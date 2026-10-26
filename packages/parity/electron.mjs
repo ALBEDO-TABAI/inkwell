@@ -12,9 +12,9 @@ const cwd = new URL('.', import.meta.url).pathname;
 const res = [];
 const ok = (name, pass, info = '') => { res.push({ name, pass: !!pass, info }); console.log(`${pass ? 'PASS' : 'FAIL'} ${name} ${info}`); };
 let proc;
-function launch(extra = [], port = 9333) {
+function launch(extra = [], port = 9333, env = {}) {
   const p = spawn('xvfb-run', ['-a', '-s', '-screen 0 1600x1000x24', 'npx', 'electron', '.', '--no-sandbox', `--remote-debugging-port=${port}`, ...extra],
-    { cwd: DESK, env: { ...process.env, INKWELL_USER_DATA: UD, INKWELL_LOCALE: 'zh-CN' }, detached: true });
+    { cwd: DESK, env: { ...process.env, INKWELL_USER_DATA: UD, INKWELL_LOCALE: 'zh-CN', ...env }, detached: true });
   p.log = ''; p.stdout.on('data', (d) => (p.log += d)); p.stderr.on('data', (d) => (p.log += d));
   return p;
 }
@@ -123,6 +123,29 @@ const act3 = after.find((a) => a.v === 'visible');
 ok('inkwell://page/<id> deep link (second instance) navigates active tab', /page-rea/.test(act3?.hash || ''), `${pid} -> ${act3?.hash}`);
 tbC.close();
 await stop(proc);
+// ---- native menu vs B02b (accessibility dump of the reference; system-injected macOS items ignored)
+const DUMP = `${OUT}menu-dump.json`; fs.rmSync(DUMP, { force: true });
+proc = launch([], 9333, { INKWELL_MENU_DUMP: DUMP, INKWELL_MENU_PLATFORM: 'darwin' });
+for (let i = 0; i < 60 && !fs.existsSync(DUMP); i++) await sleep(250);
+await stop(proc);
+const ours = JSON.parse(fs.readFileSync(DUMP, 'utf8'));
+const SYS = /[選單語動撥聽寫符號啟傳給沒服務設結並保留視窗將縮滿移與調整螢幕側於從組合聯碼頂個]|等分|^[左右][上下]角$|^底部$|^排列$|^信用卡|^Zoom$|^Bring All|^中央$|^REA /;
+const refMenus = { notion: 0, file: 1, edit: 2, view: 3, history: 4, window: 5, help: 6 };
+const brand = ours[0].label;
+let tot = 0, hit = 0; const missing = [];
+for (const [name, idx] of Object.entries(refMenus)) {
+  const txt = fs.readFileSync(`/workspace/notion-research/ref/B02b/B02b_menu_${name}.txt`, 'utf8').split('\n');
+  const flat = (ns) => ns.flatMap((n) => [n.label, ...(n.submenu ? flat(n.submenu) : [])]);
+  const have = new Set(flat(ours[idx]?.submenu || []).map((l) => l.replace(/\.\.\.$/, '…')));
+  for (const line of txt) {
+    const m = line.match(/^\t+\d+ (?:\(disabled\) )?(.+?)(?:, (?:ID|Secondary).*)?$/); if (!m) continue;
+    const label = m[1].replaceAll('Notion', brand);
+    if (SYS.test(label)) continue;
+    tot++; if (have.has(label)) hit++; else missing.push(`${name}: ${label}`);
+  }
+}
+ok('native menu items match B02b (app-defined items)', hit === tot, `${hit}/${tot}` + (missing.length ? ' missing: ' + missing.join(' | ') : ''));
+ok('menu bar order matches B02b', JSON.stringify(ours.map((m) => m.label)) === JSON.stringify([brand, '文件', '编辑', '视图', '历史', '窗口', '帮助']), JSON.stringify(ours.map((m) => m.label)));
 fs.writeFileSync(`${OUT}electron.json`, JSON.stringify(res, null, 2));
 console.log(`electron: ${res.filter((r) => r.pass).length}/${res.length}`);
 process.exit(0);

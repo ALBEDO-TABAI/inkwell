@@ -3,7 +3,7 @@
  * One BrowserWindow per window (1320×860, hiddenInset title bar). Inside it a 36px tab-bar
  * WebContentsView plus one WebContentsView per tab, only the active one visible.
  */
-import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, session, shell, dialog, clipboard, screen, type MenuItemConstructorOptions, type WebContents } from 'electron';
+import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, session, contentTracing, systemPreferences, shell, dialog, clipboard, screen, type MenuItemConstructorOptions, type WebContents } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -269,8 +269,31 @@ function tabContextMenu(w: WindowController, id: string, x: number, y: number) {
 function reopenClosedTab(w = current()) { const c = closedTabs.pop(); if (c && w) w.addTab(c.hash); }
 
 /* ------------------------------ menus (B02b) ------------------------------ */
+// ---- troubleshooting helpers (all local; results land in the logs folder)
+const logFile = (name: string) => { const d = app.getPath('logs'); fs.mkdirSync(d, { recursive: true }); return path.join(d, `${name}-${new Date().toISOString().replace(/[:.]/g, '-')}`); };
+async function blankTabDiagnostics() {
+  const w = current(); const t = w?.active(); if (!w || !t) return;
+  const wc = t.view.webContents;
+  const info = { url: wc.getURL(), crashed: wc.isCrashed(), loading: wc.isLoading(), visible: await wc.executeJavaScript('document.visibilityState').catch(() => '?'),
+    rootChildren: await wc.executeJavaScript('document.getElementById("root")?.childElementCount ?? -1').catch(() => -1), bounds: t.view.getBounds(), gpu: app.getGPUFeatureStatus(), versions: process.versions };
+  const f = logFile('blank-tab') + '.json'; fs.writeFileSync(f, JSON.stringify(info, null, 2)); shell.showItemInFolder(f);
+}
+let tracing = false;
+async function recordTrace(ms = 5000) {
+  if (tracing) return; tracing = true;
+  try { await contentTracing.startRecording({ included_categories: ['*'] }); await new Promise((r) => setTimeout(r, ms)); const f = await contentTracing.stopRecording(logFile('trace') + '.json'); shell.showItemInFolder(f); } finally { tracing = false; }
+}
+async function recordNetLog(ms = 15000) {
+  const ses = session.fromPartition(BRAND.partition); if (ses.netLog.currentlyLogging) return;
+  const f = logFile('netlog') + '.json'; await ses.netLog.startLogging(f); setTimeout(async () => { await ses.netLog.stopLogging(); shell.showItemInFolder(f); }, ms);
+}
+function showMediaStatus() {
+  const st = (k: 'microphone' | 'camera') => (process.platform === 'darwin' || process.platform === 'win32' ? systemPreferences.getMediaAccessStatus(k) : 'n/a');
+  dialog.showMessageBox({ type: 'info', message: L.mediaStatus, detail: `${L.mic}: ${st('microphone')}\n${L.camera}: ${st('camera')}` });
+}
+
 function buildMenu() {
-  const mac = process.platform === 'darwin';
+  const mac = (process.env.INKWELL_MENU_PLATFORM || process.platform) === 'darwin'; // override lets the harness dump the mac menu on linux
   const cmd = (c: string, arg?: unknown) => () => current()?.command(c, arg);
   const activeWc = () => current()?.active()?.view.webContents;
   const template: MenuItemConstructorOptions[] = [
@@ -357,18 +380,37 @@ function buildMenu() {
         {
           label: L.troubleshoot,
           submenu: [
-            { label: L.showLogs, click: () => shell.openPath(app.getPath('logs')) },
+            { label: mac ? L.showLogsMac : L.showLogs, click: () => { fs.mkdirSync(app.getPath('logs'), { recursive: true }); shell.openPath(app.getPath('logs')); } },
+            ...(mac ? [
+              { label: L.openConsole, click: () => shell.openPath('/System/Applications/Utilities/Console.app') },
+              { label: L.openActivity, click: () => shell.openPath('/System/Applications/Utilities/Activity Monitor.app') },
+            ] : []),
+            { type: 'separator' },
+            { label: L.blankTabDiag, click: blankTabDiagnostics },
+            { label: L.blackScreen, click: () => { app.relaunch({ args: [...process.argv.slice(1).filter((a) => a !== '--disable-gpu-compositing'), '--disable-gpu-compositing'] }); app.quit(); } },
+            { label: L.perfTrace, click: () => recordTrace() },
+            { label: L.netLog, click: () => recordNetLog() },
+            { label: L.mediaStatus, click: showMediaStatus },
+            { type: 'separator' },
             { label: L.disableGpu, type: 'checkbox', checked: !!state.data.gpuDisabled, click: () => { state.data.gpuDisabled = !state.data.gpuDisabled; persistAll(true); app.relaunch(); app.quit(); } },
+            { label: L.verboseLog, type: 'checkbox', checked: !!state.data.verboseLogging, click: () => { state.data.verboseLogging = !state.data.verboseLogging; persistAll(true); app.relaunch(); app.quit(); } },
             { type: 'separator' },
             { label: L.resetData, click: resetLocalData },
             { label: L.copyInstallId, click: () => clipboard.writeText(state.data.installId) },
           ],
         },
         { label: L.openHelp, enabled: false },
+        { label: L.latest(mac ? 'macOS' : process.platform === 'win32' ? 'Windows' : 'Linux'), click: showAbout },
       ],
     },
   ];
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+  if (process.env.INKWELL_MENU_DUMP) { // parity harness: structure + accelerators of the native menu
+    type Node = { label: string; role?: string; accelerator?: string; enabled: boolean; type: string; submenu?: Node[] };
+    const ser = (m: Electron.Menu): Node[] => m.items.map((i) => ({ label: i.label, role: i.role, accelerator: i.accelerator ? String(i.accelerator) : undefined, enabled: i.enabled, type: i.type, submenu: i.submenu ? ser(i.submenu) : undefined }));
+    fs.writeFileSync(process.env.INKWELL_MENU_DUMP, JSON.stringify(ser(menu), null, 2));
+  }
 }
 function zoom(d: number) {
   const wc = current()?.active()?.view.webContents; if (!wc) return;
@@ -404,6 +446,7 @@ if (!app.isDefaultProtocolClient(BRAND.scheme)) { try { app.setAsDefaultProtocol
 
 state = new StateFile(app.getPath('userData'), BRAND.stateFile);
 if (state.data.gpuDisabled) app.disableHardwareAcceleration();
+if (state.data.verboseLogging) { app.commandLine.appendSwitch('enable-logging', 'file'); app.commandLine.appendSwitch('log-file', path.join(app.getPath('userData'), 'logs', 'verbose.log')); }
 
 app.whenReady().then(() => {
   // serve the built renderer from inkwell://app/…
