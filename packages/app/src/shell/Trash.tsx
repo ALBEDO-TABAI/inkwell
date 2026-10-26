@@ -25,6 +25,7 @@ function TrashPanel({ close }: { close: () => void }) {
     <div className="ink-trash">
       <div className="ink-trash-top">
         <input data-autofocus className="ink-menu-search" placeholder={t('trash.search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        {q && <button className="ink-trash-clear" aria-label={t('common.close')} onClick={() => setQ('')}><Icon name="x" size={10} stroke={3} /></button>}
         <div className="ink-trash-chips">
           <span className="ink-chip is-accent"><Icon name="user" size={14} stroke={1.8} />{t('trash.lastEditedBy')}<Icon name="chevronDown" size={12} stroke={2} /></span>
           <span className="ink-chip"><Icon name="file" size={14} stroke={1.8} />{t('trash.pages')}<Icon name="chevronDown" size={12} stroke={2} /></span>
@@ -33,7 +34,7 @@ function TrashPanel({ close }: { close: () => void }) {
       </div>
       <div className="ink-trash-list">
         {items.length === 0 ? (
-          <div className="ink-trash-empty"><Icon name="trash" size={18} stroke={1.6} /><div>{t('common.noResults')}</div></div>
+          <div className="ink-trash-empty"><Icon name="trash" size={18} stroke={1.6} />{q ? <><div className="ink-trash-empty-title">{t('trash.noMatch')}</div><div>{t('trash.noMatchHint')}</div></> : <div>{t('common.noResults')}</div>}</div>
         ) : items.map((b) => (
           <div key={b!.id} className="ink-menu-item ink-trash-item" onClick={() => { navigate(b!.id); close(); }}>
             <span className="ink-menu-icon"><PageIcon block={b} size={20} /></span>

@@ -1,7 +1,7 @@
 export const zhCN = {
   // generic
   'common.untitled': '新页面',
-  'common.noResults': '无结果',
+  'trash.noMatch': '无匹配项', 'trash.noMatchHint': '尝试检查拼写错误', 'common.noResults': '无结果',
   'common.close': '关闭',
   'common.cancel': '取消',
   'common.done': '完成',

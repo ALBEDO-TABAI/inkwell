@@ -1,6 +1,6 @@
 import type { zhCN } from './zh-CN';
 export const en: Partial<Record<keyof typeof zhCN, string>> = {
-  'common.untitled': 'New page', 'common.noResults': 'No results', 'common.close': 'Close', 'common.cancel': 'Cancel', 'common.done': 'Done',
+  'common.untitled': 'New page', 'trash.noMatch': 'No matches', 'trash.noMatchHint': 'Try checking your spelling', 'common.noResults': 'No results', 'common.close': 'Close', 'common.cancel': 'Cancel', 'common.done': 'Done',
   'common.delete': 'Delete', 'common.today': 'Today', 'common.yesterday': 'Yesterday', 'common.tomorrow': 'Tomorrow',
   'common.lastEdited': 'Last edited', 'common.wordsChars': '{words} words, {chars} characters', 'common.chars': '{chars} characters', 'common.page': 'Page',
   'tabs.newTab': 'New tab', 'tabs.close': 'Close tab', 'tabs.back': 'Back', 'tabs.forward': 'Forward', 'tabs.toggleSidebar': 'Toggle sidebar', 'tabs.inbox': 'Inbox', 'tabs.newPage': 'New page',
