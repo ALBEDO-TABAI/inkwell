@@ -28,20 +28,31 @@ npm run parity         # Playwright parity harness (in progress)
   - `page/`: PageView (header/cover/icon/title, handles, DnD, rubber band, selection keys, outline), media.
   - entries: `entry-index.tsx` (app), `entry-window.tsx` (browser window simulator), `entry-tabbar.tsx` (Electron tab bar).
 - `packages/desktop`: Electron main/preload (to write).
-- `packages/parity`: Playwright harness (to write).
+- `packages/parity`: Playwright harness (Chrome for Testing 1208 in ~/.cache/ms-playwright):
+  - `geometry.mjs [light|dark]` → `docs/parity/geometry-*.md` (rects vs reference computed captures)
+  - `editor.mjs [light|dark]` → `docs/parity/editor-*.md` (hover handles, block menu, slash, toolbar, page menu, search)
+  - `b08.mjs` → `docs/parity/B08_p*_*.png` (reference | ours | diff, 7 scroll pages × 2 themes) + `out/b08.json`
+  - `b04.mjs` → header variants (none / icon / cover / icon+cover)
+  - `smoke.mjs` → interaction smoke tests (slash, media, markdown, undo, selection, sidebar, theme, toolbar, link, @, :, menus, settings, DnD)
+  - helpers: `compare.py` (pixel diff), `rows.py` (text-row drift), `bbox.py` (glyph bbox), `shot.mjs`
 
 ## Status
 - [x] Monorepo, tokens, shared brand/IPC
 - [x] Store, fixture, persistence
 - [x] Shell components (sidebar, topbar, menus, settings, trash, search, switcher)
-- [x] Editor modules (all written, NOT yet typechecked/run)
-- [ ] CSS (styles/app.css, styles/tabbar.css) — in progress
-- [ ] First typecheck + Vite run on 5200
-- [ ] Playwright parity harness + docs/PARITY.md
+- [x] Editor modules; CSS; typecheck clean; runs on 5200 with no page errors
+- [x] Parity harness running from the first render (geometry, B08 pixels, B04 header, B02 tab bar, editor menus)
+  - page/block geometry: 65/67 within 1px (table is intentionally in-column; reference is full-bleed)
+  - header variants: title position ±1px in all four variants
+  - tab bar: tab pitch/edges exact for 1/5/15 tabs
+  - menus: block menu, page menu, slash menu, handles within 1px; search modal + inline toolbar pending
+- [x] Smoke tests: 16/16 pass
+- [ ] Search modal rebuild (filters row, preview pane, footer hints) to match B07
+- [ ] Inline toolbar geometry vs reference
+- [ ] B03 sidebar variants, B05/B05b menus pixel checks, docs/PARITY.md
 - [ ] Electron shell (window, tab views, native menus, state restore, SQLite)
-- [ ] Commits per milestone
 
 ## Next
-1. Write CSS, typecheck, run Vite, fix runtime errors.
-2. Parity harness: screenshot B08/B03/B05 states, pixel diff per region, computed deltas.
+1. Search modal to B07 layout; inline toolbar measurements.
+2. docs/PARITY.md with summary + side-by-side images.
 3. Electron desktop package.
