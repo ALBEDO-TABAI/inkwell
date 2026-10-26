@@ -67,10 +67,12 @@ npm run parity         # every harness (packages/parity/run.mjs [job…]); resul
 - [x] M3: sub-pages, link to page, @ page/person/date mentions, `[[`, back/forward (⌘[ / ⌘]), side peek 660 / center peek 960×680 r12 (Alt / Alt+Shift click on page links, rows), page menu (appearance, lock, trash, move, duplicate), page lock (read-only editables, 已锁定 chip), trash search / restore / delete, find in page (⌘F, highlights, n/m, Enter / ⇧Enter)
 - [x] M4: `packages/app/src/db/` — inline + full-page DBs, 13 property types (text, number, select, multi, status, date, person, checkbox, URL, email, phone, formula, created time), Table / Board / List / Gallery S-M-L views, filter / sort / group, calculations, cell editors, header / type / new-view / settings menus, view tabs with overflow, row peek; REA DB fixture 14 props × 12 rows
   - `db.mjs` pixel parity (20 cases × light/dark) and `db-geometry.mjs` (42/44 within 1px vs computed/db_*.json); `m3m4.mjs` behaviour checks 26/26
-- [x] M5 (partial): Calendar and Timeline views (drag to move dates, today line, month labels)
+- [x] M3 additions: `[[` opens a pages-only link menu (caret fix: `textLength` skipped editables carrying `data-placeholder`), version history (B07: per-minute snapshots, preview, restore), trash no-match state
+- [x] M5: Calendar and Timeline views (drag to move dates, today line at the current time, month labels), relation + rollup properties, database templates
+  - `b07.mjs` (page menu / trash / history), B01c dark comparisons in `db.mjs`; `m3m4.mjs` 41/41
 
 ## Next
-1. Page history modal (B07_page_history), help / updates panels (B07).
-2. Relation / rollup / files properties; multiple data sources; view drag reorder; timeline zoom levels.
+1. Help / updates / shortcuts panels and library menu (rest of B07).
+2. Files property; multiple data sources; view drag reorder; timeline zoom levels.
 3. Comments, sharing/publish UI (local only), export (HTML/PDF via printToPDF).
 4. Signing / notarisation, auto-update stub.

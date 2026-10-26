@@ -19,6 +19,13 @@ Side-by-side images are `reference | ours | diff` (diff = pixels whose channel d
 | Full reference page B08 (7 scroll positions) | `b08.mjs` | sidebar 4.6%; text pages 1.6–3.1%; p3/p5 10–13% and p4 50% are pages dominated by media (embedded images, video, bookmark thumbnails we do not copy) |
 | Block hover / handle / block menu / colour / turn-into B05 | `b05.mjs` | 3.5–3.8% (hover, handle, block menu); colour 5.8–6.3%, turn-into 5.7–7.7% (glyphs, plus the ref's own scroll offset) |
 | Slash, inline toolbar, colour grid, link popover/hover, mention, emoji inline/picker B05b | `b05b.mjs` | visual side-by-sides (refs were shot at varying scroll offsets, so crops are paired by box, not diffed as a %) |
+| Database views B06 (table, board, list, gallery S/M/L, calendar, timeline), light + dark | `db.mjs` | board 1.5–1.6%, list 2.0–2.1%, calendar 1.8%, timeline 2.2%, gallery 2.8–3.8%, table 4.1–4.2% |
+| Row peeks B06 (side 660 from table, center 960×680 from gallery) | `db.mjs` | side 4.7–4.9%, center 2.8–2.9% |
+| DB menus and editors B06b (views, header, type, filter, sort, calc, select/multi/status/text cells) | `db.mjs` | 2.4–7.0% (views 2.4, filter 4.3, header 4.4, cells 4.1–5.0, calc 5.8, sort 6.3, type 6.9) |
+| B01c dark DB views (native window capture, tab bar cropped) | `db.mjs` | board 1.9%, calendar 2.1%, list 2.3%, timeline 2.6%, gallery 3.9%, table 4.5% |
+| DB geometry vs `computed/db_light.json` / `db_dark.json` | `db-geometry.mjs` | **42/44** within 1px in both themes (below) |
+| B07 page menu, trash (filtered), version history | `b07.mjs` | page menu 4.9–5.0%, trash 4.2–4.3%, history 4.2–4.8% (history text rows within 1px of the reference) |
+| M3/M4/M5 behaviour (find, lock, peeks, cell editors, sort/filter/group/calc, formula, `[[`, @date, back/forward, history restore, relation + rollup, templates) | `m3m4.mjs` | **41/41** |
 | Electron shell | `electron.mjs` | **20/20** (below) |
 | Native menus vs B02b accessibility dump | `electron.mjs` | **51/51** app-defined items, menu-bar order exact; macOS system-injected items (Services, Speech, AutoFill, window tiling, traditional-Chinese entries) are supplied by the OS |
 | Tab bar B02 (1/5/15 tabs) | earlier window-sim checks | tab pitch and edges exact; real Electron tab bar vs `B02_tabs_1` 6.2% (the Linux capture has no traffic lights) |
@@ -47,7 +54,18 @@ Side-by-side images are `reference | ours | diff` (diff = pixels whose channel d
 19. Native menu items match B02b (51/51)
 20. Menu bar order: Inkwell / 文件 / 编辑 / 视图 / 历史 / 窗口 / 帮助
 
+## DB geometry (`db-geometry.mjs`)
+
+Exact (±1px): DB title, view tabs, 新建 button, all header cells (160/200/100/110 × 36), rows (37), hover 打开 chip, board cards (260×40, pitch 48) and group pills, gallery cards S/M/L (198.5/270/413 × 128.5, gaps 16), calendar weekday labels, cells (120.14 × 124), today badge and event lanes, views menu (290), side peek (660×824) and its title, center peek (960×680 at 180,72) and its title.
+The two misses: the second view tab is 1.5px narrower (glyph widths), and the computed capture puts the first select tag 6px further right than the reference screenshot does (the screenshot and ours agree at x=842).
+
 ## Side-by-sides worth opening
+
+- `docs/parity/B06_view_board_light.png`, `B06_view_calendar_light.png`, `B06_view_timeline_light.png`, `B06_view_table_dark.png`: DB views
+- `docs/parity/B06_row_peek_from_gallery_light.png`: center peek
+- `docs/parity/B06_sort_menu_light.png`: sort chip bar + panel
+- `docs/parity/B07_page_history_light.png`: version history
+- `docs/parity/db-geometry-light.md`: DB rect deltas
 
 - `docs/parity/B03_default_light.png`: sidebar default state
 - `docs/parity/B08_p1_light.png`: top of the reference page (headings, inline styles, lists)
@@ -65,5 +83,6 @@ Side-by-side images are `reference | ours | diff` (diff = pixels whose channel d
 - **Table width.** Tables stay in the text column; the reference is full-bleed (2 geometry misses).
 - **Drag ref.** The B05b drag-in-progress reference shows no indicator (capture failed), so there is nothing to compare.
 - **Emoji ordering.** Inline `:` results are ordered by our own keyword index, not the reference's popularity data.
-- **Not implemented.** The tabs block, and the `@今天` ghost placeholder in the mention menu.
+- **Icons.** Lucide outline icons where the reference uses its own filled glyphs (DB property icons, toolbar), a large part of the 4–7% on DB menus.
+- **Not implemented.** The tabs block, the `@今天` ghost placeholder in the mention menu, file/media properties, multiple data sources, view drag reorder, timeline zoom levels other than 季度.
 - **macOS-only bits** (traffic lights, system menu items) cannot be shot on the Linux box; menus are checked structurally against the accessibility dump instead.

@@ -5,7 +5,7 @@ const only = process.argv.slice(2);
 const jobs = [
   ['smoke', ['smoke.mjs']], ['geo_l', ['geometry.mjs', 'light']], ['geo_d', ['geometry.mjs', 'dark']],
   ['ed_l', ['editor.mjs', 'light']], ['ed_d', ['editor.mjs', 'dark']], ['b08', ['b08.mjs']], ['b04', ['b04.mjs']],
-  ['b03', ['b03.mjs']], ['b05', ['b05.mjs']], ['b05b', ['b05b.mjs']], ['electron', ['--experimental-websocket', 'electron.mjs']],
+  ['b03', ['b03.mjs']], ['b05', ['b05.mjs']], ['b05b', ['b05b.mjs']], ['b07', ['b07.mjs']], ['db', ['db.mjs']], ['dbgeo_l', ['db-geometry.mjs', 'light']], ['dbgeo_d', ['db-geometry.mjs', 'dark']], ['m3m4', ['m3m4.mjs']], ['electron', ['--experimental-websocket', 'electron.mjs']],
 ];
 let failed = 0;
 for (const [name, args] of jobs) {
