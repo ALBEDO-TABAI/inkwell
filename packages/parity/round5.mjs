@@ -95,6 +95,45 @@ T.comments = async () => {
   await page.evaluate(() => window.__ink.setUi({ rightPanel: 'updates' })); await page.waitForTimeout(300);
   ok((await page.$$('.ink-rpanel .ink-up-entry')).length >= 1, 'updates panel lists entries');
 };
+T.media = async () => {
+  await go('page-rea');
+  const id = await page.evaluate(() => [...window.__ink.store.blocks.values()].find((b) => b.type === 'image' && b.alive !== false).id);
+  const sel = `.ink-main [data-block-id="${id}"] .ink-media-box`;
+  await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel); await page.waitForTimeout(300);
+  const b0 = await box(sel); await page.mouse.move(b0.x + b0.w / 2, b0.y + b0.h / 2); await page.waitForTimeout(200);
+  const h = await box(sel + ' .ink-rs-handle.is-right');
+  await page.mouse.move(h.x + 7, h.y + h.h / 2); await page.mouse.down(); await page.mouse.move(h.x - 100, h.y + h.h / 2, { steps: 6 }); await page.mouse.up(); await page.waitForTimeout(300);
+  const w = await page.evaluate((i) => window.__ink.store.get(i).format.image_width, id);
+  ok(w && Math.abs(w - (b0.w - 214)) < 6, `centred image resizes symmetrically: ${b0.w.toFixed(0)} → ${w}`);
+  await page.mouse.move(b0.x + b0.w / 2, b0.y + 50); await page.waitForTimeout(200);
+  await page.click(sel + ' .ink-mtb-btn[aria-label="对齐"]'); await page.click('[data-item-id="al-left"]'); await page.waitForTimeout(200);
+  const b1 = await box(sel); ok(Math.abs(b1.x - b0.x) < 3, 'align left moves the image to the left edge');
+  await page.mouse.move(b1.x + 50, b1.y + 50); await page.waitForTimeout(150);
+  await page.click(sel + ' .ink-mtb-btn[aria-label="说明"]'); await page.waitForTimeout(200); await page.keyboard.type('图片说明'); await page.waitForTimeout(400);
+  ok(await page.evaluate((i) => (window.__ink.store.get(i).props.caption || []).map((x) => x[0]).join('') === '图片说明', id), 'caption is editable');
+  await page.screenshot({ path: 'out/r5_image.png' });
+  // file / audio / pdf blocks
+  const ids = await page.evaluate(() => { const s = window.__ink.store; const out = []; for (const [type, p] of [['file', { url: 'data:text/plain;base64,aGVsbG8=', fileName: '笔记.txt', fileSize: 5 }], ['audio', { url: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=' }], ['pdf', {}]]) { const id = 'x-' + type; s.transact('t', (tx) => { tx.create({ id, type, title: [], parent: 'page-rea', parentTable: 'block', content: [], alive: true, props: p }); tx.insertChild('page-rea', id, 0); }); out.push(id); } return out; });
+  await page.waitForTimeout(300);
+  ok(await page.textContent(`[data-block-id="x-file"] .ink-fileblock-row`).then((x) => x.includes('笔记.txt') && x.includes('5 B')), 'file block shows name and size');
+  ok(!!(await page.$('[data-block-id="x-audio"] audio')), 'audio block renders a player');
+  ok(!!(await page.$('[data-block-id="x-pdf"] .ink-media-empty')), 'empty pdf block shows the upload placeholder');
+  void ids;
+};
+T.tabs = async () => {
+  await go('page-rea');
+  await page.click('.ink-main .ink-page-blocks > [data-type="header"] [data-editable-id]'); await page.keyboard.press('End'); await page.keyboard.press('Enter');
+  await page.keyboard.type('/标签页'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(400);
+  ok((await page.$$('.ink-main .ink-tabsblock .ink-tabs-tab')).length === 2, 'slash /标签页 creates a 2-tab block');
+  await page.keyboard.type('第一页内容'); await page.waitForTimeout(200);
+  await page.click('.ink-main .ink-tabsblock .ink-tabs-tab >> nth=1'); await page.waitForTimeout(300);
+  ok(!(await page.textContent('.ink-main .ink-tabs-panel')).includes('第一页内容'), 'switching tabs swaps the panel');
+  await page.click('.ink-main .ink-tabsblock .ink-tabs-add'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-main .ink-tabsblock .ink-tabs-tab')).length === 3, 'add tab');
+  await page.click('.ink-main .ink-tabsblock .ink-tabs-tab >> nth=0'); await page.waitForTimeout(300);
+  ok((await page.textContent('.ink-main .ink-tabs-panel')).includes('第一页内容'), 'first tab keeps its content');
+  await page.screenshot({ path: 'out/r5_tabs.png' });
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

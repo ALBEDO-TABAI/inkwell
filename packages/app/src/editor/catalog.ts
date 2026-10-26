@@ -15,7 +15,7 @@ export interface BlockKind {
   badge?: () => string;
   toggleable?: boolean;
   /** creates something other than a plain type switch */
-  special?: 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage' | 'ai' | 'dbInline' | 'dbPage';
+  special?: 'tabs' | 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage' | 'ai' | 'dbInline' | 'dbPage';
   turnInto?: boolean;
 }
 
@@ -51,6 +51,10 @@ export const BLOCK_KINDS: BlockKind[] = [
   { id: 'toggleH4', type: 'header_4', label: () => t('b.toggleH4'), icon: 'th4', keywords: ['toggle heading 4'], toggleable: true, turnInto: true },
   { id: 'columns2', type: 'column_list', label: () => t('b.columns2'), icon: 'columns', keywords: ['2 columns', 'two columns', 'columns', 'layout'], special: 'columns2' },
   { id: 'columns3', type: 'column_list', label: () => t('b.columns3'), icon: 'columns3', keywords: ['3 columns', 'three columns', 'columns'], special: 'columns3' },
+  { id: 'tabs', type: 'tabs', label: () => t('b.tabs'), icon: 'tabsBlock', keywords: ['tabs', 'tab', 'biaoqianye', '标签页'], badge: () => t('b.badgeNew'), special: 'tabs' },
+  { id: 'file', type: 'file', label: () => t('b.file'), icon: 'file', keywords: ['file', 'upload', 'attachment', 'wenjian'] },
+  { id: 'audio', type: 'audio', label: () => t('b.audio'), icon: 'audio', keywords: ['audio', 'sound', 'music', 'mp3', 'yinpin'] },
+  { id: 'pdf', type: 'pdf', label: () => t('b.pdf'), icon: 'pdf', keywords: ['pdf', 'document'] },
   { id: 'columns4', type: 'column_list', label: () => t('b.columns4'), icon: 'columns', keywords: ['4 columns', 'four columns'], special: 'columns4' },
   { id: 'mentionPerson', type: 'text', label: () => t('b.mentionPerson'), icon: 'at', keywords: ['mention person', 'person', 'user', '@'], special: 'mentionPerson' },
   { id: 'mentionPage', type: 'text', label: () => t('b.mentionPage'), icon: 'pageLink', keywords: ['mention page', 'page link', '[['], special: 'mentionPage' },
@@ -65,10 +69,10 @@ export const kind = (id: string) => BLOCK_KINDS.find((k) => k.id === id)!;
 export const SLASH_SECTIONS: { id: string; label: () => string; items: string[] }[] = [
   { id: 'suggested', label: () => t('slash.suggested'), items: ['aiNotes', 'embed', 'page', 'toggle'] },
   { id: 'basic', label: () => t('slash.basic'), items: ['text', 'h1', 'h2', 'h3', 'h4', 'bulleted', 'numbered', 'todo', 'toggle', 'page', 'callout', 'quote', 'table', 'divider', 'linkToPage'] },
-  { id: 'media', label: () => t('slash.media'), items: ['image', 'video', 'bookmark', 'code', 'embed'] },
+  { id: 'media', label: () => t('slash.media'), items: ['image', 'video', 'audio', 'file', 'pdf', 'bookmark', 'code', 'embed'] },
   { id: 'advanced', label: () => t('slash.advanced'), items: ['dbInline', 'dbPage', 'toc', 'equation', 'breadcrumb', 'synced', 'toggleH1', 'toggleH2', 'toggleH3', 'toggleH4'] },
   { id: 'inline', label: () => t('slash.inline'), items: ['mentionPerson', 'mentionPage', 'date', 'emoji', 'inlineEquation'] },
-  { id: 'layout', label: () => t('slash.layout'), items: ['columns2', 'columns3', 'columns4'] },
+  { id: 'layout', label: () => t('slash.layout'), items: ['columns2', 'columns3', 'columns4', 'tabs'] },
 ];
 
 export const TURN_INTO_ORDER = ['text', 'h1', 'h2', 'h3', 'h4', 'page', 'bulleted', 'numbered', 'todo', 'toggle', 'code', 'quote', 'callout', 'equation', 'synced', 'toggleH1', 'toggleH2', 'toggleH3', 'toggleH4'];

@@ -8,7 +8,8 @@ import { Editable } from './Editable';
 import { t } from '../i18n';
 import { Icon } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
-import { openMediaPopover, type MediaKind } from './media-popover';
+import { ImageBlock, VideoBlock, BookmarkBlock, AudioBlock, FileBlock, PdfBlock, MediaPlaceholder } from './media-blocks';
+import { TabsBlock } from './tabs-block';
 import { isListish } from './commands';
 import { renderTex } from './render-inline';
 import { focusBlock, onBlockSelection, getBlockSelection, setBlockSelection } from './registry';
@@ -26,7 +27,7 @@ import { rtPlain, colorClass } from './richtext';
 export interface Ctx { parentType: BlockType | 'root'; first: boolean; last: boolean; prev?: Block; next?: Block; depth: number; number?: number }
 
 const HEADING_TOP: Partial<Record<BlockType, number>> = { header: 30, sub_header: 26, sub_sub_header: 22, header_4: 18 };
-const PADDED8: BlockType[] = ['quote', 'callout', 'code', 'table', 'image', 'video', 'bookmark', 'embed', 'equation', 'table_of_contents'];
+const PADDED8: BlockType[] = ['quote', 'callout', 'code', 'table', 'image', 'video', 'bookmark', 'embed', 'equation', 'table_of_contents', 'file', 'audio', 'pdf', 'tabs'];
 const PAGE_LINKS: BlockType[] = ['page', 'alias', 'collection_view_page'];
 const LIST_PARENTS: (BlockType | 'root')[] = ['bulleted_list', 'numbered_list', 'to_do', 'toggle'];
 
@@ -224,6 +225,16 @@ function BlockBody({ b, ctx }: { b: Block; ctx: Ctx }) {
       return <BookmarkBlock b={b} />;
     case 'embed':
       return <EmbedBlock b={b} />;
+    case 'file':
+      return <FileBlock b={b} />;
+    case 'audio':
+      return <AudioBlock b={b} />;
+    case 'pdf':
+      return <PdfBlock b={b} />;
+    case 'tabs':
+      return <TabsBlock b={b} depth={ctx.depth} />;
+    case 'tab':
+      return kids('ink-children-flat');
     case 'table':
       return <TableBlock b={b} />;
     case 'table_of_contents':
@@ -288,61 +299,7 @@ function ColumnList({ b, depth }: { b: Block; depth: number }) {
   );
 }
 
-/* ---------- media ---------- */
-function Caption({ b }: { b: Block }) {
-  const cap = b.props?.caption;
-  if (!cap?.length) return null;
-  return <div className="ink-caption">{rtPlain(cap)}</div>;
-}
-function ImageBlock({ b }: { b: Block }) {
-  const src = resolveMedia(b.props?.src);
-  const aspect = b.format?.image_aspect ?? 316.06 / 704;
-  if (!src) return <MediaPlaceholder b={b} kind="image" label={t('ed.imagePlaceholder')} />;
-  return (
-    <div className="ink-image" contentEditable={false}>
-      <div className="ink-image-frame" style={{ width: b.format?.image_width ? b.format.image_width : '100%', paddingBottom: `${aspect * 100}%` }}>
-        <img src={src} alt="" draggable={false} onLoad={(e) => {
-          const im = e.currentTarget; if (b.format?.image_aspect || !im.naturalWidth) return;
-          store.transact('image size', (tx) => tx.update(b.id, (x) => ({ format: { ...x.format, image_aspect: im.naturalHeight / im.naturalWidth } })), { noUndo: true });
-        }} />
-      </div>
-      <Caption b={b} />
-    </div>
-  );
-}
-function VideoBlock({ b }: { b: Block }) {
-  if (!b.props?.url) return <MediaPlaceholder b={b} kind="video" label={t('ed.videoPlaceholder')} />;
-  return (
-    <div className="ink-video" contentEditable={false}>
-      <div className="ink-video-frame" style={{ paddingBottom: `${(396.61 / 704) * 100}%` }}>
-        {/^data:video|\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(b.props.url) ? <video className="ink-video-el" src={b.props.url} controls /> : <div className="ink-video-inner"><div className="ink-video-play"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M8 5v14l11-7z" fill="currentColor" /></svg></div><div className="ink-video-url">{b.props.url}</div></div>}
-      </div>
-    </div>
-  );
-}
-function BookmarkBlock({ b }: { b: Block }) {
-  const bm = b.props?.bookmark;
-  if (!bm && !b.props?.url) return <MediaPlaceholder b={b} kind="bookmark" label={t('ed.bookmarkPlaceholder')} />;
-  const url = bm?.url || b.props?.url || '';
-  return (
-    <div className="ink-bookmark" contentEditable={false} role="link" tabIndex={-1} onClick={(e) => { if (e.metaKey || e.ctrlKey || true) window.open(url, '_blank'); }}>
-      <div className="ink-bookmark-text">
-        <div className="ink-bookmark-title">{bm?.title || url}</div>
-        <div className="ink-bookmark-desc">{bm?.description}</div>
-        <div className="ink-bookmark-url"><img src={resolveMedia(bm?.favicon || 'fixture://favicon')} alt="" width={16} height={16} /><span>{url}</span></div>
-      </div>
-      {bm?.image && <div className="ink-bookmark-img"><img src={resolveMedia(bm.image)} alt="" /></div>}
-    </div>
-  );
-}
-function MediaPlaceholder({ b, kind, label }: { b: Block; kind: MediaKind; label: string }) {
-  return (
-    <div className="ink-media-ph ink-media-empty" contentEditable={false} role="button" onMouseDown={(e) => e.preventDefault()}
-      onClick={(e) => openMediaPopover(b, kind, (e.currentTarget as HTMLElement).getBoundingClientRect())}>
-      <Icon name={kind} size={20} /><span>{label}</span>
-    </div>
-  );
-}
+/* ---------- media: see media-blocks.tsx ---------- */
 function EmbedBlock({ b }: { b: Block }) {
   const html = b.props?.html as string | undefined;
   if (!html) return <MediaPlaceholder b={b} kind="embed" label={t('media.htmlPlaceholder')} />;

@@ -5,7 +5,8 @@ export type BlockType =
   | 'bulleted_list' | 'numbered_list' | 'to_do' | 'toggle' | 'quote' | 'callout'
   | 'divider' | 'code' | 'equation' | 'column_list' | 'column'
   | 'image' | 'bookmark' | 'video' | 'embed' | 'table' | 'table_row' | 'table_of_contents'
-  | 'breadcrumb' | 'alias' | 'synced' | 'collection_view_page' | 'collection_view';
+  | 'breadcrumb' | 'alias' | 'synced' | 'collection_view_page' | 'collection_view'
+  | 'file' | 'audio' | 'pdf' | 'tabs' | 'tab';
 
 /** Inline marks. Colours are editor colour keys: 'gray' | 'gray_background' etc. */
 export interface Marks {
@@ -40,6 +41,12 @@ export interface BlockFormat {
   table_widths?: number[];
   image_width?: number;
   image_aspect?: number;
+  /** media alignment: left | center | right */
+  block_alignment?: 'left' | 'center' | 'right';
+  /** simple table: first column is a header */
+  table_has_column_header?: boolean;
+  /** pdf / embed height */
+  block_height?: number;
   list_start?: number;
 }
 

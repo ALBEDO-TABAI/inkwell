@@ -12,6 +12,7 @@ import { openEquationEditor } from './equation';
 import { toast } from '../ui/toast';
 import { t } from '../i18n';
 import { addRow, newDbProps } from '../db/model';
+import { newTab } from './tabs-block';
 
 const TEXTISH: BlockType[] = ['text', 'header', 'sub_header', 'sub_sub_header', 'header_4', 'bulleted_list', 'numbered_list', 'to_do', 'toggle', 'quote', 'callout'];
 
@@ -49,6 +50,12 @@ export function applyKind(id: string, k: BlockKind, title: RichText, at: number)
   if (k.special?.startsWith('columns')) {
     setTitle(id, title, false);
     insertColumns(id, Number(k.special.slice(-1)), empty);
+    return;
+  }
+  if (k.special === 'tabs') {
+    const a = newTab('', t('tabs.default', { n: 1 })), c = newTab('', t('tabs.default', { n: 2 }));
+    const sid = createBlockAt(id, empty, 'tabs', { props: { active: 0 } }, false, (tx, nid) => { for (const x of [a, c]) { tx.create({ ...x.tab, parent: nid }); tx.create(x.text); } tx.update(nid, { content: [a.tab.id, c.tab.id] }); });
+    void sid; focusBlock(a.text.id, 0);
     return;
   }
   if (k.special === 'linkToPage') {
@@ -103,7 +110,7 @@ export function applyKind(id: string, k: BlockKind, title: RichText, at: number)
   if (k.type === 'equation') extra.props = { tex: '' };
   const nid = createBlockAt(id, empty, k.type, extra, true);
   if (k.type === 'equation') requestAnimationFrame(() => openEquationEditor({ blockId: nid }));
-  else if (k.type === 'image' || k.type === 'bookmark' || k.type === 'video' || k.type === 'embed') requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-block-id="${nid}"] .ink-media-empty`)?.click());
+  else if (['image', 'bookmark', 'video', 'embed', 'file', 'audio', 'pdf'].includes(k.type)) requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-block-id="${nid}"] .ink-media-empty`)?.click());
   else setBlockSelection([]);
 }
 
