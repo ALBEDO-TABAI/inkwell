@@ -80,13 +80,14 @@ export function openViewTabMenu(anchor: HTMLElement, db: Block, v: View) {
   }, { anchorEl: anchor });
 }
 
-function NameInput({ value, onCommit, lead }: { value: string; onCommit: (v: string) => void; lead?: ReactNode }) {
+function NameInput({ value, onCommit, lead, info }: { value: string; onCommit: (v: string) => void; lead?: ReactNode; info?: boolean }) {
   const [v, setV] = useState(value);
   useEffect(() => () => { if (v.trim() !== value) onCommit(v.trim()); }, [v]);
   return (
     <div className="ink-hm-name">
       {lead && <span className="ink-hm-type">{lead}</span>}
-      <input className="ink-menu-search" data-autofocus value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onCommit(v.trim()); closePopover(e.currentTarget.closest('[data-popover-id]')!.getAttribute('data-popover-id')!); } }} />
+      <span className="ink-hm-input"><input className="ink-menu-search" data-autofocus value={v} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onCommit(v.trim()); closePopover(e.currentTarget.closest('[data-popover-id]')!.getAttribute('data-popover-id')!); } }} />
+      {info && <span className="ink-hm-info" title="属性说明"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden><circle cx="7" cy="7" r="6.5" fill="currentColor" /><path d="M7 6.2v3.6M7 4.2v.1" stroke="var(--ink-background-elevated)" strokeWidth="1.6" strokeLinecap="round" /></svg></span>}</span>
     </div>
   );
 }
@@ -99,8 +100,8 @@ const TYPE_ORDER: { type: PropType | null; label: string; icon?: IconName }[] = 
   { type: 'created_time', label: '创建时间' },
 ];
 const typeItems = (onPick: (t: PropType) => void, current?: PropType): MenuItemSpec[] => TYPE_ORDER.map((t) => ({
-  id: 't-' + t.label, label: t.label, text: t.label, keywords: t.type ? [t.type] : [], disabled: !t.type,
-  icon: t.type ? <PropIcon type={t.type} /> : <Icon name={t.icon!} size={16} />, checked: !!t.type && t.type === current, onSelect: () => t.type && onPick(t.type),
+  id: 't-' + t.label, label: t.label, text: t.label, keywords: t.type ? [t.type] : [],
+  icon: t.type ? <PropIcon type={t.type} /> : <Icon name={t.icon!} size={16} />, checked: !!t.type && t.type === current, onSelect: () => (t.type ? onPick(t.type) : toast(`“${t.label}”属性将在后续版本提供`)),
 }));
 export function openAddPropMenu(anchor: HTMLElement, db: Block, view: View, at?: { after?: string; before?: string }) {
   openMenu(R(anchor), { width: 265, search: '搜索或添加新属性', maxHeight: 520,
@@ -140,17 +141,17 @@ export function openHeaderMenu(anchor: HTMLElement, db: Block, view: View, propI
   const frozenHere = (view.frozen || 0) === idx + 1;
   anchor.classList.add('is-open');
   const groups: MenuEntry[][] = [
-    [{ kind: 'custom', key: 'name', render: () => <NameInput value={p.name} lead={<PropIcon type={p.type} />} onCommit={(name) => name && updateDb(db.id, ({ schema }) => ({ schema: { ...schema, [propId]: { ...schema[propId], name } } }), 'rename property')} /> },
-      { id: 'access', label: '属性访问权限', icon: 'lock', disabled: true },
+    [{ kind: 'custom', key: 'name', render: () => <NameInput value={p.name} info lead={<PropIcon type={p.type} />} onCommit={(name) => name && updateDb(db.id, ({ schema }) => ({ schema: { ...schema, [propId]: { ...schema[propId], name } } }), 'rename property')} /> },
+      { id: 'access', label: '属性访问权限', icon: 'lock', onSelect: () => toast('属性访问权限需要团队空间') },
       ...(!isTitle ? [{ id: 'type', label: '更改类型', icon: 'sortDown' as IconName, sub: () => ({ width: 265, search: '搜索属性类型…', maxHeight: 480, groups: [typeItems((t) => changeType(db, propId, t), p.type)] }) }] : []),
-      { id: 'ai', label: 'AI 自动填充', icon: 'wand', right: <span className="ink-badge-blue">现已支持代理</span>, disabled: true },
+      { id: 'ai', label: 'AI 自动填充', icon: 'wand', right: <span className="ink-badge-blue">现已支持代理</span>, sub: () => ({ width: 220, groups: [[{ id: 'off', label: 'AI 功能未启用', disabled: true }]] }) },
       ...(p.type === 'formula' ? [{ kind: 'custom' as const, key: 'formula', render: () => <FormulaInput db={db} propId={propId} /> }] : []),
     ],
     [
       { id: 'filter', label: '筛选', icon: 'filter', onSelect: () => setTimeout(() => addFilter(store.get(db.id)!, view, propId, anchor), 0) },
       { id: 'sort', label: '排序', icon: 'sort', sub: () => ({ width: 200, groups: [[
-        { id: 'asc', label: '升序', icon: 'arrowUp' as IconName, onSelect: () => updateView(db.id, view.id, (v) => ({ sort: [...(v.sort || []).filter((r) => r.prop !== propId), { prop: propId, dir: 'asc' }] }), 'sort') },
-        { id: 'desc', label: '降序', icon: 'arrowDown' as IconName, onSelect: () => updateView(db.id, view.id, (v) => ({ sort: [...(v.sort || []).filter((r) => r.prop !== propId), { prop: propId, dir: 'desc' }] }), 'sort') }]] }) },
+        { id: 'asc', label: '升序', icon: 'arrowUp' as IconName, onSelect: () => updateView(db.id, view.id, (v) => ({ sort: [{ prop: propId, dir: 'asc' }] }), 'sort') },
+        { id: 'desc', label: '降序', icon: 'arrowDown' as IconName, onSelect: () => updateView(db.id, view.id, (v) => ({ sort: [{ prop: propId, dir: 'desc' }] }), 'sort') }]] }) },
       { id: 'group', label: '群组', icon: 'dashboard', checked: view.group === propId, onSelect: () => updateView(db.id, view.id, (v) => ({ group: v.group === propId ? undefined : propId }), 'group') },
       { id: 'calc', label: '计算', icon: 'sigma', sub: () => calcGroups(store.get(db.id)!, viewsOf(store.get(db.id)!).find((x) => x.id === view.id)!, propId) },
       { id: 'freeze', label: frozenHere ? '取消冻结' : '冻结', icon: 'pin', onSelect: () => updateView(db.id, view.id, { frozen: frozenHere ? 0 : idx + 1 }, 'freeze') },

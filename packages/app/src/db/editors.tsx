@@ -63,7 +63,7 @@ function OptionEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: str
   const raw = rawValue(row, propId, db);
   const selected: string[] = Array.isArray(raw) ? raw : raw ? [String(raw)] : [];
   const [q, setQ] = useState('');
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(-1);
   const opts = (p.options || []).filter((o) => !q || o.v.toLowerCase().includes(q.toLowerCase()));
   const exact = (p.options || []).some((o) => o.v === q.trim());
   const canCreate = !!q.trim() && !exact;
@@ -84,12 +84,12 @@ function OptionEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: str
     if (e.nativeEvent.isComposing) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive((a) => (a + 1) % Math.max(1, total)); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((a) => (a - 1 + total) % Math.max(1, total)); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (active < opts.length) pick(opts[active].v); else if (canCreate) create(); }
+    else if (e.key === 'Enter') { e.preventDefault(); const a = active < 0 && q ? 0 : active; if (a >= 0 && a < opts.length) pick(opts[a].v); else if (canCreate && (a === opts.length || !opts.length)) create(); }
     else if (e.key === 'Backspace' && !q && selected.length) remove(selected[selected.length - 1]);
   };
   const renderOpt = (o: SelectOption, i: number) => (
     <div key={o.v} className={'ink-menu-item ink-opt-row' + (i === active ? ' is-active' : '')} onMouseEnter={() => setActive(i)} onMouseDown={(e) => { e.preventDefault(); pick(o.v); }}>
-      <span className="ink-opt-grip"><Icon name="grip" size={14} /></span>
+      {!isStatus && <span className="ink-opt-grip"><Icon name="grip" size={14} /></span>}
       {isStatus ? <StatusPill label={o.v} color={o.c} /> : <Tag label={o.v} color={o.c} />}
       <span style={{ flex: 1 }} />
       <span className="ink-opt-more" role="button" onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); openOptionMenu(e.currentTarget as HTMLElement, dbId, propId, o); }}><Icon name="more" size={16} /></span>
@@ -100,15 +100,16 @@ function OptionEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: str
     : [['', opts]];
   let idx = 0;
   return (
-    <div className="ink-menu ink-opt-editor">
+    <div className={'ink-menu ink-opt-editor' + (isStatus ? ' is-status' : '')}>
       <div className="ink-opt-input">
         {selected.map((v) => isStatus ? <StatusPill key={v} label={v} color={p.options?.find((o) => o.v === v)?.c || 'default'} /> : <Tag key={v} label={v} color={p.options?.find((o) => o.v === v)?.c || 'default'} onRemove={() => remove(v)} />)}
         <input data-autofocus value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} onKeyDown={onKey} placeholder={selected.length ? '' : isStatus ? '搜索选项…' : '搜索选项…'} />
       </div>
       <div className="ink-opt-list">
         {!isStatus && <div className="ink-menu-label">{multi ? '选择一个或多个选项' : '选择或创建一个选项'}</div>}
-        {groups.map(([label, list]) => list.length || !isStatus ? (
+        {groups.map(([label, list], gi) => list.length || !isStatus ? (
           <div key={label}>
+            {isStatus && gi > 0 && <div className="ink-menu-sep" style={{ margin: '4px 8px' }} />}
             {isStatus && <div className="ink-menu-label">{label}</div>}
             {list.map((o) => renderOpt(o, idx++))}
           </div>

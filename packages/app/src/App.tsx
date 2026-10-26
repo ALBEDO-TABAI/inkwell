@@ -5,6 +5,7 @@ import { Topbar } from './shell/Topbar';
 import { PageView } from './page/PageView';
 import { OverlayHost, isPopoverOpen } from './ui/overlay';
 import { PeekHost } from './shell/Peek';
+import { FindBar, openFind } from './shell/FindBar';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
 import { openSettings } from './shell/Settings';
@@ -38,6 +39,7 @@ export function App() {
         if (k === 'k' && inText && sel && !sel.isCollapsed) return; // link popover
         e.preventDefault(); openSearch(); return;
       }
+      if (k === 'f' && !e.shiftKey && !e.altKey) { e.preventDefault(); openFind(); return; }
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }
       if (k === ',' ) { e.preventDefault(); openSettings(); return; }
@@ -92,6 +94,7 @@ export function App() {
         <PageView key={pageId} pageId={pageId} />
       </main>
       <PeekHost />
+      <FindBar />
       <OverlayHost />
       <ToastHost />
     </div>
