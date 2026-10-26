@@ -11,6 +11,7 @@ import { openPagePicker } from './page-picker';
 import { openEquationEditor } from './equation';
 import { toast } from '../ui/toast';
 import { t } from '../i18n';
+import { addRow, newDbProps } from '../db/model';
 
 const TEXTISH: BlockType[] = ['text', 'header', 'sub_header', 'sub_sub_header', 'header_4', 'bulleted_list', 'numbered_list', 'to_do', 'toggle', 'quote', 'callout'];
 
@@ -54,6 +55,13 @@ export function applyKind(id: string, k: BlockKind, title: RichText, at: number)
     setTitle(id, title, false);
     const el = document.querySelector(`[data-editable-id="${id}"]`);
     openPagePicker(el?.getBoundingClientRect() || new DOMRect(), (target) => createBlockAt(id, empty, 'alias', { props: { target } }, true));
+    return;
+  }
+  if (k.special === 'dbInline' || k.special === 'dbPage') {
+    const page = k.special === 'dbPage';
+    const nid = createBlockAt(id, empty, page ? 'collection_view_page' : 'collection_view', { props: newDbProps() }, !page);
+    for (let i = 0; i < 3; i++) addRow(nid);
+    if (page) navigate(nid); else setBlockSelection([]);
     return;
   }
   if (k.special === 'page') {

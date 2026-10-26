@@ -32,6 +32,11 @@ export function Topbar({ pageId }: { pageId: string }) {
             </span>
           </span>
         ))}
+        {!!page?.props?.locked && (
+          <span className="ink-crumb ink-locked-chip" role="button" {...tip('点击解锁页面')} onClick={() => store.transact('lock', (tx) => tx.update(pageId, (b) => ({ props: { ...b.props, locked: false } })))}>
+            <Icon name="lock" size={12} stroke={2} /><span className="ink-crumb-text">已锁定</span>
+          </span>
+        )}
         {inPrivate && (
           <span className="ink-crumb ink-crumb-scope" role="button">
             <Icon name="lock" size={12} stroke={2} /><span className="ink-crumb-text">{t('top.private')}</span><Icon name="chevronDown" size={12} stroke={2} />

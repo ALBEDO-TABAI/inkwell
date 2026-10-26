@@ -4,6 +4,7 @@ import { Sidebar, SidebarPeek } from './shell/Sidebar';
 import { Topbar } from './shell/Topbar';
 import { PageView } from './page/PageView';
 import { OverlayHost, isPopoverOpen } from './ui/overlay';
+import { PeekHost } from './shell/Peek';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
 import { openSettings } from './shell/Settings';
@@ -90,6 +91,7 @@ export function App() {
         <Topbar pageId={pageId} />
         <PageView key={pageId} pageId={pageId} />
       </main>
+      <PeekHost />
       <OverlayHost />
       <ToastHost />
     </div>

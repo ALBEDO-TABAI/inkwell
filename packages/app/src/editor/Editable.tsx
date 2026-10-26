@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useRef } from 'react';
 import type { Block, RichText } from '../store/model';
 import { store } from '../store/store';
 import { toHtml, fromDom, rtPlain, normalize } from './richtext';
@@ -11,6 +11,9 @@ import { afterInput } from './input-rules';
 import { handlePaste, handleCopy, handleCut } from './clipboard';
 import { highlightCode } from './code';
 import { onSelectionChanged } from './inline-toolbar';
+
+/** true inside a locked page: editables become read-only */
+export const LockContext = createContext(false);
 
 interface Props {
   block: Block;
@@ -84,11 +87,12 @@ export function Editable({ block, className, placeholder, alwaysPlaceholder, tag
   };
 
   const Tag = tag as any;
+  const locked = useContext(LockContext);
   return (
     <Tag
       ref={ref}
       className={'ink-editable' + (className ? ' ' + className : '') + (alwaysPlaceholder ? ' show-ph' : '')}
-      contentEditable
+      contentEditable={!locked}
       suppressContentEditableWarning
       spellCheck
       data-editable-id={value === undefined ? block.id : undefined}

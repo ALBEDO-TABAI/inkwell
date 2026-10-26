@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview';
 import type { Block } from '../store/model';
@@ -25,9 +25,13 @@ import { tip } from '../ui/overlay';
 import { openMenu } from '../ui/menu';
 import { setUi } from '../app/state';
 import { rtPlain } from '../editor/richtext';
+import { LockContext } from '../editor/Editable';
+import { Database } from '../db/Database';
+import { RowProps } from '../db/RowProps';
+import { dbOfRow } from '../db/model';
 
 /* ================= page ================= */
-export function PageView({ pageId }: { pageId: string }) {
+export function PageView({ pageId, variant = 'main' }: { pageId: string; variant?: 'main' | 'side' | 'center' }) {
   const page = useBlock(pageId);
   useStoreVersion();
   const scroller = useRef<HTMLDivElement>(null);
@@ -49,24 +53,32 @@ export function PageView({ pageId }: { pageId: string }) {
 
   if (!page || !page.alive && !isInTrash(pageId)) return <div className="ink-scroller"><div className="ink-page-missing">{t('page.notFound')}</div></div>;
   const f = page.format || {};
-  const cls = ['ink-page', 'font-' + (f.page_font || 'default'), f.page_small_text ? 'is-small' : '', f.page_full_width ? 'is-full' : ''].filter(Boolean).join(' ');
+  const isDbPage = page.type === 'collection_view_page';
+  const rowDb = dbOfRow(page);
+  const locked = !!page.props?.locked;
+  const cls = ['ink-page', 'font-' + (f.page_font || 'default'), f.page_small_text ? 'is-small' : '', f.page_full_width ? 'is-full' : '', isDbPage ? 'is-db' : '', rowDb ? 'is-row' : '', variant !== 'main' ? 'is-peek is-peek-' + variant : '', locked ? 'is-locked' : ''].filter(Boolean).join(' ');
   const trashed = isInTrash(pageId);
   const content = page.content?.filter((c) => store.get(c)?.alive) || [];
+  const blankRow = !!rowDb && (content.length === 0 || (content.length === 1 && store.get(content[0])?.type === 'text' && !rtPlain(store.get(content[0])!.title).length));
   return (
     <div className="ink-scroller" ref={scroller} onMouseDown={(e) => rubberBandStart(e, pageId, scroller.current!)}>
       {trashed && <div className="ink-trash-banner">{t('trash.banner')}<button className="ink-btn-outline-white" onClick={() => restorePage(pageId)}>{t('trash.restore')}</button></div>}
+      <LockContext.Provider value={locked}>
       <div className={cls} ref={pageRef} data-page-id={pageId}>
         <PageHeader page={page} />
+        {rowDb && <div className="ink-page-content ink-rowprops-wrap"><RowProps row={page} db={rowDb} locked={locked} /></div>}
         <div className="ink-page-content">
-          {page.type === 'collection_view_page' ? <DbPlaceholder page={page} /> : <>
+          {isDbPage ? <Database dbId={page.id} locked={locked} /> : <>
             <BlockChildren parent={page} depth={0} className="ink-page-blocks" />
-            {content.length === 0 && <EmptyPageHint page={page} />}
+            {content.length === 0 && !rowDb && <EmptyPageHint page={page} />}
+            {blankRow && <div className="ink-row-blank-hint" onMouseDown={(e) => { e.preventDefault(); clickBelow(page); }}>按 enter（回车键）以继续使用空白页，或创建模板</div>}
           </>}
-          <div className="ink-page-tail" onMouseDown={(e) => { e.preventDefault(); clickBelow(page); }} />
+          {!isDbPage && !locked && <div className="ink-page-tail" onMouseDown={(e) => { e.preventDefault(); clickBelow(page); }} />}
         </div>
         <BlockHandles pageId={pageId} pageRef={pageRef} />
         <DropIndicator pageRef={pageRef} pageId={pageId} />
       </div>
+      </LockContext.Provider>
       {f.page_toc && <FloatingOutline pageId={pageId} scroller={scroller} />}
       <div className="ink-page-keyhost" tabIndex={-1} ref={keyhost} onKeyDown={(e) => selectionKeys(e.nativeEvent, pageId)} />
       <RubberBand />
@@ -85,18 +97,6 @@ function clickBelow(page: Block) {
 
 function EmptyPageHint({ page }: { page: Block }) {
   return <div className="ink-empty-hint" onMouseDown={(e) => { e.preventDefault(); clickBelow(page); }}>{t('ed.placeholderFocused')}</div>;
-}
-
-function DbPlaceholder({ page }: { page: Block }) {
-  const rows = store.children(page.id).filter((r) => r.alive);
-  return (
-    <div className="ink-db-ph">
-      <div className="ink-db-ph-views"><span className="is-on"><Icon name="table" size={16} /> {t('db.table')}</span></div>
-      <table className="ink-table ink-db-table"><thead><tr><th>{t('db.name')}</th></tr></thead>
-        <tbody>{(rows || []).map((r) => <tr key={r.id}><td>{pageTitle(r)}</td></tr>)}</tbody></table>
-      <div className="ink-db-ph-note">{t('db.comingSoon')}</div>
-    </div>
-  );
 }
 
 /* ================= header ================= */
@@ -160,6 +160,7 @@ function Cover({ page }: { page: Block }) {
 
 function PageTitle({ page }: { page: Block }) {
   const ref = useRef<HTMLDivElement>(null);
+  const locked = useContext(LockContext);
   const text = plain(page.title);
   useLayoutEffect(() => {
     const el = ref.current!;
@@ -193,7 +194,7 @@ function PageTitle({ page }: { page: Block }) {
   };
   return (
     <div className="ink-page-title">
-      <div ref={ref} className="ink-title-editable" contentEditable suppressContentEditableWarning spellCheck data-placeholder={t('page.untitledPlaceholder')} role="textbox" aria-label="title"
+      <div ref={ref} className="ink-title-editable" contentEditable={!locked} suppressContentEditableWarning spellCheck data-placeholder={t('page.untitledPlaceholder')} role="textbox" aria-label="title"
         onInput={() => { if (!composing.current) commit(); }}
         onCompositionStart={() => (composing.current = true)}
         onCompositionEnd={() => { composing.current = false; commit(); }}

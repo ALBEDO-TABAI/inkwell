@@ -15,7 +15,7 @@ export interface BlockKind {
   badge?: () => string;
   toggleable?: boolean;
   /** creates something other than a plain type switch */
-  special?: 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage' | 'ai';
+  special?: 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage' | 'ai' | 'dbInline' | 'dbPage';
   turnInto?: boolean;
 }
 
@@ -33,6 +33,8 @@ export const BLOCK_KINDS: BlockKind[] = [
   { id: 'callout', type: 'callout', label: () => t('b.callout'), icon: 'callout', keywords: ['callout', 'note', 'tip', 'biaozhu'], turnInto: true },
   { id: 'quote', type: 'quote', label: () => t('b.quote'), icon: 'quote', keywords: ['quote', 'blockquote', 'citation', '"'], hint: '"', turnInto: true },
   { id: 'table', type: 'table', label: () => t('b.table'), icon: 'table', keywords: ['table', 'simple table', 'grid'] },
+  { id: 'dbInline', type: 'collection_view', label: () => t('b.dbInline'), icon: 'table', keywords: ['database inline', 'database', 'table view', 'db', 'shujuku'], special: 'dbInline' },
+  { id: 'dbPage', type: 'collection_view_page', label: () => t('b.dbPage'), icon: 'table', keywords: ['database full page', 'database', 'db', 'shujuku'], special: 'dbPage' },
   { id: 'divider', type: 'divider', label: () => t('b.divider'), icon: 'divider', keywords: ['divider', 'separator', 'hr', 'line', '---'], hint: '---' },
   { id: 'linkToPage', type: 'alias', label: () => t('b.linkToPage'), icon: 'pageLink', keywords: ['link to page', 'alias', 'link'], special: 'linkToPage' },
   { id: 'image', type: 'image', label: () => t('b.image'), icon: 'image', keywords: ['image', 'picture', 'photo', 'img'] },
@@ -64,7 +66,7 @@ export const SLASH_SECTIONS: { id: string; label: () => string; items: string[] 
   { id: 'suggested', label: () => t('slash.suggested'), items: ['aiNotes', 'embed', 'page', 'toggle'] },
   { id: 'basic', label: () => t('slash.basic'), items: ['text', 'h1', 'h2', 'h3', 'h4', 'bulleted', 'numbered', 'todo', 'toggle', 'page', 'callout', 'quote', 'table', 'divider', 'linkToPage'] },
   { id: 'media', label: () => t('slash.media'), items: ['image', 'video', 'bookmark', 'code', 'embed'] },
-  { id: 'advanced', label: () => t('slash.advanced'), items: ['toc', 'equation', 'breadcrumb', 'synced', 'toggleH1', 'toggleH2', 'toggleH3', 'toggleH4'] },
+  { id: 'advanced', label: () => t('slash.advanced'), items: ['dbInline', 'dbPage', 'toc', 'equation', 'breadcrumb', 'synced', 'toggleH1', 'toggleH2', 'toggleH3', 'toggleH4'] },
   { id: 'inline', label: () => t('slash.inline'), items: ['mentionPerson', 'mentionPage', 'date', 'emoji', 'inlineEquation'] },
   { id: 'layout', label: () => t('slash.layout'), items: ['columns2', 'columns3', 'columns4'] },
 ];

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { useEffect, useRef, useState } from 'react';
 import '@tokens/tokens.css';
 import './styles/app.css';
+import './styles/db.css';
 import './styles/tabbar.css';
 import { TabBar } from './shell/TabBar';
 import type { TabState } from '@shared/ipc';

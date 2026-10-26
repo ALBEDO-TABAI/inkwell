@@ -118,7 +118,7 @@ export function buildFixture(): FixtureData {
   };
 }
 
-/** REA DB: 14 properties, 12 rows (db_baseline.txt). Rendering arrives in M4; data is complete now. */
+/** REA DB: 14 properties, 12 rows (logs/db_baseline.txt), six views as in B01c/B06. */
 function buildDb(db: Block, mk: (t: BlockType, p: string, title?: RichText, extra?: Partial<Block>) => Block, r: (s: string) => RichText) {
   const rows = [
     ['Draft the first concept.', 10, 'Alpha', ['red'], '未开始', ['2026-10-05', '2026-10-08'], true, false],
@@ -134,25 +134,33 @@ function buildDb(db: Block, mk: (t: BlockType, p: string, title?: RichText, extr
     ['Review the timeline.', 110, 'Beta', ['green'], '进行中', ['2026-11-24'], true, true],
     ['Complete the design review.', 120, 'Gamma', ['blue', 'red'], '完成', ['2026-11-26', '2026-11-30'], false, false],
   ] as const;
+  const desc = rows.map((_, i) => `row-${String(12 - i).padStart(2, '0')}`);
   db.props = {
     schema: {
       title: { name: 'Name', type: 'title' }, notes: { name: 'Notes', type: 'text' }, score: { name: 'Score', type: 'number' },
       category: { name: 'Category', type: 'select', options: [{ v: 'Alpha', c: 'brown' }, { v: 'Beta', c: 'default' }, { v: 'Gamma', c: 'green' }] },
       tags: { name: 'Tags', type: 'multi_select', options: [{ v: 'red', c: 'brown' }, { v: 'green', c: 'yellow' }, { v: 'blue', c: 'purple' }] },
-      status: { name: 'Status', type: 'status', options: [{ v: '未开始', c: 'default' }, { v: '进行中', c: 'blue' }, { v: '完成', c: 'green' }] },
+      status: { name: 'Status', type: 'status', options: [{ v: '未开始', c: 'default', group: 'todo' }, { v: '进行中', c: 'blue', group: 'doing' }, { v: '完成', c: 'green', group: 'done' }] },
       due: { name: 'Due', type: 'date' }, owner: { name: 'Owner', type: 'person' }, done: { name: 'Done?', type: 'checkbox' },
       website: { name: 'Website', type: 'url' }, email: { name: 'Email', type: 'email' }, phone: { name: 'Phone', type: 'phone_number' },
       double: { name: 'Double', type: 'formula', formula: 'prop("Score") * 2' }, created: { name: 'Created', type: 'created_time' },
     },
-    views: ['Table', 'Board', 'List', 'Gallery', 'Calendar', 'Timeline'].map((v, i) => ({ id: `view-${i}`, name: v, type: v.toLowerCase() })),
+    views: [
+      { id: 'view-0', name: 'Table', type: 'table', widths: { title: 160, score: 100, category: 110, tags: 140 } },
+      { id: 'view-1', name: 'Board', type: 'board', group: 'status', manual: desc, cardProps: [] },
+      { id: 'view-2', name: 'List', type: 'list', manual: desc, cardProps: ['category'] },
+      { id: 'view-3', name: 'Gallery', type: 'gallery', manual: desc, gallerySize: 'M', cardProps: ['notes', 'category', 'status'], openIn: 'center' },
+      { id: 'view-4', name: 'Calendar', type: 'calendar', dateProp: 'due' },
+      { id: 'view-5', name: 'Timeline', type: 'timeline', dateProp: 'due', manual: desc },
+    ],
   };
   rows.forEach((row, i) => {
     const k = i + 1;
     mk('page', db.id, r(`Task ${String(k).padStart(2, '0')}`), {
-      id: `row-${String(k).padStart(2, '0')}`,
+      id: `row-${String(k).padStart(2, '0')}`, created: T0 + 15 * 60000, edited: T0 + 15 * 60000,
       props: {
         notes: row[0], score: row[1], category: row[2], tags: [...row[3]], status: row[4], due: [...row[5]],
-        owner: row[6] ? ['user-1'] : [], done: row[7], website: `https://example.com/${k}`, email: `test${k}@example.com`, phone: `555-01${String(k).padStart(2, '0')}`,
+        owner: row[6] ? ['user-1'] : [], done: k % 3 === 0, website: `https://example.com/${k}`, email: `test${k}@example.com`, phone: `555-01${String(k).padStart(2, '0')}`,
       },
     });
   });

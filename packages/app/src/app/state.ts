@@ -18,6 +18,8 @@ export interface UiState {
   expanded: Record<string, boolean>;
   highContrast: boolean;
   sidebarResizing: boolean;
+  /** a page open in side or center peek over the current page */
+  rowPeek: { id: string; mode: 'side' | 'center' } | null;
 }
 
 const mq = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
@@ -56,6 +58,7 @@ export function initUi() {
     sidebarWidth: Number(q.get('sidebarWidth')) || kvGet('sidebarWidth', 270),
     sidebarOpen: q.get('sidebar') === 'closed' ? false : kvGet('sidebarOpen', true),
     peek: false,
+    rowPeek: null,
     chromeHidden: q.get('idle') === '1',
     expanded: kvGet('sidebarExpanded', {} as Record<string, boolean>),
     highContrast: kvGet('highContrast', false),
@@ -82,7 +85,7 @@ export function onNavigate(f: () => void) { navListeners.add(f); return () => na
 
 export function navigate(pageId: string, opts: { replace?: boolean; fromHash?: boolean } = {}) {
   if (pageId === state.pageId) return;
-  setUi((s) => ({ pageId, back: opts.replace ? s.back : [...s.back, s.pageId], forward: [] }));
+  setUi((s) => ({ pageId, back: opts.replace ? s.back : [...s.back, s.pageId], forward: [], rowPeek: null }));
   kvPut('lastPage', pageId);
   pushRecent(pageId);
   syncHash();
@@ -94,14 +97,17 @@ export function pushRecent(pageId: string) {
 }
 export function goBack() {
   const s = state; if (!s.back.length) return;
-  setUi({ pageId: s.back[s.back.length - 1], back: s.back.slice(0, -1), forward: [s.pageId, ...s.forward] });
+  setUi({ pageId: s.back[s.back.length - 1], back: s.back.slice(0, -1), forward: [s.pageId, ...s.forward], rowPeek: null });
   syncHash(); navListeners.forEach((f) => f());
 }
 export function goForward() {
   const s = state; if (!s.forward.length) return;
-  setUi({ pageId: s.forward[0], forward: s.forward.slice(1), back: [...s.back, s.pageId] });
+  setUi({ pageId: s.forward[0], forward: s.forward.slice(1), back: [...s.back, s.pageId], rowPeek: null });
   syncHash(); navListeners.forEach((f) => f());
 }
+
+export function openPeek(id: string, mode: 'side' | 'center' = 'side') { setUi({ rowPeek: { id, mode } }); }
+export function closePeek() { if (state.rowPeek) setUi({ rowPeek: null }); }
 
 export function setTheme(theme: ThemePref) {
   setUi({ theme });

@@ -6,7 +6,7 @@ import { focusBlock, setBlockSelection, visibleBlocks, focusableBlocks, NON_TEXT
 
 export const LISTISH: BlockType[] = ['bulleted_list', 'numbered_list', 'to_do', 'toggle'];
 export const isListish = (b?: Block) => !!b && LISTISH.includes(b.type);
-const canHaveChildren = (b?: Block) => !!b && !['divider', 'image', 'bookmark', 'video', 'equation', 'code', 'table_of_contents', 'breadcrumb', 'alias', 'table', 'table_row', 'collection_view_page'].includes(b.type);
+const canHaveChildren = (b?: Block) => !!b && !['divider', 'image', 'bookmark', 'video', 'equation', 'code', 'table_of_contents', 'breadcrumb', 'alias', 'table', 'table_row', 'collection_view_page', 'collection_view'].includes(b.type);
 const isContainer = (b?: Block) => !!b && (b.type === 'page' || b.type === 'column' || b.type === 'synced' || b.type === 'callout');
 
 export function pageIdOf(id: string) { return store.pageOf(id)?.id || ''; }

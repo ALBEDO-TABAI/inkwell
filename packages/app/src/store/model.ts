@@ -5,7 +5,7 @@ export type BlockType =
   | 'bulleted_list' | 'numbered_list' | 'to_do' | 'toggle' | 'quote' | 'callout'
   | 'divider' | 'code' | 'equation' | 'column_list' | 'column'
   | 'image' | 'bookmark' | 'video' | 'embed' | 'table' | 'table_row' | 'table_of_contents'
-  | 'breadcrumb' | 'alias' | 'synced' | 'collection_view_page';
+  | 'breadcrumb' | 'alias' | 'synced' | 'collection_view_page' | 'collection_view';
 
 /** Inline marks. Colours are editor colour keys: 'gray' | 'gray_background' etc. */
 export interface Marks {

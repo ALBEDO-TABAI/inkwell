@@ -242,6 +242,7 @@ export const zhCN = {
   'b.columns2': '2 列',
   'b.columns3': '3 列',
   'b.columns4': '4 列',
+  'b.dbInline': '数据库 - 内联', 'b.dbPage': '数据库 - 整页',
   'b.table': '表格',
   'b.toc': '目录',
   'b.breadcrumb': '面包屑导航',

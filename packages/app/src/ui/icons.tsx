@@ -26,6 +26,13 @@ const REG = {
   sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, panelRight: L.PanelRight, filterCircle: L.ListFilter, caseSensitive: L.CaseSensitive, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
   turnInto: L.Repeat2, paintBucket: L.PaintBucket, file: L.File, info: L.Info, eye: L.Eye, user: L.User,
   plusCircle: L.CirclePlus, th1: L.Heading1, th2: L.Heading2, th3: L.Heading3, th4: L.Heading4,
+  hash: L.Hash, alignLeft: L.AlignLeft, selectProp: L.CircleChevronDown, multiSelect: L.List, statusProp: L.Loader, checkboxProp: L.SquareCheck,
+  phone: L.Phone, personProp: L.Users, urlProp: L.Link, dateProp: L.CalendarDays, sort: L.ArrowUpDown, zap: L.Zap, wand: L.WandSparkles,
+  board: L.SquareKanban, listView: L.List, gallery: L.LayoutGrid, timeline: L.ChartGantt, eyeOff: L.EyeOff, pin: L.Pin,
+  insertLeft: L.ArrowLeftToLine, insertRight: L.ArrowRightToLine, wrap: L.WrapText, expand: L.Maximize2, collapse: L.Minimize2,
+  chevronsRight: L.ChevronsRight, centerPeek: L.SquareSplitHorizontal, fullPage: L.Expand, unlock: L.LockOpen, chart: L.ChartLine, map: L.Map,
+  form: L.FormInput, feed: L.Rss, dashboard: L.LayoutDashboard, openPage: L.SquareArrowOutUpRight, userRound: L.UserRound, sortDown: L.ArrowDownUp,
+  sigma: L.Sigma, caseUpper: L.CaseUpper, arrowUp: L.ArrowUp, arrowDown: L.ArrowDown,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };
 

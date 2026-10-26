@@ -12,7 +12,8 @@ import { openMediaPopover, type MediaKind } from './media-popover';
 import { isListish } from './commands';
 import { renderTex } from './render-inline';
 import { focusBlock, onBlockSelection, getBlockSelection, setBlockSelection } from './registry';
-import { navigate } from '../app/state';
+import { navigate, openPeek } from '../app/state';
+import { Database } from '../db/Database';
 import { pageTitle, breadcrumbPath } from '../app/pages';
 import { openEmojiPicker } from './emoji-picker';
 import { openEquationEditor } from './equation';
@@ -231,6 +232,8 @@ function BlockBody({ b, ctx }: { b: Block; ctx: Ctx }) {
       return <BreadcrumbBlock b={b} />;
     case 'page': case 'alias': case 'collection_view_page':
       return <PageLinkBlock b={b} />;
+    case 'collection_view':
+      return <div className="ink-db-block" contentEditable={false}><Database dbId={b.id} inline /></div>;
     case 'synced':
       return <div className="ink-synced">{hasKids ? <BlockChildren parent={b} depth={ctx.depth} className="ink-children-flat" /> : <div className="ink-toggle-empty">{t('ed.syncedLabel')}</div>}</div>;
     default:
@@ -436,7 +439,7 @@ function PageLinkBlock({ b }: { b: Block }) {
   const ref = useRef<HTMLDivElement>(null);
   return (
     <div ref={ref} className="ink-pagelink" contentEditable={false} role="link" tabIndex={-1}
-      onClick={(e) => { if (!target) return toast(t('page.notFound')); if ((e.target as HTMLElement).closest('.ink-block-handle')) return; navigate(target.id); }}>
+      onClick={(e) => { if (!target) return toast(t('page.notFound')); if ((e.target as HTMLElement).closest('.ink-block-handle')) return; if (e.altKey) openPeek(target.id, e.shiftKey ? 'center' : 'side'); else navigate(target.id); }}>
       <span className="ink-pagelink-icon"><PageIcon block={b.type === 'alias' ? b : target} size={20} emojiSize={17} /></span>
       <span className="ink-pagelink-title">{target ? pageTitle(target) : t('page.notFound')}</span>
     </div>

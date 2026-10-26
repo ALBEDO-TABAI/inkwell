@@ -39,6 +39,7 @@ export const en: Partial<Record<keyof typeof zhCN, string>> = {
   'b.h3': 'Heading 3', 'b.h3.desc': 'Small section heading.', 'b.h4': 'Heading 4', 'b.page': 'Page', 'b.page.desc': 'Embed a sub-page inside this page.', 'b.bulleted': 'Bulleted list', 'b.numbered': 'Numbered list',
   'b.todo': 'To-do list', 'b.toggle': 'Toggle list', 'b.quote': 'Quote', 'b.callout': 'Callout', 'b.divider': 'Divider', 'b.code': 'Code', 'b.equation': 'Block equation', 'b.inlineEquation': 'Inline equation',
   'b.synced': 'Synced block', 'b.toggleH1': 'Toggle heading 1', 'b.toggleH2': 'Toggle heading 2', 'b.toggleH3': 'Toggle heading 3', 'b.toggleH4': 'Toggle heading 4', 'b.columns2': '2 columns', 'b.columns3': '3 columns', 'b.columns4': '4 columns',
+  'b.dbInline': 'Database - Inline', 'b.dbPage': 'Database - Full page',
   'b.table': 'Table', 'b.toc': 'Table of contents', 'b.breadcrumb': 'Breadcrumb', 'b.image': 'Image', 'b.bookmark': 'Web bookmark', 'b.video': 'Video', 'b.linkToPage': 'Link to page',
   'b.mentionPerson': 'Mention a person', 'b.mentionPage': 'Mention a page', 'b.date': 'Date or reminder', 'b.emoji': 'Emoji',
   'bm.search': 'Search actions…', 'bm.turnInto': 'Turn into', 'bm.color': 'Color', 'bm.copyLink': 'Copy link to block', 'bm.duplicate': 'Duplicate', 'bm.moveTo': 'Move to', 'bm.delete': 'Delete',
