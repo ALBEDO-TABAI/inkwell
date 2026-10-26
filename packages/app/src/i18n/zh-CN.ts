@@ -192,7 +192,7 @@ export const zhCN = {
   'ed.videoPlaceholder': '嵌入视频',
   'ed.linkPlaceholder': '粘贴链接或搜索页面',
   'ed.linkTo': '链接到页面',
-  'ed.linkRemove': '移除链接',
+  'ed.linkRecent': '最近访问的页面', 'ed.linkRemove': '移除链接',
   'ed.linkEdit': '编辑',
   'ed.linkCopy': '拷贝链接',
   'ed.linkTitle': '链接标题',

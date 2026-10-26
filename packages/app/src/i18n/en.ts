@@ -32,7 +32,7 @@ export const en: Partial<Record<keyof typeof zhCN, string>> = {
   'ed.handle.drag': 'Drag to move', 'ed.handle.click': 'Click to open menu', 'ed.plus.click': 'Click to add below', 'ed.plus.alt': 'Option-click to add above', 'ed.copyCode': 'Copy', 'ed.copied': 'Copied',
   'ed.caption': 'Add a caption…', 'ed.equationEmpty': 'New equation', 'ed.eqDone': 'Done', 'ed.syncedLabel': 'Synced block', 'ed.syncedEditing': 'Editing synced block', 'ed.tocEmpty': 'Add headings to create a table of contents.',
   'ed.imagePlaceholder': 'Add an image', 'ed.bookmarkPlaceholder': 'Add a web bookmark', 'ed.videoPlaceholder': 'Embed a video', 'ed.linkPlaceholder': 'Paste link or search pages', 'ed.linkTo': 'Link to page',
-  'ed.linkRemove': 'Remove link', 'ed.linkEdit': 'Edit', 'ed.linkCopy': 'Copy link', 'ed.linkTitle': 'Link title', 'ed.pageLink': 'Link', 'ed.code.language': 'Language', 'ed.code.plain': 'Plain Text',
+  'ed.linkRecent': 'Recently visited', 'ed.linkRemove': 'Remove link', 'ed.linkEdit': 'Edit', 'ed.linkCopy': 'Copy link', 'ed.linkTitle': 'Link title', 'ed.pageLink': 'Link', 'ed.code.language': 'Language', 'ed.code.plain': 'Plain Text',
   'slash.inlinePlaceholder': 'Type to search', 'slash.filtered': 'Filtered results', 'slash.close': 'Close menu', 'slash.suggested': 'Suggested', 'slash.basic': 'Basic blocks', 'slash.media': 'Media',
   'slash.advanced': 'Advanced blocks', 'slash.inline': 'Inline', 'slash.layout': 'Layout', 'slash.noResults': 'No results',
   'b.text': 'Text', 'b.text.desc': 'Just start writing with plain text.', 'b.h1': 'Heading 1', 'b.h1.desc': 'Big section heading.', 'b.h2': 'Heading 2', 'b.h2.desc': 'Medium section heading.',

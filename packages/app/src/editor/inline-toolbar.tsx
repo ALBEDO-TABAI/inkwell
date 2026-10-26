@@ -78,9 +78,9 @@ export function ColorGrid({ onPick, current }: { onPick: (c: string) => void; cu
     const bg = c.endsWith('_background');
     const base = c.replace('_background', '');
     return (
-      <span className={'ink-swatch' + (bg ? ' is-bg' : ' is-fg') + (current === c || (!current && c === 'default') ? ' is-current' : '')} role="button"
+      <span className={'ink-swatch' + (bg ? ' is-bg ink-bgfill-' + base + ' ink-fg-' + base : ' is-fg ink-fg-' + base) + (current === c || (!current && (c === 'default' || c === 'default_background')) ? ' is-current' : '')} role="button"
         {...tip(colorLabel(c))} onMouseDown={(e) => e.preventDefault()} onClick={() => onPick(c)}>
-        {bg ? <span className={'ink-swatch-fill ink-bgfill-' + base} /> : <span className={'ink-swatch-a ink-fg-' + base}>A</span>}
+        {!bg && 'A'}
       </span>
     );
   };
@@ -118,7 +118,7 @@ function Toolbar() {
         <span className="ink-tb-btn ink-tb-color" style={{ width: 32 }} role="button" {...tip(t('tb.color'), undefined, 'top')} onMouseDown={(e) => e.preventDefault()} onClick={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
           openPopover({ id: 'tb-color', parent: 'inline-toolbar', anchor: { left: r.left - 4, right: r.right, top: r.top, bottom: r.bottom }, placement: 'bottom-start', offset: 4, noFocus: true,
-            render: (close) => <div className="ink-menu ink-color-pop" style={{ width: 192 }}><ColorGrid current={curColor} onPick={(c) => { withSel((st) => applyTextColor(st.blockId, st.start, st.end, c)); close(); }} /></div> });
+            render: (close) => <div className="ink-menu ink-color-pop" style={{ width: 190 }}><ColorGrid current={curColor} onPick={(c) => { withSel((st) => applyTextColor(st.blockId, st.start, st.end, c)); close(); }} /></div> });
         }}><span className={'ink-tb-a ' + (curColor ? (curColor.endsWith('_background') ? 'ink-bg-' + curColor.replace('_background', '') : 'ink-fg-' + curColor) : '')}>A</span></span>
         <Btn icon="bold" on={has('b')} label={t('tb.bold')} sc="⌘B" onClick={() => toggle('b')} />
         <Btn icon="italic" on={has('i')} label={t('tb.italic')} sc="⌘I" onClick={() => toggle('i')} />

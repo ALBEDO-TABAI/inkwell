@@ -31,6 +31,7 @@ export function App() {
       if (k === '\\') { e.preventDefault(); toggleSidebar(); return; }
       if (e.shiftKey && k === 'l') { e.preventDefault(); cycleTheme(); return; }
       if ((k === 'k' || k === 'p') && !e.shiftKey && !e.altKey) {
+        if (e.defaultPrevented) return; // handled by the editor (Cmd+K link)
         const inText = (e.target as HTMLElement).closest?.('[contenteditable="true"]');
         const sel = getSelection();
         if (k === 'k' && inText && sel && !sel.isCollapsed) return; // link popover

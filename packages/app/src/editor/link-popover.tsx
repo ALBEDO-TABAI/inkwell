@@ -6,8 +6,9 @@ import { PageIcon } from '../ui/PageIcon';
 import { openPopover, closePopover } from '../ui/overlay';
 import { setLink, linkRangeAt } from './richtext';
 import { focusBlock, editables } from './registry';
-import { setTitle } from './commands';
-import { pageTitle, isInTrash } from '../app/pages';
+import { setTitle, pageIdOf } from './commands';
+import { pageTitle, isInTrash, breadcrumbPath } from '../app/pages';
+import { kvGet } from '../store/persistence';
 import { BRAND } from '@shared/brand';
 import { offsetToDom } from './caret';
 
@@ -16,8 +17,7 @@ function rangeRect(blockId: string, start: number, end: number): DOMRect {
   if (!el) return new DOMRect(400, 300, 0, 0);
   const a = offsetToDom(el, start), b = offsetToDom(el, end);
   const r = document.createRange(); r.setStart(a.node, a.offset); r.setEnd(b.node, b.offset);
-  const rects = r.getClientRects();
-  return rects[rects.length - 1] || r.getBoundingClientRect();
+  return r.getBoundingClientRect();
 }
 
 /** Cmd+K popover: paste a URL or search pages. */
@@ -27,7 +27,7 @@ export function openLinkPopover(blockId: string, start: number, end: number) {
   const rect = rangeRect(blockId, start, end);
   // keep a visual selection highlight while focus is in the popover
   const el = editables.get(blockId); el?.classList.add('has-fake-selection');
-  openPopover({ id: 'link', anchor: rect, placement: 'bottom-start', offset: 6,
+  openPopover({ id: 'link', anchor: rect, placement: 'bottom', offset: 8,
     onClose: () => { el?.classList.remove('has-fake-selection'); focusBlock(blockId, end); },
     render: (close) => <LinkBox blockId={blockId} start={start} end={end} initial={existing?.href || ''} close={close} /> });
 }
@@ -42,11 +42,17 @@ function LinkBox({ blockId, start, end, initial, close }: { blockId: string; sta
   };
   const isUrl = /^(https?:\/\/|www\.|mailto:|[\w-]+\.[a-z]{2,})/i.test(v.trim());
   const pages = v && !isUrl ? [...store.blocks.values()].filter((p) => p.alive && p.type === 'page' && !isInTrash(p.id) && pageTitle(p).toLowerCase().includes(v.toLowerCase())).slice(0, 6) : [];
-  const rows: { key: string; node: React.ReactNode; run: () => void }[] = [];
+  const rows: { key: string; node: React.ReactNode; run: () => void; sub?: boolean }[] = [];
   if (isUrl) rows.push({ key: 'url', node: <><span className="ink-menu-icon"><Icon name="link" size={20} /></span><span className="ink-menu-text">{v}</span><span className="ink-slash-hint">{t('ed.pageLink')}</span></>, run: () => apply(/^https?:|^mailto:/.test(v.trim()) ? v.trim() : 'https://' + v.trim()) });
-  for (const p of pages) rows.push({ key: p.id, node: <><span className="ink-menu-icon"><PageIcon block={p} size={20} /></span><span className="ink-menu-text">{pageTitle(p)}</span></>, run: () => apply(`${BRAND.scheme}://page/${p.id}`) });
+  const recents = !v ? [...new Set([pageIdOf(blockId), ...kvGet<string[]>('recentPages', [])])].map((id) => store.get(id)).filter((p): p is NonNullable<typeof p> => !!p && p.alive && p.type === 'page' && store.get(p.parent)?.type !== 'collection_view_page' && !isInTrash(p.id)).slice(0, 3) : [];
+  const pageRow = (p: NonNullable<ReturnType<typeof store.get>>) => {
+    const path = breadcrumbPath(p.id).slice(0, -1);
+    const sub = path.length > 2 ? `${pageTitle(path[0])} / … / ${pageTitle(path[path.length - 1])}` : path.map((x) => pageTitle(x)).join(' / ');
+    return { key: p.id, sub: !!sub, node: <><span className="ink-menu-icon"><PageIcon block={p} size={20} /></span><span className="ink-link-pop-lines"><span className="ink-menu-text">{pageTitle(p)}</span>{sub && <span className="ink-link-pop-sub">{sub}</span>}</span></>, run: () => apply(`${BRAND.scheme}://page/${p.id}`) };
+  };
+  for (const p of [...pages, ...recents]) rows.push(pageRow(p));
   return (
-    <div className="ink-menu ink-link-pop" style={{ width: 360 }}>
+    <div className="ink-menu ink-link-pop" style={{ width: 330 }}>
       <div className="ink-menu-search-wrap">
         <input data-autofocus className="ink-menu-search" placeholder={t('ed.linkPlaceholder')} value={v} onChange={(e) => { setV(e.target.value); setActive(0); }}
           onKeyDown={(e) => {
@@ -57,7 +63,8 @@ function LinkBox({ blockId, start, end, initial, close }: { blockId: string; sta
       </div>
       {(rows.length > 0 || initial) && (
         <div className="ink-menu-body"><div className="ink-menu-group">
-          {rows.map((r, i) => <div key={r.key} className={'ink-menu-item' + (i === active ? ' is-active' : '')} onMouseMove={() => setActive(i)} onClick={r.run}>{r.node}</div>)}
+          {recents.length > 0 && <div className="ink-menu-label">{t('ed.linkRecent')}</div>}
+          {rows.map((r, i) => <div key={r.key} className={'ink-menu-item' + (r.sub ? ' has-sub' : '') + (i === active ? ' is-active' : '')} onMouseMove={() => setActive(i)} onClick={r.run}>{r.node}</div>)}
           {initial && <div className="ink-menu-item" onClick={() => apply(undefined)}><span className="ink-menu-icon"><Icon name="trash" size={20} /></span><span className="ink-menu-text">{t('ed.linkRemove')}</span></div>}
         </div></div>
       )}
