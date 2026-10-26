@@ -26,6 +26,10 @@ Side-by-side images are `reference | ours | diff` (diff = pixels whose channel d
 | DB geometry vs `computed/db_light.json` / `db_dark.json` | `db-geometry.mjs` | **42/44** within 1px in both themes (below) |
 | B07 page menu, trash (filtered), version history | `b07.mjs` | page menu 4.9–5.0%, trash 4.2–4.3%, history 4.2–4.8% (history text rows within 1px of the reference) |
 | M3/M4/M5 behaviour (find, lock, peeks, cell editors, sort/filter/group/calc, formula, `[[`, @date, back/forward, history restore, relation + rollup, templates) | `m3m4.mjs` | **41/41** |
+| Round 5 gaps (view drag, timeline zoom, @今天, emoji usage, files prop, group panel, comments, media, tabs, table, reminders) | `round5.mjs` | **44/44** |
+| B07 help / 更多 / library menus, shortcuts modal, updates panel | `b07.mjs` | help 4.6–4.7%, 更多 4.8%, library 4.3–4.4%, shortcuts 2.5–3.1%, updates panel 5.6% |
+| M7 (quick window, templates, settings panes, zh-TW, high contrast, import/export) | `m7.mjs` | **30/30** |
+| Motion timings vs SPEC (sidebar width, peeks, menu/modal fades, spring, hover bg, chevron, topbar idle, tab-strip blur) | `motion.mjs` | **13/13**; frame strips in `packages/parity/out/motion/` |
 | Electron shell | `electron.mjs` | **20/20** (below) |
 | Native menus vs B02b accessibility dump | `electron.mjs` | **51/51** app-defined items, menu-bar order exact; macOS system-injected items (Services, Speech, AutoFill, window tiling, traditional-Chinese entries) are supplied by the OS |
 | Tab bar B02 (1/5/15 tabs) | earlier window-sim checks | tab pitch and edges exact; real Electron tab bar vs `B02_tabs_1` 6.2% (the Linux capture has no traffic lights) |
@@ -82,7 +86,7 @@ The two misses: the second view tab is 1.5px narrower (glyph widths), and the co
 - **Media.** Cover images, embedded images, video posters and bookmark thumbnails are original or placeholder art, never the reference's assets (B04 cover, B08 p3–p5).
 - **Table width.** Tables stay in the text column; the reference is full-bleed (2 geometry misses).
 - **Drag ref.** The B05b drag-in-progress reference shows no indicator (capture failed), so there is nothing to compare.
-- **Emoji ordering.** Inline `:` results are ordered by our own keyword index, not the reference's popularity data.
+- **Emoji ordering.** Inline `:` results rank by local usage, then our own keyword index (no reference popularity data).
 - **Icons.** Lucide outline icons where the reference uses its own filled glyphs (DB property icons, toolbar), a large part of the 4–7% on DB menus.
-- **Not implemented.** The tabs block, the `@今天` ghost placeholder in the mention menu, file/media properties, multiple data sources, view drag reorder, timeline zoom levels other than 季度.
+- **Not implemented.** Multiple data sources per database; sharing/publish; analytics tab is a stub.
 - **macOS-only bits** (traffic lights, system menu items) cannot be shot on the Linux box; menus are checked structurally against the accessibility dump instead.

@@ -72,8 +72,12 @@ npm run parity         # every harness (packages/parity/run.mjs [job…]); resul
 - [x] M5: Calendar and Timeline views (drag to move dates, today line at the current time, month labels), relation + rollup properties, database templates
   - `b07.mjs` (page menu / trash / history), B01c dark comparisons in `db.mjs`; `m3m4.mjs` 41/41
 
+- [x] Round 5 gaps (after v3): `@今天` ghost + emoji ranked by usage (fea144e), timeline zoom 天/周/月/季度/年 (f158de6), view-tab drag reorder (b4bbc7b), files & media property (7522e9a), full group panel (7760709), comments: inline threads / page-level / comments panel + updates & analytics right panel (e34a615), B07 help menu + 更多 submenu, library menu, shortcuts modal (250ee86); `round5.mjs` 44/44
+- [x] M6 media & embeds: image resize/align/caption/toolbar, video embeds, audio, file, PDF (b715855); tabs block; column resize, simple-table row/column grips + header row/col + column width, synced block copy/unsync, bookmark OG fetch in Electron main (290dca1); date-mention reminders → local notifications (a9cf6dd)
+- [x] M7: quick-search window (⇧⌘K global, 755×700 frameless, `?quick=1`), tray, dock badge (today's reminders), update-check stub, import MD/HTML/TXT, export MD/HTML/PDF (printToPDF), zh-TW locale (OpenCC), full settings panes (通知/邮箱和日历/通用/人员/侧边栏/导入/表情符号/离线/开发者), persisted high contrast (959ad9a); templates gallery (07efb9a); `m7.mjs` 30/30
+- [x] Motion parity: `styles/motion.css` + animated sidebar width (cef186d); `motion.mjs` reads live Web Animations and records frame strips (`packages/parity/out/motion/`), 13/13 vs SPEC timings
+
 ## Next
-1. Help / updates / shortcuts panels and library menu (rest of B07).
-2. Files property; multiple data sources; view drag reorder; timeline zoom levels.
-3. Comments, sharing/publish UI (local only), export (HTML/PDF via printToPDF).
-4. Signing / notarisation, auto-update stub.
+1. Full suite rerun + v4 mac build (in progress).
+2. Full-bleed tables (reference geometry), multiple data sources, sharing/publish UI (local only).
+3. Signing / notarisation; real update channel.
