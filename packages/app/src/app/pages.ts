@@ -19,7 +19,7 @@ export function sidebarChildren(id: string): Block[] {
   const walk = (pid: string) => {
     for (const c of store.children(pid)) {
       if (c.type === 'page' || c.type === 'collection_view_page' || c.type === 'alias') { if (!(c.type === 'alias' && !store.get(c.props?.target)?.alive)) out.push(c); }
-      else if (c.type === 'column_list' || c.type === 'column' || c.type === 'toggle' || c.type === 'synced' || (c.content?.length && c.type !== 'collection_view_page')) walk(c.id);
+      else if (c.type === 'column_list' || c.type === 'column' || c.type === 'toggle' || c.type === 'synced' || !!c.content?.length) walk(c.id);
     }
   };
   const b = store.get(id);

@@ -1,0 +1,34 @@
+html, body, #root { margin: 0; height: 100%; }
+body { font-family: var(--ink-font-sans-zh); overflow: hidden; -webkit-font-smoothing: antialiased; }
+html.is-harness body { font-family: Inter, "Noto Sans CJK SC", sans-serif; }
+.ink-tabbar { height: 36px; display: flex; align-items: stretch; background: var(--ink-chrome-tab-bar-background); user-select: none; -webkit-app-region: drag; color: var(--ink-chrome-enabled-button-color); flex: none; }
+.ink-tabbar [role="button"], .ink-tab { -webkit-app-region: no-drag; cursor: default; }
+.ink-tabbar-left { flex: none; display: flex; align-items: center; padding-left: 78px; padding-right: 8px; position: relative; box-shadow: inset -1px 0 0 var(--ink-chrome-sidebar-divider); }
+.ink-traffic { position: absolute; left: 14px; top: 11px; display: flex; gap: 9px; }
+.ink-traffic span { width: 14px; height: 14px; border-radius: 50%; display: block; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+.ink-traffic .tl-close { background: #ff5f57; } .ink-traffic .tl-min { background: #febc2e; } .ink-traffic .tl-max { background: #28c840; }
+.ink-tbar-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ink-chrome-enabled-button-color); }
+.ink-tbar-icon:hover { background: var(--ink-chrome-button-background); }
+.ink-tbar-icon.is-disabled { color: var(--ink-chrome-secondary-button-color); opacity: .6; }
+.ink-tbar-icon.is-disabled:hover { background: none; }
+.ink-tbar-sidebar { margin-left: 2px; }
+.ink-tbar-spacer { flex: 1; }
+.ink-tabbar-left.is-sidebar .ink-tbar-icon + .ink-tbar-icon { margin-left: 2px; }
+.ink-tabbar-nav { flex: none; width: 68px; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tabstrip { flex: 1; min-width: 0; display: flex; align-items: stretch; position: relative; padding-right: 0; }
+.ink-tabstrip > .ink-tab:first-child { box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tab { position: relative; flex: 0 1 200px; min-width: 36px; max-width: 200px; display: flex; align-items: center; padding: 0 8px 0 16px; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--ink-text-secondary); box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset 0 -1px 0 var(--ink-chrome-sidebar-divider); overflow: hidden; }
+.ink-tab.is-last { box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset -1px 0 0 var(--ink-chrome-sidebar-divider), inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tab.is-hover { background: var(--ink-background-secondary); color: var(--ink-text-primary); }
+.ink-tab.is-active { background: var(--ink-background-primary); color: var(--ink-text-primary); box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset -1px 0 0 var(--ink-chrome-sidebar-divider); }
+.ink-tab-icon { margin-inline-end: 8px; font-size: 14px; opacity: .75; flex: none; }
+.ink-tab.is-active .ink-tab-icon { opacity: 1; }
+.ink-tab-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 9px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 9px), transparent); }
+.ink-tab-close { flex: none; width: 20px; height: 20px; padding: 2px; border-radius: 6px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 150ms ease; color: var(--ink-chrome-enabled-button-color); }
+.ink-tab.is-hover .ink-tab-close, .ink-tab.is-active .ink-tab-close { opacity: 1; }
+.ink-tab-close:hover { background: var(--ink-chrome-button-background); }
+.ink-tab-drop { position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: rgba(35,131,226,.43); }
+.ink-tab-drop.is-end { position: relative; }
+.ink-tbar-new { margin: auto 6px; flex: none; }
+.ink-tabstrip::after { content: ""; flex: 1; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tabbar-right { flex: none; width: 67px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }

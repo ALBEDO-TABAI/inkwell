@@ -146,8 +146,7 @@ export function outdent(ids: string[]) {
   const blocks = ids.map((i) => store.get(i)!).filter(Boolean);
   if (!blocks.length) return;
   const parent = store.get(blocks[0].parent);
-  if (!parent || parent.type === 'page' || parent.type === 'column' || parent.parentTable === 'space' && parent.type !== 'page' && false) return;
-  if (parent.type === 'page' || parent.type === 'collection_view_page') return;
+  if (!parent || parent.type === 'page' || parent.type === 'collection_view_page' || parent.type === 'column') return;
   const grand = store.get(parent.parent); if (!grand) return;
   store.transact('outdent', (tx) => {
     const siblings = (store.get(parent.id)!.content || []);

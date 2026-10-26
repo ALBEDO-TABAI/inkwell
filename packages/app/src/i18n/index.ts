@@ -24,7 +24,7 @@ export function setLocale(l: Locale) {
   document.documentElement.lang = l;
   listeners.forEach((f) => f());
 }
-export function onLocaleChange(f: () => void) { listeners.add(f); return () => listeners.delete(f); }
+export function onLocaleChange(f: () => void) { listeners.add(f); return () => { listeners.delete(f); }; }
 
 /** Translate. `{name}` placeholders are filled from vars; `{brand}` is always available. */
 export function t(key: MessageKey | string, vars?: Record<string, string | number>): string {
