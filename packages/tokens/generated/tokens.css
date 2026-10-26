@@ -802,7 +802,7 @@
   --ink-embed-block-resizer-inner-bg: rgba(15,15,15,.6);
   --ink-calendar-event-hovered-background: rgba(55, 53, 47, 0.02);
   --ink-chrome-tab-bar-background: rgba(249, 248, 247, 1);
-  --ink-chrome-notion-background: rgba(255, 255, 255, 1);
+  --ink-chrome-app-background: rgba(255, 255, 255, 1);
   --ink-chrome-button-background: rgba(42, 28, 0, 0.07);
   --ink-chrome-enabled-button-color: rgba(142, 139, 134, 1);
   --ink-chrome-secondary-button-color: rgba(173, 169, 163, 1);
@@ -1726,7 +1726,7 @@
   --ink-embed-block-resizer-inner-bg: rgba(15,15,15,.6);
   --ink-calendar-event-hovered-background: rgba(55, 53, 47, 0.02);
   --ink-chrome-tab-bar-background: rgba(32, 32, 32, 1);
-  --ink-chrome-notion-background: rgba(25, 25, 25, 1);
+  --ink-chrome-app-background: rgba(25, 25, 25, 1);
   --ink-chrome-button-background: rgba(255, 255, 243, 0.082);
   --ink-chrome-enabled-button-color: rgba(173, 169, 163, 1);
   --ink-chrome-secondary-button-color: rgba(125, 122, 117, 1);
@@ -1885,7 +1885,7 @@
 }
 [data-contrast="high"][data-theme="light"], [data-contrast="high"] [data-theme="light"] {
   --ink-chrome-tab-bar-background: rgba(249, 248, 247, 1);
-  --ink-chrome-notion-background: rgba(255, 255, 255, 1);
+  --ink-chrome-app-background: rgba(255, 255, 255, 1);
   --ink-chrome-button-background: rgb(from rgba(42, 28, 0, 0.07) r g b / calc(alpha * (1 + 0.5 * 3)));
   --ink-chrome-enabled-button-color: rgba(95, 94, 89, 1);
   --ink-chrome-secondary-button-color: rgba(95, 94, 89, 1);
@@ -2280,7 +2280,7 @@
 }
 [data-contrast="high"][data-theme="dark"], [data-contrast="high"] [data-theme="dark"] {
   --ink-chrome-tab-bar-background: rgba(32, 32, 32, 1);
-  --ink-chrome-notion-background: rgba(25, 25, 25, 1);
+  --ink-chrome-app-background: rgba(25, 25, 25, 1);
   --ink-chrome-button-background: rgb(from rgba(255, 255, 243, 0.082) r g b / calc(alpha * (1 + 0.5 * 3)));
   --ink-chrome-enabled-button-color: rgba(212, 211, 207, 1);
   --ink-chrome-secondary-button-color: rgba(212, 211, 207, 1);
@@ -2676,7 +2676,7 @@
 @media (prefers-contrast: more) {
   [data-contrast="auto"][data-theme="light"] {
   --ink-chrome-tab-bar-background: rgba(249, 248, 247, 1);
-  --ink-chrome-notion-background: rgba(255, 255, 255, 1);
+  --ink-chrome-app-background: rgba(255, 255, 255, 1);
   --ink-chrome-button-background: rgb(from rgba(42, 28, 0, 0.07) r g b / calc(alpha * (1 + 0.5 * 3)));
   --ink-chrome-enabled-button-color: rgba(95, 94, 89, 1);
   --ink-chrome-secondary-button-color: rgba(95, 94, 89, 1);
@@ -3071,7 +3071,7 @@
   }
   [data-contrast="auto"][data-theme="dark"] {
   --ink-chrome-tab-bar-background: rgba(32, 32, 32, 1);
-  --ink-chrome-notion-background: rgba(25, 25, 25, 1);
+  --ink-chrome-app-background: rgba(25, 25, 25, 1);
   --ink-chrome-button-background: rgb(from rgba(255, 255, 243, 0.082) r g b / calc(alpha * (1 + 0.5 * 3)));
   --ink-chrome-enabled-button-color: rgba(212, 211, 207, 1);
   --ink-chrome-secondary-button-color: rgba(212, 211, 207, 1);

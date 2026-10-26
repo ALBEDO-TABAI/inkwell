@@ -41,7 +41,7 @@ for (const [key, byMode] of Object.entries(theme)) {
 // desktop chrome colours (tab bar etc.)
 const hcModes = { light: {}, dark: {} };
 for (const [key, byMode] of Object.entries(electron)) {
-  const name = 'chrome-' + kebab(key);
+  const name = 'chrome-' + kebab(key).replace(/notion/g, 'app'); // never ship the reference brand name
   modes.light[name] = byMode.light; modes.dark[name] = byMode.dark;
   if (byMode.lightHighContrast) hcModes.light[name] = byMode.lightHighContrast;
   if (byMode.darkHighContrast) hcModes.dark[name] = byMode.darkHighContrast;
