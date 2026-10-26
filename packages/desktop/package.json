@@ -20,5 +20,6 @@
     "esbuild": "^0.25.0"
   },
   "description": "Inkwell desktop",
-  "author": "Inkwell"
+  "author": "Inkwell",
+  "productName": "Inkwell"
 }

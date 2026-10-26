@@ -20,8 +20,8 @@ const DEV_URL = process.env.INKWELL_DEV_URL; // e.g. http://127.0.0.1:5200 (vite
 const APP_DIST = [path.join(process.resourcesPath || '', 'renderer'), path.resolve(__dirname, '../../app/dist')].find((d) => fs.existsSync(path.join(d, 'index.html'))) || path.resolve(__dirname, '../../app/dist');
 const BG = { light: '#f9f8f7', dark: '#202020' };
 
-if (process.env.INKWELL_USER_DATA) app.setPath('userData', path.resolve(process.env.INKWELL_USER_DATA));
-app.setName(BRAND.name);
+app.setName(BRAND.name); // userData → ~/Library/Application Support/Inkwell (package name is @inkwell/desktop)
+app.setPath('userData', process.env.INKWELL_USER_DATA ? path.resolve(process.env.INKWELL_USER_DATA) : path.join(app.getPath('appData'), BRAND.name));
 protocol.registerSchemesAsPrivileged([{ scheme: BRAND.scheme, privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true } }]);
 
 let db: Store;

@@ -1,6 +1,8 @@
 # Inkwell desktop packaging. Test builds are unsigned (ad-hoc signed afterwards for Apple Silicon).
 appId: app.inkwell.desktop
 productName: Inkwell
+linux:
+  executableName: inkwell
 copyright: Copyright © 2026 Inkwell
 directories:
   output: release
