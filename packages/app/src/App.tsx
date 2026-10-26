@@ -7,6 +7,7 @@ import { OverlayHost, isPopoverOpen } from './ui/overlay';
 import { PeekHost } from './shell/Peek';
 import { FindBar, openFind } from './shell/FindBar';
 import { RightPanel } from './shell/RightPanel';
+import { openShortcuts } from './shell/HelpMenus';
 import { commentOnSelection } from './comments/Comments';
 import { activeEditable } from './editor/registry';
 import { getSelectionOffsets } from './editor/caret';
@@ -37,7 +38,7 @@ export function App() {
       if (!m) return;
       const k = e.key.toLowerCase();
       if (k === '\\') { e.preventDefault(); toggleSidebar(); return; }
-      if (e.shiftKey && k === 'l') { e.preventDefault(); cycleTheme(); return; }
+      if (e.shiftKey && k === 'l' && !e.altKey) { e.preventDefault(); cycleTheme(); return; }
       if ((k === 'k' || k === 'p') && !e.shiftKey && !e.altKey) {
         if (e.defaultPrevented) return; // handled by the editor (Cmd+K link)
         const inText = (e.target as HTMLElement).closest?.('[contenteditable="true"]');
@@ -45,8 +46,11 @@ export function App() {
         if (k === 'k' && inText && sel && !sel.isCollapsed) return; // link popover
         e.preventDefault(); openSearch(); return;
       }
-      if (k === 'm' && e.shiftKey) { const a = activeEditable(); const o = a && getSelectionOffsets(a.el); if (a && o && o.start !== o.end) { e.preventDefault(); commentOnSelection(a.id, o.start, o.end); } return; }
-      if (k === 'u' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'updates' ? null : 'updates' }); return; }
+      if (k === 'm' && e.shiftKey && !e.altKey) { const a = activeEditable(); const o = a && getSelectionOffsets(a.el); if (a && o && o.start !== o.end) { e.preventDefault(); commentOnSelection(a.id, o.start, o.end); } return; }
+      if (e.code === 'KeyU' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'updates' ? null : 'updates' }); return; }
+      if ((k === '/' || e.code === 'Slash') && e.altKey && !e.shiftKey) { e.preventDefault(); openShortcuts(); return; }
+      if (e.code === 'KeyM' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'comments' ? null : 'comments' }); return; }
+      if (e.code === 'KeyL' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ highContrast: !getUi().highContrast }); return; }
       if (k === 'f' && !e.shiftKey && !e.altKey) { e.preventDefault(); openFind(); return; }
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }

@@ -4,6 +4,7 @@
  */
 export const BRAND = {
   name: 'Inkwell',
+  version: '0.4.0',
   slug: 'inkwell',
   scheme: 'inkwell',
   appId: 'app.inkwell.desktop',

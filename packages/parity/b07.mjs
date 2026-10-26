@@ -9,14 +9,21 @@ const seedHistory = async (p) => p.evaluate(async () => {
   for (let i = 12; i >= 1; i--) { s.transact('e', (tx) => tx.update(last, { title: [...(orig || []), [' v' + i]] }), { noUndo: true }); h.record('page-rea', now - i * 420000 - (i % 3) * 61000); }
   s.transact('e', (tx) => tx.update(last, { title: orig }), { noUndo: true }); h.record('page-rea', now);
 });
+const only = process.argv[2];
 const CASES = {
   page_menu: async (p) => { await p.click('.ink-more-btn'); },
   trash_filtered_REA: async (p) => { await p.evaluate(() => import('/src/shell/Trash.tsx').then((m) => m.openTrash())); await p.waitForTimeout(200); await p.keyboard.type('REA'); },
+  help_menu: async (p) => { await p.click('.ink-sb-footer .ink-sb-iconbtn >> nth=0'); },
+  help_more_submenu: async (p) => { await p.click('.ink-sb-footer .ink-sb-iconbtn >> nth=0'); await p.waitForTimeout(250); await p.hover('[data-item-id="more"]'); },
+  library_menu: async (p) => { await p.click('.ink-sb-footer .ink-sb-iconbtn >> nth=1'); },
+  shortcuts_modal: async (p) => { await p.evaluate(() => import('/src/shell/HelpMenus.tsx').then((m) => m.openShortcuts())); },
+  updates_panel: async (p) => { await seedHistory(p); await p.evaluate(() => window.__ink.setUi({ rightPanel: 'updates' })); },
   page_history: async (p) => { await seedHistory(p); await p.click('.ink-more-btn'); await p.waitForTimeout(300); await p.click('[data-item-id="history"]'); },
 };
 const b = await chromium.launch({ executablePath: '/home/box/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome' });
 const res = [];
 for (const theme of ['light', 'dark']) for (const [name, act] of Object.entries(CASES)) {
+  if (only && !name.includes(only)) continue;
   const p = await b.newPage({ viewport: { width: 1320, height: 824 } });
   p.on('pageerror', (e) => console.log('pageerror', e.message));
   await p.goto(`http://127.0.0.1:5200/index.html?fixture=1&storage=memory&harness=1&expand=page-rea&promo=1&theme=${theme}#/p/page-rea`); await p.waitForFunction(() => window.__inkwellReady); await p.waitForTimeout(500);

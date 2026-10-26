@@ -82,8 +82,8 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
               <span className="ink-sb-switcher-name">{space.name}</span>
               <Icon name="chevronDown" size={14} stroke={2} className="ink-sb-switcher-chev" />
             </div>
-            <div className="ink-sb-iconbtn" role="button" {...tip(t('sidebar.help'))}><Icon name="help" size={20} stroke={1.5} /></div>
-            <div className="ink-sb-iconbtn" role="button" {...tip(t('sidebar.apps'))} onClick={(e) => openAppsMenu(e.currentTarget)}><Icon name="apps" size={20} stroke={1.5} /></div>
+            <div className="ink-sb-iconbtn" role="button" {...tip(t('sidebar.help'))} onClick={(e) => openHelpMenu(e.currentTarget)}><Icon name="help" size={20} stroke={1.5} /></div>
+            <div className="ink-sb-iconbtn" role="button" {...tip(t('sidebar.apps'))} onClick={(e) => openLibraryMenu(e.currentTarget)}><Icon name="apps" size={20} stroke={1.5} /></div>
           </div>
         </div>
       </div>
@@ -92,7 +92,8 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
   );
 }
 
-function openAppsMenu(el: HTMLElement) {
+import { openHelpMenu, openLibraryMenu } from './HelpMenus';
+export function openAppsMenu(el: HTMLElement) {
   const r = el.getBoundingClientRect();
   openMenu(r, {
     width: 220,
