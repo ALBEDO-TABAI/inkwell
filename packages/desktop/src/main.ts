@@ -7,6 +7,7 @@ import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protoc
 import path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { fetchOg } from './og';
 import { BRAND } from '@shared/brand';
 import { IPC, type TabState, type TabsSnapshot } from '@shared/ipc';
 import { openStore, type Store } from './db';
@@ -214,6 +215,7 @@ function wireContents(wc: WebContents) {
 /* ------------------------------ IPC ------------------------------ */
 function wireIpc() {
   ipcMain.handle(IPC.dbLoad, () => db.load());
+  ipcMain.handle('inkwell:fetch-og', (_e, url: string) => fetchOg(String(url || '')));
   // every tab is its own renderer with its own in-memory store: fan writes out so the others stay live
   const fanout = (from: WebContents, ch: string, ...a: unknown[]) => { for (const w of windows) for (const t of w.tabs) if (t.view.webContents !== from && !t.view.webContents.isDestroyed()) t.view.webContents.send(ch, ...a); };
   ipcMain.handle(IPC.dbWrite, (e, c) => { db.write(c); fanout(e.sender, 'inkwell:db-changed', c); });

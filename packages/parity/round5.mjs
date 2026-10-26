@@ -134,6 +134,29 @@ T.tabs = async () => {
   ok((await page.textContent('.ink-main .ink-tabs-panel')).includes('第一页内容'), 'first tab keeps its content');
   await page.screenshot({ path: 'out/r5_tabs.png' });
 };
+T.table = async () => {
+  await go('page-rea');
+  const tid = await page.evaluate(() => [...window.__ink.store.blocks.values()].find((b) => b.type === 'table' && b.alive !== false).id);
+  const sel = `.ink-main [data-block-id="${tid}"]`;
+  await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), sel); await page.waitForTimeout(300);
+  const dims = () => page.evaluate((s) => { const t = document.querySelector(s + ' table'); return [t.rows.length, t.rows[0].cells.length, t.querySelectorAll('th').length]; }, sel);
+  const d0 = await dims();
+  await page.hover(sel + ' tr >> nth=1'); await page.click(sel + ' tr >> nth=1 >> .ink-tr-grip'); await page.click('[data-item-id="tb-below"]'); await page.waitForTimeout(200);
+  let d = await dims(); ok(d[0] === d0[0] + 1, 'insert row below');
+  await page.hover(sel + ' tr >> nth=0 >> td, th >> nth=1').catch(() => {}); await page.hover(sel + ' tr:first-child > :nth-child(2)'); await page.click(sel + ' .ink-tc-grip'); await page.click('[data-item-id="tb-right"]'); await page.waitForTimeout(200);
+  d = await dims(); ok(d[1] === d0[1] + 1, 'insert column right');
+  await page.hover(sel + ' tr:first-child > :nth-child(1)'); await page.click(sel + ' .ink-tc-grip'); await page.click('[data-item-id="tb-hcol"]'); await page.waitForTimeout(200);
+  d = await dims(); ok(d[2] >= d[0] - (d0[2] ? 1 : 0), 'header column turns first cells into th: ' + d.join('/'));
+  await page.hover(sel + ' tr >> nth=1'); await page.click(sel + ' tr >> nth=1 >> .ink-tr-grip'); await page.click('[data-item-id="tb-delrow"]'); await page.waitForTimeout(200);
+  d = await dims(); ok(d[0] === d0[0], 'delete row');
+  // column resize
+  const cl = await page.evaluate(() => [...window.__ink.store.blocks.values()].find((b) => b.type === 'column_list' && b.alive !== false).id);
+  const rs = `.ink-main [data-block-id="${cl}"] .ink-column-resizer`;
+  await page.evaluate((s) => document.querySelector(s).scrollIntoView({ block: 'center' }), rs); await page.waitForTimeout(200);
+  const r = await box(rs); await page.mouse.move(r.x + r.w / 2, r.y + 10); await page.mouse.down(); await page.mouse.move(r.x + 80, r.y + 10, { steps: 5 }); await page.mouse.up(); await page.waitForTimeout(200);
+  const ratios = await page.evaluate((id) => window.__ink.store.get(id).content.map((c) => window.__ink.store.get(c).format.column_ratio.toFixed(2)), cl);
+  ok(Number(ratios[0]) > Number(ratios[1]), 'dragging the column gap resizes columns: ' + ratios.join('/'));
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

@@ -10,6 +10,7 @@ import { Icon } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
 import { ImageBlock, VideoBlock, BookmarkBlock, AudioBlock, FileBlock, PdfBlock, MediaPlaceholder } from './media-blocks';
 import { TabsBlock } from './tabs-block';
+import { syncedSource, syncedRefs } from './synced';
 import { isListish } from './commands';
 import { renderTex } from './render-inline';
 import { focusBlock, onBlockSelection, getBlockSelection, setBlockSelection } from './registry';
@@ -246,7 +247,7 @@ function BlockBody({ b, ctx }: { b: Block; ctx: Ctx }) {
     case 'collection_view':
       return <div className="ink-db-block" contentEditable={false}><Database dbId={b.id} inline /></div>;
     case 'synced':
-      return <div className="ink-synced">{hasKids ? <BlockChildren parent={b} depth={ctx.depth} className="ink-children-flat" /> : <div className="ink-toggle-empty">{t('ed.syncedLabel')}</div>}</div>;
+      return <SyncedBlock b={b} depth={ctx.depth} />;
     default:
       return <TextRow b={b} ctx={ctx} />;
   }
@@ -285,16 +286,53 @@ function EquationBlock({ b }: { b: Block }) {
 
 /* ---------- columns ---------- */
 function ColumnList({ b, depth }: { b: Block; depth: number }) {
-  const cols = store.children(b.id);
-  const total = cols.reduce((s, c) => s + (c.format?.column_ratio ?? 1 / cols.length), 0) || 1;
+  const cols = store.children(b.id).filter((c) => c.alive !== false);
+  const [live, setLive] = useState<number[] | null>(null);
+  const wrap = useRef<HTMLDivElement>(null);
+  const base = cols.map((c) => c.format?.column_ratio ?? 1 / cols.length);
+  const sum = base.reduce((x, y) => x + y, 0) || 1;
+  const ratios = live ?? base.map((r) => r / sum);
+  const GAP = 46;
+  const startResize = (i: number) => (e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    const total = wrap.current!.getBoundingClientRect().width - (cols.length - 1) * GAP;
+    const r0 = base.map((r) => r / sum), x0 = e.clientX; let r = r0;
+    const move = (ev: PointerEvent) => {
+      const d = (ev.clientX - x0) / total; const pair = r0[i] + r0[i + 1]; const min = Math.min(0.1, pair / 2);
+      const a = Math.max(min, Math.min(pair - min, r0[i] + d));
+      r = r0.map((v, k) => (k === i ? a : k === i + 1 ? pair - a : v)); setLive(r);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('is-col-resizing'); setLive(null);
+      if (r !== r0) store.transact('resize columns', (tx) => cols.forEach((c, k) => tx.update(c.id, (x) => ({ format: { ...x.format, column_ratio: r[k] } }))));
+    };
+    document.body.classList.add('is-col-resizing');
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
   return (
-    <div className="ink-columns">
+    <div className="ink-columns" ref={wrap}>
       {cols.map((c, i) => (
-        <div key={c.id} className="ink-column" data-block-id={c.id} data-type="column" style={{ width: `calc((100% - ${(cols.length - 1) * 46}px) * ${(c.format?.column_ratio ?? 1 / cols.length) / total})` }}>
+        <div key={c.id} className="ink-column" data-block-id={c.id} data-type="column" style={{ width: `calc((100% - ${(cols.length - 1) * GAP}px) * ${ratios[i]})` }}>
           <BlockChildren parent={c} depth={depth} className="ink-children-flat" />
-          {i < cols.length - 1 && <div className="ink-column-resizer" contentEditable={false} />}
+          {i < cols.length - 1 && <div className={'ink-column-resizer' + (live ? ' is-active' : '')} contentEditable={false} onPointerDown={startResize(i)}><span /></div>}
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ---------- synced ---------- */
+function SyncedBlock({ b, depth }: { b: Block; depth: number }) {
+  const src = syncedSource(b);
+  useBlock(src?.id);
+  const isRef = !!b.props?.target;
+  const refs = isRef ? 0 : syncedRefs(b.id).length;
+  if (!src || src.alive === false) return <div className="ink-synced is-ref"><div className="ink-toggle-empty">{t('ed.syncedMissing')}</div></div>;
+  const has = (src.content || []).some((id) => store.get(id)?.alive !== false);
+  return (
+    <div className={'ink-synced' + (isRef ? ' is-ref' : '') + (refs ? ' has-refs' : '')} data-synced-source={src.id}>
+      {(isRef || refs > 0) && <div className="ink-synced-tag" contentEditable={false}><Icon name="synced" size={12} />{isRef ? t('ed.syncedRef') : t('ed.syncedOrigin', { n: refs })}</div>}
+      {has ? <BlockChildren parent={src} depth={depth} className="ink-children-flat" /> : <div className="ink-toggle-empty">{t('ed.syncedLabel')}</div>}
     </div>
   );
 }
@@ -312,32 +350,66 @@ function EmbedBlock({ b }: { b: Block }) {
 
 /* ---------- table ---------- */
 function TableBlock({ b }: { b: Block }) {
-  const rows = store.children(b.id);
+  const rows = store.children(b.id).filter((r) => r.alive !== false);
   const widths = b.format?.table_widths || [];
-  const ncol = Math.max(widths.length, ...rows.map((r) => r.props?.cells?.length || 0));
-  const header = !!b.format?.table_has_header;
+  const ncol = Math.max(widths.length, ...rows.map((r) => r.props?.cells?.length || 0), 1);
+  const header = !!b.format?.table_has_header, colHeader = !!b.format?.table_has_column_header;
+  const [hc, setHc] = useState<number | null>(null);
   const setCell = (row: Block, ci: number, rt: RichText) => store.transact('cell', (tx) => tx.update(row.id, (x) => { const cells = [...(x.props?.cells || [])]; while (cells.length < ncol) cells.push([]); cells[ci] = rt; return { props: { ...x.props, cells } }; }), { coalesce: 'cell:' + row.id + ':' + ci });
-  const addRow = () => store.transact('add row', (tx) => { const id = newId(); tx.create({ id, type: 'table_row', title: [], props: { cells: Array.from({ length: ncol }, () => []) }, parent: b.id, parentTable: 'block', content: [] }); tx.insertChild(b.id, id); });
-  const addCol = () => store.transact('add column', (tx) => { tx.update(b.id, (x) => ({ format: { ...x.format, table_widths: [...(x.format?.table_widths || Array(ncol).fill(120)), 120] } })); for (const r of rows) tx.update(r.id, (x) => ({ props: { ...x.props, cells: [...(x.props?.cells || []), []] } })); });
+  const insertRow = (at: number) => store.transact('add row', (tx) => { const id = newId(); tx.create({ id, type: 'table_row', title: [], props: { cells: Array.from({ length: ncol }, () => []) }, parent: b.id, parentTable: 'block', content: [] }); tx.insertChild(b.id, id, at); });
+  const insertCol = (at: number) => store.transact('add column', (tx) => {
+    tx.update(b.id, (x) => { const w = [...(x.format?.table_widths || Array(ncol).fill(120))]; while (w.length < ncol) w.push(120); w.splice(at, 0, 120); return { format: { ...x.format, table_widths: w } }; });
+    for (const r of rows) tx.update(r.id, (x) => { const c = [...(x.props?.cells || [])]; while (c.length < ncol) c.push([]); c.splice(at, 0, []); return { props: { ...x.props, cells: c } }; });
+  });
+  const deleteRow = (ri: number) => { if (rows.length <= 1) return; store.transact('delete row', (tx) => { tx.removeChild(b.id, rows[ri].id); tx.update(rows[ri].id, { alive: false }); }); };
+  const deleteCol = (ci: number) => { if (ncol <= 1) return; store.transact('delete column', (tx) => {
+    tx.update(b.id, (x) => { const w = [...(x.format?.table_widths || Array(ncol).fill(120))]; w.splice(ci, 1); return { format: { ...x.format, table_widths: w } }; });
+    for (const r of rows) tx.update(r.id, (x) => { const c = [...(x.props?.cells || [])]; c.splice(ci, 1); return { props: { ...x.props, cells: c } }; });
+  }); };
+  const toggleFmt = (k: 'table_has_header' | 'table_has_column_header') => store.transact('table header', (tx) => tx.update(b.id, (x) => ({ format: { ...x.format, [k]: !x.format?.[k] } })));
+  const rowMenu = (el: HTMLElement, ri: number) => openMenu(el.getBoundingClientRect(), { width: 220, groups: [
+    [{ id: 'tb-hrow', label: t('table.headerRow'), icon: 'table', toggle: header, onSelect: () => toggleFmt('table_has_header') }],
+    [{ id: 'tb-above', label: t('table.insertAbove'), icon: 'arrowUp', onSelect: () => insertRow(ri) }, { id: 'tb-below', label: t('table.insertBelow'), icon: 'arrowDown', onSelect: () => insertRow(ri + 1) }],
+    [{ id: 'tb-delrow', label: t('table.deleteRow'), icon: 'trash', danger: true, disabled: rows.length <= 1, onSelect: () => deleteRow(ri) }],
+  ] }, { placement: 'right-start' });
+  const colMenu = (el: HTMLElement, ci: number) => openMenu(el.getBoundingClientRect(), { width: 220, groups: [
+    [{ id: 'tb-hcol', label: t('table.headerCol'), icon: 'table', toggle: colHeader, onSelect: () => toggleFmt('table_has_column_header') }],
+    [{ id: 'tb-left', label: t('table.insertLeft'), icon: 'arrowLeft', onSelect: () => insertCol(ci) }, { id: 'tb-right', label: t('table.insertRight'), icon: 'arrowRight', onSelect: () => insertCol(ci + 1) }],
+    [{ id: 'tb-delcol', label: t('table.deleteCol'), icon: 'trash', danger: true, disabled: ncol <= 1, onSelect: () => deleteCol(ci) }],
+  ] }, { placement: 'bottom-start' });
+  const resizeCol = (ci: number) => (e: React.PointerEvent) => {
+    e.preventDefault(); e.stopPropagation(); const x0 = e.clientX; const w0 = widths[ci] ?? 120; let w = w0;
+    const col = (e.currentTarget as HTMLElement).closest('table')!.querySelectorAll('col')[ci] as HTMLElement;
+    const move = (ev: PointerEvent) => { w = Math.max(32, Math.round(w0 + ev.clientX - x0)); col.style.width = w + 'px'; };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); document.body.classList.remove('is-col-resizing'); if (w !== w0) store.transact('column width', (tx) => tx.update(b.id, (x) => { const ws = [...(x.format?.table_widths || Array(ncol).fill(120))]; while (ws.length < ncol) ws.push(120); ws[ci] = w; return { format: { ...x.format, table_widths: ws } }; })); };
+    document.body.classList.add('is-col-resizing'); window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
   return (
-    <div className="ink-table-wrap" contentEditable={false}>
+    <div className="ink-table-wrap" contentEditable={false} onMouseLeave={() => setHc(null)}>
       <div className="ink-table-scroll">
-        <table className="ink-table">
+        <table className={'ink-table' + (colHeader ? ' has-col-header' : '')}>
           <colgroup>{Array.from({ length: ncol }, (_, i) => <col key={i} style={{ width: widths[i] ?? 120 }} />)}</colgroup>
           <tbody>
             {rows.map((r, ri) => (
               <tr key={r.id} data-row-id={r.id}>
                 {Array.from({ length: ncol }, (_, ci) => {
-                  const Cell = header && ri === 0 ? 'th' : 'td';
-                  return <Cell key={ci} className="ink-cell"><Editable block={r} value={(r.props?.cells?.[ci] as RichText) || []} onChange={(rt) => setCell(r, ci, rt)} /></Cell>;
+                  const Cell = (header && ri === 0) || (colHeader && ci === 0) ? 'th' : 'td';
+                  return (
+                    <Cell key={ci} className="ink-cell" onMouseEnter={() => setHc(ci)} onContextMenu={(e) => { e.preventDefault(); rowMenu(e.currentTarget as HTMLElement, ri); }}>
+                      <Editable block={r} value={(r.props?.cells?.[ci] as RichText) || []} onChange={(rt) => setCell(r, ci, rt)} />
+                      {ci === 0 && <span className="ink-tr-grip" role="button" aria-label={t('table.rowOptions')} onMouseDown={(e) => e.preventDefault()} onClick={(e) => rowMenu(e.currentTarget, ri)}><Icon name="grip" size={12} /></span>}
+                      {ri === 0 && hc === ci && <span className="ink-tc-grip" role="button" aria-label={t('table.colOptions')} onMouseDown={(e) => e.preventDefault()} onClick={(e) => colMenu(e.currentTarget, ci)}><Icon name="grip" size={12} style={{ transform: 'rotate(90deg)' }} /></span>}
+                      {ri === 0 && <span className="ink-tc-resize" onPointerDown={resizeCol(ci)} />}
+                    </Cell>
+                  );
                 })}
               </tr>
             ))}
           </tbody>
         </table>
-        <div className="ink-table-add-col" role="button" onClick={addCol}><Icon name="plus" size={14} /></div>
+        <div className="ink-table-add-col" role="button" aria-label={t('table.addCol')} onClick={() => insertCol(ncol)}><Icon name="plus" size={14} /></div>
       </div>
-      <div className="ink-table-add-row" role="button" onClick={addRow}><Icon name="plus" size={14} /></div>
+      <div className="ink-table-add-row" role="button" aria-label={t('table.addRow')} onClick={() => insertRow(rows.length)}><Icon name="plus" size={14} /></div>
     </div>
   );
 }

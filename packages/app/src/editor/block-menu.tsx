@@ -12,6 +12,7 @@ import { openMoveTo, allPages, moveBlockTo } from '../shell/MoveTo';
 import { BRAND } from '@shared/brand';
 import { toast } from '../ui/toast';
 import { commentOnSelection } from '../comments/Comments';
+import { copySynced, unsync } from './synced';
 import { rtPlain } from './richtext';
 import { countWords, pageTitle } from '../app/pages';
 
@@ -44,7 +45,8 @@ export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect,
   const k = kindOfBlock(first.type, first.format?.toggleable);
   const anchor = anchorEl instanceof HTMLElement ? anchorEl.getBoundingClientRect() : anchorEl;
   const c = countWords(first.id);
-  const textLike = first.type !== 'divider' && first.type !== 'image' && first.type !== 'video' && first.type !== 'bookmark';
+  const textLike = !['divider', 'image', 'video', 'bookmark', 'file', 'audio', 'pdf', 'tabs', 'table', 'embed', 'collection_view'].includes(first.type);
+  const synced = first.type === 'synced' && ids.length === 1;
   openMenu({ left: anchor.left, right: anchor.right, top: anchor.top, bottom: anchor.bottom }, () => ({
     width: 265,
     search: t('bm.search'),
@@ -56,6 +58,8 @@ export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect,
       ],
       [
         { id: 'link', label: t('bm.copyLink'), icon: 'link', shortcut: '⌘^L', onSelect: () => { navigator.clipboard?.writeText(`${BRAND.scheme}://page/${store.pageOf(ids[0])?.id}#${ids[0]}`).catch(() => {}); toast(t('toast.linkCopied')); } },
+        ...(synced ? [{ id: 'sync-copy', label: t('bm.copySynced'), icon: 'synced' as const, onSelect: () => { const ref = copySynced(first.id); if (ref) { navigator.clipboard?.writeText(`${BRAND.scheme}://block/${ref}`).catch(() => {}); toast(t('toast.syncedCopied')); } } },
+          ...(first.props?.target ? [{ id: 'sync-unsync', label: t('bm.unsync'), icon: 'x' as const, onSelect: () => unsync(first.id) }] : [])] : []),
         { id: 'dup', label: t('bm.duplicate'), icon: 'duplicate', shortcut: '⌘D', onSelect: () => { const n = duplicateBlocks(ids); setBlockSelection(n); } },
         { id: 'move', label: t('bm.moveTo'), icon: 'move', shortcut: '⌘⇧P', onSelect: () => setTimeout(() => openMoveTo(anchor, ids)) },
         { id: 'delete', label: t('bm.delete'), icon: 'trash', shortcut: 'Del', onSelect: () => { deleteBlocks(ids); clearBlockSelection(); } },

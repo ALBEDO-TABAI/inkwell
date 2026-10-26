@@ -639,3 +639,19 @@ body.is-col-resizing iframe { pointer-events: none; }
 .ink-tabs-add { width: 24px; height: 24px; margin: 0 0 6px 2px; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: var(--ink-icon-secondary); cursor: pointer; flex: none; }
 .ink-tabs-add:hover { background: var(--ink-button-hovered-background); }
 .ink-tabs-panel { padding: 8px 14px 10px; min-height: 36px; }
+.ink-column-resizer { display: flex; justify-content: center; z-index: 91; }
+.ink-column-resizer span { width: 2px; height: 100%; border-radius: 1px; background: transparent; transition: background .15s ease-out; }
+.ink-column-resizer:hover span, .ink-column-resizer.is-active span { background: var(--ink-border-strong, rgba(55, 53, 47, .16)); }
+.ink-table td, .ink-table th { position: relative; }
+.ink-tr-grip { position: absolute; left: -13px; top: 50%; transform: translateY(-50%); width: 12px; height: 20px; display: flex; align-items: center; justify-content: center; border-radius: 3px; color: var(--ink-icon-tertiary); background: var(--ink-background-elevated); box-shadow: var(--ink-shadow-outline-sm, 0 0 0 1px rgba(0,0,0,.08)); opacity: 0; cursor: pointer; z-index: 2; transition: opacity .1s ease; }
+.ink-table tr:hover .ink-tr-grip { opacity: 1; }
+.ink-tc-grip { position: absolute; top: -8px; left: 50%; transform: translateX(-50%); width: 20px; height: 12px; display: flex; align-items: center; justify-content: center; border-radius: 3px; color: var(--ink-icon-tertiary); background: var(--ink-background-elevated); box-shadow: var(--ink-shadow-outline-sm, 0 0 0 1px rgba(0,0,0,.08)); cursor: pointer; z-index: 2; }
+.ink-tr-grip:hover, .ink-tc-grip:hover { color: var(--ink-icon-primary); }
+.ink-tc-resize { position: absolute; top: 0; right: -3px; width: 5px; height: 100%; cursor: col-resize; z-index: 1; }
+.ink-tc-resize:hover { background: rgba(35, 131, 226, .5); }
+.ink-table-wrap { overflow: visible; }
+.ink-table-scroll { padding-top: 8px; margin-top: -8px; padding-left: 14px; margin-left: -14px; }
+.ink-synced { position: relative; transition: outline-color .15s ease-out; }
+.ink-synced:hover, .ink-synced:focus-within { outline-color: rgba(235, 87, 87, .5); }
+.ink-synced-tag { position: absolute; top: -10px; right: 6px; display: none; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border-radius: 4px; font-size: 11px; color: rgb(235, 87, 87); background: var(--ink-background-primary); box-shadow: 0 0 0 1px rgba(235, 87, 87, .35); z-index: 2; }
+.ink-synced:hover > .ink-synced-tag, .ink-synced:focus-within > .ink-synced-tag { display: flex; }
