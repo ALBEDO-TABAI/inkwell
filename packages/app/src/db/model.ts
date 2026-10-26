@@ -21,7 +21,7 @@ export type FilterOp = 'contains' | 'not_contains' | 'is' | 'is_not' | 'empty' |
 export interface FilterRule { prop: string; op: FilterOp; value?: string | string[] }
 export interface View {
   id: string; name: string; type: ViewType;
-  sort?: SortRule[]; filter?: FilterRule[]; group?: string;
+  sort?: SortRule[]; filter?: FilterRule[]; group?: string; groupOpts?: GroupOpts;
   /** property order and visibility for this view */
   order?: string[]; hidden?: string[]; widths?: Record<string, number>;
   /** number of leading columns frozen (table) */
@@ -244,8 +244,26 @@ export function queryRows(db: Block, view: View, search = ''): Block[] {
   return rows;
 }
 
-export interface Group { key: string; label: string; color: string; rows: Block[] }
-export function groupRows(db: Block, view: View, rows: Block[]): Group[] | null {
+export interface Group { key: string; label: string; color: string; rows: Block[]; hidden?: boolean }
+export interface GroupOpts { hidden?: string[]; hideEmpty?: boolean; sort?: 'manual' | 'asc' | 'desc'; dateBy?: 'day' | 'week' | 'month' | 'year'; showCount?: boolean }
+const WEEKSTART = (d: Date) => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
+function dateGroupKey(iso: string, by: GroupOpts['dateBy']): [string, string] {
+  const d = parseIso(iso);
+  if (by === 'day') return [iso, fmtDate(iso)];
+  if (by === 'week') { const w = WEEKSTART(d); const k = isoOf(w); return [k, `${fmtDate(k)}这周`]; }
+  if (by === 'year') return [String(d.getFullYear()), `${d.getFullYear()}年`];
+  return [iso.slice(0, 7), `${d.getFullYear()}年${d.getMonth() + 1}月`];
+}
+/** groups with the view's group options applied (sort, hide empty); hidden groups are flagged, or dropped unless includeHidden */
+export function groupRows(db: Block, view: View, rows: Block[], includeHidden = false): Group[] | null {
+  const g = rawGroups(db, view, rows); if (!g) return null;
+  const o = view.groupOpts || {};
+  let out = g;
+  if (o.sort === 'asc' || o.sort === 'desc') { const none = out.filter((x) => x.key === ''); const rest = out.filter((x) => x.key !== '').sort((a, b) => a.label.localeCompare(b.label, 'zh', { numeric: true })); if (o.sort === 'desc') rest.reverse(); out = [...none, ...rest]; }
+  out = out.map((x) => ({ ...x, hidden: !!o.hidden?.includes(x.key) || (!!o.hideEmpty && x.rows.length === 0) }));
+  return includeHidden ? out : out.filter((x) => !x.hidden);
+}
+function rawGroups(db: Block, view: View, rows: Block[]): Group[] | null {
   const gp = view.group; const p = gp ? schemaOf(db)[gp] : undefined;
   if (!gp || !p) return null;
   if (p.type === 'select' || p.type === 'status' || p.type === 'multi_select') {
@@ -260,6 +278,17 @@ export function groupRows(db: Block, view: View, rows: Block[]): Group[] | null 
   }
   if (p.type === 'checkbox') {
     return [{ key: 'true', label: '已勾选', color: 'default', rows: rows.filter((r) => !!rawValue(r, gp, db)) }, { key: 'false', label: '未勾选', color: 'default', rows: rows.filter((r) => !rawValue(r, gp, db)) }];
+  }
+  if (p.type === 'date' || p.type === 'created_time') {
+    const by = view.groupOpts?.dateBy || 'month';
+    const map = new Map<string, Group>(); const none: Group = { key: '', label: `无 ${p.name}`, color: 'default', rows: [] };
+    for (const r of rows) {
+      const v = rawValue(r, gp, db); const iso = p.type === 'created_time' ? isoOf(new Date(v as number)) : Array.isArray(v) ? v[0] : undefined;
+      if (!iso) { none.rows.push(r); continue; }
+      const [k, label] = dateGroupKey(iso, by); if (!map.has(k)) map.set(k, { key: k, label, color: 'default', rows: [] }); map.get(k)!.rows.push(r);
+    }
+    const list = [...map.values()].sort((a, b) => a.key.localeCompare(b.key));
+    return none.rows.length ? [none, ...list] : list;
   }
   const map = new Map<string, Block[]>();
   for (const r of rows) { const k = valueText(r, gp, db); map.set(k, [...(map.get(k) || []), r]); }

@@ -2,7 +2,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Block } from '../store/model';
 import { store } from '../store/store';
-import { openMenu, type MenuEntry, type MenuItemSpec, type MenuSpec } from '../ui/menu';
+import { openMenu, Switch, type MenuEntry, type MenuItemSpec, type MenuSpec } from '../ui/menu';
 import { openPopover, closePopover } from '../ui/overlay';
 import { Icon, type IconName } from '../ui/icons';
 import { toast } from '../ui/toast';
@@ -10,7 +10,7 @@ import { openPeek } from '../app/state';
 import { duplicateBlock, pageTitle } from '../app/pages';
 import {
   schemaOf, viewsOf, propIds, updateDb, updateView, addProp, addRow, deleteRow, VIEW_NAMES, PROP_DEFAULT_NAME, STATUS_DEFAULT,
-  ROLLUP_LABEL, templatesOf, addTemplate, deleteTemplate, addRowFromTemplate, type Prop, type RollupFn,
+  ROLLUP_LABEL, groupRows, queryRows, type GroupOpts, templatesOf, addTemplate, deleteTemplate, addRowFromTemplate, type Prop, type RollupFn,
   type View, type ViewType, type PropType, type CalcFn, type FilterRule, type FilterOp, type SortRule,
 } from './model';
 import { PropIcon, Tag, StatusPill } from './cells';
@@ -322,23 +322,68 @@ function SortPanel({ dbId, viewId, close }: { dbId: string; viewId: string; clos
 
 /* ---------- settings / group ---------- */
 export function openGroupPanel(anchor: HTMLElement, db: Block, view: View) {
-  const s = schemaOf(db);
-  const groupable = sortedProps(db).filter((id) => !['title', 'formula', 'relation', 'rollup'].includes(s[id].type));
-  openPopover({ id: 'db-group', anchor: R(anchor), placement: 'bottom-end', offset: 4, className: 'ink-group-pop', render: (close) => (
-    <div className="ink-menu ink-group-panel" style={{ width: 290 }}>
-      <div className="ink-gp-head"><button className="ink-gp-back" aria-label="返回" onClick={close}><Icon name="arrowLeft" size={16} /></button><span>分组方式</span><span style={{ flex: 1 }} /><button className="ink-gp-back" aria-label="关闭" onClick={close}><Icon name="x" size={16} /></button></div>
-      <GroupList db={db} view={view} ids={groupable} close={close} />
-    </div>
-  ) });
+  openPopover({ id: 'db-group', anchor: R(anchor), placement: 'bottom-end', offset: 4, className: 'ink-group-pop', render: (close) => <GroupPanel dbId={db.id} viewId={view.id} close={close} /> });
 }
-function GroupList({ db, view, ids, close }: { db: Block; view: View; ids: string[]; close: () => void }) {
+const DATE_BY = { day: '天', week: '周', month: '月', year: '年' } as const;
+function GroupPanel({ dbId, viewId, close }: { dbId: string; viewId: string; close: () => void }) {
+  const [, force] = useState(0);
+  useEffect(() => store.subscribe(() => force((x) => x + 1)), []);
+  const db = store.get(dbId)!; const view = viewsOf(db).find((v) => v.id === viewId)!; const s = schemaOf(db);
+  const [pickProp, setPickProp] = useState(!view.group);
+  const groupable = sortedProps(db).filter((id) => !['title', 'formula', 'relation', 'rollup', 'file'].includes(s[id].type));
+  const o = view.groupOpts || {};
+  const setO = (patch: Partial<GroupOpts>) => updateView(db.id, view.id, (v) => ({ groupOpts: { ...(v.groupOpts || {}), ...patch } }), 'group options');
+  const head = (title: string, back?: () => void) => <div className="ink-gp-head"><button className="ink-gp-back" aria-label="返回" onClick={back || close}><Icon name="arrowLeft" size={16} /></button><span>{title}</span><span style={{ flex: 1 }} /><button className="ink-gp-back" aria-label="关闭" onClick={close}><Icon name="x" size={16} /></button></div>;
+  if (pickProp || !view.group || !s[view.group]) return (
+    <div className="ink-menu ink-group-panel" style={{ width: 290 }}>
+      {head('分组方式', view.group ? () => setPickProp(false) : undefined)}
+      <GroupList db={db} view={view} ids={groupable} onPick={(g) => { updateView(db.id, view.id, { group: g, groupOpts: g === view.group ? view.groupOpts : undefined }, 'group'); if (g) setPickProp(false); else close(); }} />
+    </div>
+  );
+  const p = s[view.group];
+  const all = groupRows(db, view, queryRows(db, view), true) || [];
+  const isOpt = p.type === 'select' || p.type === 'status' || p.type === 'multi_select';
+  const isDate = p.type === 'date' || p.type === 'created_time';
+  const hidden = new Set(o.hidden || []);
+  const toggleG = (k: string) => setO({ hidden: hidden.has(k) ? [...hidden].filter((x) => x !== k) : [...hidden, k] });
+  const row = (label: string, right: ReactNode, onClick?: (e: React.MouseEvent<HTMLDivElement>) => void, key?: string) => <div key={key || label} className="ink-menu-item" role="button" onClick={onClick}><span style={{ flex: 1 }}>{label}</span>{right}</div>;
+  const val = (t: string) => <span className="ink-menu-value">{t}<Icon name="chevronRight" size={14} /></span>;
+  return (
+    <div className="ink-menu ink-group-panel" style={{ width: 290 }}>
+      {head('分组')}
+      <div className="ink-menu-group">
+        {row('分组依据', val(p.name), () => setPickProp(true))}
+        {isDate && row('日期分组方式', val(DATE_BY[o.dateBy || 'month']), (e) => openMenu(R(e.currentTarget), { width: 160, groups: [(Object.keys(DATE_BY) as (keyof typeof DATE_BY)[]).map((k) => ({ id: 'by-' + k, label: DATE_BY[k], checked: (o.dateBy || 'month') === k, onSelect: () => setO({ dateBy: k }) }))] }, { placement: 'bottom-end', parent: 'db-group' }))}
+        {row('排序', val(o.sort === 'asc' ? '升序' : o.sort === 'desc' ? '降序' : isOpt ? '手动' : '升序'), (e) => openMenu(R(e.currentTarget), { width: 160, groups: [[...(isOpt ? [{ id: 'gs-manual', label: '手动', checked: !o.sort || o.sort === 'manual', onSelect: () => setO({ sort: 'manual' }) }] : []), { id: 'gs-asc', label: '升序', checked: o.sort === 'asc', onSelect: () => setO({ sort: 'asc' }) }, { id: 'gs-desc', label: '降序', checked: o.sort === 'desc', onSelect: () => setO({ sort: 'desc' }) }]] }, { placement: 'bottom-end', parent: 'db-group' }))}
+        {row('隐藏空组', <Switch on={!!o.hideEmpty} />, () => setO({ hideEmpty: !o.hideEmpty }), 'hideEmpty')}
+        {row('显示聚合', <Switch on={o.showCount !== false} />, () => setO({ showCount: o.showCount === false }), 'showCount')}
+      </div>
+      <div className="ink-menu-sep" />
+      <div className="ink-gp-groups-head"><span>可见分组</span><span style={{ flex: 1 }} /><button className="ink-gp-link" onClick={() => setO({ hidden: hidden.size ? [] : all.map((g) => g.key) })}>{hidden.size ? '全部显示' : '全部隐藏'}</button></div>
+      <div className="ink-menu-group ink-gp-groups">
+        {all.map((g) => (
+          <div key={g.key || '∅'} className={'ink-menu-item' + (hidden.has(g.key) ? ' is-muted' : '')} data-group-key={g.key}>
+            <span className="ink-gp-grip"><Icon name="grip" size={14} /></span>
+            <span style={{ flex: 1, minWidth: 0 }}>{isOpt && g.key ? (p.type === 'status' ? <StatusPill label={g.label} color={g.color} /> : <Tag label={g.label} color={g.color} />) : g.label}</span>
+            <span className="ink-gp-count">{g.rows.length}</span>
+            <span className="ink-gp-eye" role="button" aria-label={hidden.has(g.key) ? '显示分组' : '隐藏分组'} onClick={() => toggleG(g.key)}><Icon name={hidden.has(g.key) ? 'eyeOff' : 'eye'} size={16} /></span>
+          </div>
+        ))}
+      </div>
+      <div className="ink-menu-sep" />
+      <div className="ink-menu-group">
+        <div className="ink-menu-item is-danger" role="button" onClick={() => { updateView(db.id, view.id, { group: undefined, groupOpts: undefined }, 'remove group'); close(); }}><span className="ink-menu-icon"><Icon name="trash" size={16} /></span><span>删除分组</span></div>
+      </div>
+    </div>
+  );
+}
+function GroupList({ db, view, ids, onPick }: { db: Block; view: View; ids: string[]; onPick: (g?: string) => void }) {
   const [q, setQ] = useState(''); const s = schemaOf(db);
-  const pick = (g?: string) => { updateView(db.id, view.id, { group: g }, 'group'); close(); };
   return <>
     <div className="ink-menu-search-wrap" style={{ paddingTop: 4 }}><input className="ink-menu-search" data-autofocus placeholder="搜索属性…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
     <div className="ink-menu-group">
-      {!q && <div className="ink-menu-item" onClick={() => pick(undefined)}><span style={{ flex: 1 }}>无</span>{!view.group && <Icon name="check" size={16} />}</div>}
-      {ids.filter((id) => !q || s[id].name.toLowerCase().includes(q.toLowerCase())).map((id) => <div key={id} className="ink-menu-item" onClick={() => pick(id)}><span className="ink-menu-icon"><PropIcon type={s[id].type} /></span><span style={{ flex: 1 }}>{s[id].name}</span>{view.group === id && <Icon name="check" size={16} />}</div>)}
+      {!q && <div className="ink-menu-item" onClick={() => onPick(undefined)}><span style={{ flex: 1 }}>无</span>{!view.group && <Icon name="check" size={16} />}</div>}
+      {ids.filter((id) => !q || s[id].name.toLowerCase().includes(q.toLowerCase())).map((id) => <div key={id} className="ink-menu-item" data-prop={id} onClick={() => onPick(id)}><span className="ink-menu-icon"><PropIcon type={s[id].type} /></span><span style={{ flex: 1 }}>{s[id].name}</span>{view.group === id && <Icon name="check" size={16} />}</div>)}
     </div>
   </>;
 }

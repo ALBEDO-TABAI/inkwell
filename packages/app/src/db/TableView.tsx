@@ -117,7 +117,7 @@ export function TableView({ ctx }: { ctx: DbCtx }) {
             <div className="ink-tv-ghead" onClick={() => setCollapsed((c) => ({ ...c, [g.key]: !c[g.key] }))}>
               <span className={'ink-tv-gtoggle' + (collapsed[g.key] ? '' : ' is-open')}><Icon name="chevronRight" size={14} /></span>
               {schema[view.group!]?.type === 'status' ? <StatusPill label={g.label} color={g.color} /> : g.key ? <Tag label={g.label} color={g.color} /> : <span className="ink-muted">{g.label}</span>}
-              <span className="ink-tv-gcount">{g.rows.length}</span>
+              {view.groupOpts?.showCount !== false && <span className="ink-tv-gcount">{g.rows.length}</span>}
             </div>
             {!collapsed[g.key] && <>
               {header}

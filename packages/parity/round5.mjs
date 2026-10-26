@@ -49,6 +49,23 @@ T.fileProp = async () => {
   await page.evaluate(() => window.__ink.setActiveView('page-db', 'view-3')); await page.waitForTimeout(300);
   ok(!!(await page.$('.ink-gv-card[data-row-id="row-01"] .ink-gv-cover img')), 'gallery card uses the image as its cover');
 };
+T.groupPanel = async () => {
+  await go('page-db', '&sidebar=closed');
+  await page.evaluate(async () => { const m = await import('/src/db/menus.tsx'); const db = window.__ink.store.get('page-db'); m.openGroupPanel(document.querySelector('.ink-main .ink-db-tools'), db, db.props.views[0]); });
+  await page.waitForTimeout(300);
+  await page.click('.ink-group-panel .ink-menu-item[data-prop="category"]'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-main .ink-tv-group')).length === 3, 'group by Category → 3 table groups');
+  ok(!!(await page.$('.ink-group-panel .ink-gp-groups')), 'panel switches to the group options page');
+  await page.click('.ink-gp-groups [data-group-key="Alpha"] .ink-gp-eye'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-main .ink-tv-group')).length === 2, 'hiding Alpha leaves 2 groups');
+  await page.click('.ink-group-panel .ink-menu-item:has-text("排序")'); await page.waitForTimeout(200); await page.click('[data-item-id="gs-desc"]'); await page.waitForTimeout(300);
+  const labels = await page.$$eval('.ink-main .ink-tv-group', (gs) => gs.map((g) => g.dataset.groupKey || g.querySelector('.ink-tag')?.textContent));
+  ok(labels.join(',') === 'Gamma,Beta', 'groups sorted descending: ' + labels.join(','));
+  await page.click('.ink-group-panel .ink-menu-item:has-text("显示聚合")'); await page.waitForTimeout(200);
+  ok(!(await page.$('.ink-main .ink-tv-gcount')), 'counts hidden');
+  await page.click('.ink-group-panel .ink-menu-item:has-text("删除分组")'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-main .ink-tv-group')).length === 0, 'remove grouping');
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

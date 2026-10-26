@@ -41,7 +41,7 @@ export function BoardView({ ctx }: { ctx: DbCtx }) {
               <div className="ink-bv-head">
                 {gp?.type === 'status' ? <span className="ink-bv-pill" style={{ background: `var(--ink-${c}-background-tertiary-translucent)`, color: `var(--ink-${c}-text-primary)` }}><span className="ink-status-dot" style={{ background: `var(--ink-status-dot-${c})` }} />{g.label}</span>
                   : g.key ? <Tag label={g.label} color={g.color} /> : <span className="ink-bv-none">{g.label}</span>}
-                <span className="ink-bv-count" style={{ color: c === 'gray' ? 'var(--ink-gray-text-primary)' : `var(--ink-${c}-text-secondary)` }}>{g.rows.length}</span>
+                {view.groupOpts?.showCount !== false && <span className="ink-bv-count" style={{ color: c === 'gray' ? 'var(--ink-gray-text-primary)' : `var(--ink-${c}-text-secondary)` }}>{g.rows.length}</span>}
               </div>
               <div className="ink-bv-cards">
                 {g.rows.map((r) => (
