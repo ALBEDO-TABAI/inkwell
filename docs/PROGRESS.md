@@ -65,7 +65,7 @@ npm run parity         # every harness (packages/parity/run.mjs [job…]); resul
   - v1 21:45 JST (pre-M4) md5 59cedbcf2a33597b69b9cd433263470a
   - v2 22:26 JST from 0915893 (M3 + M4) md5 0de66e7361477ab8158e590497e394d3
   - v3 22:54 JST from df41571 (+ history, relation/rollup, templates, `[[` fix) md5 437b1772530885d411c82e8ff01a1292
-  - v4 23:53 JST from 77ad0f2 (0.4.0: round-5 gaps, M6, M7, motion) md5 0495113c7a8dd53a434e429fd9f834fa, 120,438,935 bytes, parts 00–04 (25 MB), `/workspace/dist-parts/MD5SUMS-v4.txt`
+  - v4 00:02 JST 10-27 from c2e194b (0.4.0: round-5 gaps, M6, M7, motion, docked group panel, resizer fix) md5 b9c4d3304abf41a57d6c3e24bb8a5ce4, 120,439,114 bytes, parts 00–04 (25 MB), `/workspace/dist-parts/MD5SUMS-v4.txt`
 - [x] M3: sub-pages, link to page, @ page/person/date mentions, `[[`, back/forward (⌘[ / ⌘]), side peek 660 / center peek 960×680 r12 (Alt / Alt+Shift click on page links, rows), page menu (appearance, lock, trash, move, duplicate), page lock (read-only editables, 已锁定 chip), trash search / restore / delete, find in page (⌘F, highlights, n/m, Enter / ⇧Enter)
 - [x] M4: `packages/app/src/db/` — inline + full-page DBs, 13 property types (text, number, select, multi, status, date, person, checkbox, URL, email, phone, formula, created time), Table / Board / List / Gallery S-M-L views, filter / sort / group, calculations, cell editors, header / type / new-view / settings menus, view tabs with overflow, row peek; REA DB fixture 14 props × 12 rows
   - `db.mjs` pixel parity (20 cases × light/dark) and `db-geometry.mjs` (42/44 within 1px vs computed/db_*.json); `m3m4.mjs` behaviour checks 26/26
@@ -79,6 +79,6 @@ npm run parity         # every harness (packages/parity/run.mjs [job…]); resul
 - [x] Motion parity: `styles/motion.css` + animated sidebar width (cef186d); `motion.mjs` reads live Web Animations and records frame strips (`packages/parity/out/motion/`), 13/13 vs SPEC timings
 
 ## Next
-1. Side-by-sides for round 5/M6/M7 in docs/parity/round4/.
+1. Full-bleed tables (2 geometry misses), toolbar x −1.9px.
 2. Full-bleed tables (reference geometry), multiple data sources, sharing/publish UI (local only).
 3. Signing / notarisation; real update channel.
