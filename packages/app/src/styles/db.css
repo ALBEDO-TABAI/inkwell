@@ -369,3 +369,8 @@ body.is-col-resizing { cursor: col-resize !important; user-select: none; }
 .ink-trash-top { position: relative; }
 .ink-trash-clear { position: absolute; right: 20px; top: 18px; width: 16px; height: 16px; border-radius: 50%; border: 0; padding: 0; background: var(--ink-icon-tertiary, rgba(55,53,47,.35)); color: var(--ink-background-primary, #fff); display: flex; align-items: center; justify-content: center; cursor: pointer; }
 .ink-trash-empty > div:last-child:not(.ink-trash-empty-title) { color: var(--ink-text-secondary); }
+/* calendar grid: ref left border sits at the content edge (374), cells start 1px in, no extra gap under weekdays */
+.ink-cal { padding-left: 104px; }
+.ink-cal-wd { margin-left: 1px; }
+.ink-cal-grid { margin-top: 0; }
+.ink-cal-day.is-today { right: 4px; }

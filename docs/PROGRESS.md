@@ -61,9 +61,16 @@ npm run parity         # every harness (packages/parity/run.mjs [job…]); resul
 - [x] docs/PARITY.md (all harness results, side-by-sides, accepted differences)
 - [x] Electron shell: window + tab views, native menus (51/51 vs B02b), tab context menu, state restore, SQLite (WAL) + JSON fallback, cross-tab live sync, new-tab palette, deep links (`inkwell://page/<id>`), troubleshooting menu; `electron.mjs` 20/20
 
-## Next (M3+)
-1. Databases: table/board/list/gallery views on `collection_view_page` (the REA DB fixture already exists), properties, filters/sorts.
-2. Tab bar polish on macOS (traffic-light inset verified on a Mac capture), tab drag between windows, dark-theme Electron captures.
-3. Comments, page history, sharing/publish UI (local only), export (Markdown/HTML/PDF via printToPDF).
-4. Tabs block; `@今天` ghost placeholder; emoji ranking by usage.
-5. Packaging (electron-builder: dmg/AppImage/nsis), auto-update stub, crash reporter wiring.
+- [x] Mac test build: `scripts/build-mac.sh` (electron-builder zip arm64 on Linux, rcodesign ad-hoc, symlink-safe zip, 25 MB parts, md5); see docs/MAC_TEST.md
+  - v1 21:45 JST (pre-M4) md5 59cedbcf2a33597b69b9cd433263470a
+  - v2 22:26 JST from 0915893 (M3 + M4) md5 0de66e7361477ab8158e590497e394d3
+- [x] M3: sub-pages, link to page, @ page/person/date mentions, `[[`, back/forward (⌘[ / ⌘]), side peek 660 / center peek 960×680 r12 (Alt / Alt+Shift click on page links, rows), page menu (appearance, lock, trash, move, duplicate), page lock (read-only editables, 已锁定 chip), trash search / restore / delete, find in page (⌘F, highlights, n/m, Enter / ⇧Enter)
+- [x] M4: `packages/app/src/db/` — inline + full-page DBs, 13 property types (text, number, select, multi, status, date, person, checkbox, URL, email, phone, formula, created time), Table / Board / List / Gallery S-M-L views, filter / sort / group, calculations, cell editors, header / type / new-view / settings menus, view tabs with overflow, row peek; REA DB fixture 14 props × 12 rows
+  - `db.mjs` pixel parity (20 cases × light/dark) and `db-geometry.mjs` (42/44 within 1px vs computed/db_*.json); `m3m4.mjs` behaviour checks 26/26
+- [x] M5 (partial): Calendar and Timeline views (drag to move dates, today line, month labels)
+
+## Next
+1. Page history modal (B07_page_history), help / updates panels (B07).
+2. Relation / rollup / files properties; multiple data sources; view drag reorder; timeline zoom levels.
+3. Comments, sharing/publish UI (local only), export (HTML/PDF via printToPDF).
+4. Signing / notarisation, auto-update stub.

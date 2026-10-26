@@ -9,4 +9,4 @@ cd packages/desktop && rm -rf release && npm run dist:mac
 "$RCODESIGN" sign release/mac-arm64/Inkwell.app >/dev/null   # ad-hoc: Apple Silicon refuses to run unsigned Mach-O
 mkdir -p "$OUT" && rm -f "$OUT/$NAME".zip*
 (cd release/mac-arm64 && python3 ../../../../scripts/zip-app.py . Inkwell.app "$OUT/$NAME.zip")
-cd "$OUT" && split -b 25M -d -a 2 "$NAME.zip" "$NAME.zip.part" && md5sum "$NAME.zip" "$NAME.zip.part"* > MD5SUMS.txt && cat MD5SUMS.txt
+cd "$OUT" && split -b 25M -d -a 2 "$NAME.zip" "$NAME.zip.part" && md5sum "$NAME.zip" "$NAME.zip.part"* > "MD5SUMS-${NAME##*-}.txt" && cat MD5SUMS-v*.txt > MD5SUMS.txt && cat "MD5SUMS-${NAME##*-}.txt"
