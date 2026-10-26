@@ -25,7 +25,7 @@ const REG = {
   synced: L.RefreshCcw, breadcrumb: L.ChevronsRight, tab: L.PanelTop, arrowLeft: L.ArrowLeft, arrowRight: L.ArrowRight,
   sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, panelRight: L.PanelRight, filterCircle: L.ListFilter, caseSensitive: L.CaseSensitive, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
   turnInto: L.Repeat2, paintBucket: L.PaintBucket, file: L.File, info: L.Info, eye: L.Eye, user: L.User,
-  th1: L.Heading1, th2: L.Heading2, th3: L.Heading3, th4: L.Heading4,
+  plusCircle: L.CirclePlus, th1: L.Heading1, th2: L.Heading2, th3: L.Heading3, th4: L.Heading4,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };
 

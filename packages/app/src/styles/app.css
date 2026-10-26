@@ -426,12 +426,17 @@ body.is-dragging-blocks .ink-handles { opacity: 0; }
 .ink-slash-footer { border-top: 1px solid var(--ink-border-primary-translucent); padding: 5px 4px 4px; }
 .ink-slash-footer-row { display: flex; align-items: center; justify-content: space-between; height: 32px; font-size: 14px; line-height: 16.8px; padding: 0 8px; border-radius: 6px; cursor: pointer; }
 .ink-slash-footer-row:hover { background: var(--ink-background-interactive-translucent); }
-.ink-mention-item { min-height: 32px; }
+.ink-mention-item { min-height: 28px; }
 .ink-mention-label { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ink-mention-sub { color: var(--ink-text-tertiary); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-.ink-emoji-inline { background: var(--ink-background-elevated); border-radius: 10px; box-shadow: var(--ink-shadow-outline-lg); padding: 6px; width: 396px; }
+.ink-mention-lines { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.ink-mention-item.has-sub { height: 46px; }
+.ink-mention-inline-sub { color: var(--ink-text-secondary); font-weight: 400; }
+.ink-mention-sub { color: var(--ink-text-tertiary); font-size: 12px; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+.ink-emoji-inline { background: var(--ink-background-elevated); border-radius: 10px; box-shadow: var(--ink-shadow-outline-lg); padding: 6px 13px; width: 410px; }
 .ink-emoji-inline.is-empty { display: none; }
 .ink-emoji-inline-grid { display: grid; grid-template-columns: repeat(12, 32px); }
+.ink-emoji-more { font-size: 14px; color: var(--ink-icon-secondary); }
+.ink-emoji-more > svg { width: 24px; height: 24px; padding: 3px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--ink-border-primary); box-sizing: border-box; }
 .ink-emoji-inline-name { font-size: 12px; color: var(--ink-text-secondary); padding: 6px 4px 0; }
 .ink-emoji-cell { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 24px; cursor: pointer; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
 .ink-emoji-cell:hover, .ink-emoji-cell.is-active { background: var(--ink-background-interactive-translucent); }
@@ -467,22 +472,27 @@ body.is-dragging-blocks .ink-handles { opacity: 0; }
 .ink-swatch.is-current { box-shadow: inset 0 0 0 2px var(--ink-text-primary); }
 
 /* emoji picker */
-.ink-emoji-picker { width: 408px; height: 390px; background: var(--ink-background-elevated); border-radius: 10px; box-shadow: var(--ink-shadow-outline-lg); display: flex; flex-direction: column; overflow: hidden; font-size: 14px; }
+.ink-emoji-picker { width: 410px; height: 390px; background: var(--ink-background-elevated); border-radius: 10px; box-shadow: var(--ink-shadow-outline-lg); display: flex; flex-direction: column; overflow: hidden; font-size: 14px; }
 .ink-ep-tabs { display: flex; align-items: center; gap: 2px; padding: 6px 8px 0; box-shadow: inset 0 -1px 0 var(--ink-border-primary-translucent); }
 .ink-ep-tab { padding: 6px 8px 8px; cursor: pointer; color: var(--ink-text-secondary); position: relative; white-space: nowrap; }
 .ink-ep-tab.is-active { color: var(--ink-text-primary); }
 .ink-ep-tab.is-active::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; background: var(--ink-text-primary); }
 .ink-ep-spacer { flex: 1; }
-.ink-ep-search { display: flex; gap: 8px; padding: 10px 12px 6px; align-items: center; }
-.ink-ep-input { flex: 1; }
-.ink-ep-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--ink-border-primary-translucent); cursor: pointer; font-size: 18px; color: var(--ink-icon-secondary); }
+.ink-ep-search { display: flex; gap: 0; padding: 10px 12px 6px; align-items: center; }
+.ink-ep-input { flex: 1; display: flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border-radius: 6px; background: var(--ink-background-secondary); box-shadow: inset 0 0 0 1px var(--ink-border-primary); color: var(--ink-icon-secondary); margin-right: 8px; }
+.ink-ep-input:focus-within { box-shadow: 0 0 0 1px #2383E2, inset 0 0 0 1px #2383E2; }
+.ink-ep-input input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 14px; color: var(--ink-text-primary); padding: 0; }
+.ink-ep-input input::placeholder { color: var(--ink-text-tertiary); }
+.ink-ep-btn { width: 28px; height: 28px; flex: none; border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 1px var(--ink-border-primary-translucent); cursor: pointer; font-size: 18px; color: var(--ink-icon-secondary); }
 .ink-ep-btn:hover { background: var(--ink-background-interactive); }
 .ink-ep-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 0 12px 6px; }
-.ink-ep-label { font-size: 12px; font-weight: 500; color: var(--ink-text-secondary); padding: 8px 0 4px; }
+.ink-ep-label { font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-text-secondary); padding: 20px 0 8px; }
+.ink-ep-section + .ink-ep-section .ink-ep-label { padding-top: 10px; }
 .ink-ep-grid { display: grid; grid-template-columns: repeat(12, 32px); }
-.ink-ep-cats { display: flex; justify-content: space-between; padding: 4px 8px; box-shadow: inset 0 1px 0 var(--ink-border-primary-translucent); }
-.ink-ep-cat { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ink-icon-secondary); cursor: pointer; }
-.ink-ep-cat:hover { background: var(--ink-background-interactive-translucent); }
+.ink-ep-cats { display: flex; justify-content: space-between; padding: 8px 12px 10px; box-shadow: inset 0 1px 0 var(--ink-border-primary-translucent); }
+.ink-ep-cat { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--ink-icon-secondary); cursor: pointer; }
+.ink-ep-cat:hover, .ink-ep-cat.is-active { background: var(--ink-background-interactive-translucent); }
+.ink-ep-skin { box-shadow: none; }
 .ink-ep-upload { padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
 /* link popover / hover */

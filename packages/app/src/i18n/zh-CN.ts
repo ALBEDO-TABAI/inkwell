@@ -331,7 +331,7 @@ export const zhCN = {
   'emoji.random': '随机',
   'emoji.skin': '选择肤色',
   'emoji.recent': '最近',
-  'emoji.cat.people': '人物',
+  'emoji.more': '更多表情', 'emoji.custom': '自定义表情', 'emoji.cat.people': '人物',
   'emoji.cat.nature': '动物与自然',
   'emoji.cat.food': '食物与饮料',
   'emoji.cat.activity': '活动',

@@ -24,7 +24,7 @@ export const CATEGORIES: { key: string; groups: number[]; icon: string }[] = [
   { key: 'activity', groups: [6], icon: 'ball' },
   { key: 'travel', groups: [5], icon: 'plane' },
   { key: 'objects', groups: [7], icon: 'bulb' },
-  { key: 'symbols', groups: [8], icon: 'symbols' },
+  { key: 'symbols', groups: [8], icon: 'circleCheck' },
   { key: 'flags', groups: [9], icon: 'flag' },
 ];
 

@@ -45,7 +45,7 @@ export function EmojiPicker({ close, onPick, onRemove }: { close: () => void; on
       {tab === 'emoji' ? (
         <>
           <div className="ink-ep-search">
-            <div className="ink-ep-input"><Icon name="search" size={14} stroke={1.8} /><input data-autofocus placeholder={t('emoji.filter')} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { const first = sections[0]?.items[0]; if (first) pick(first); } }} /></div>
+            <div className="ink-ep-input"><Icon name="search" size={16} stroke={1.6} /><input data-autofocus placeholder={t('emoji.filter')} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { const first = sections[0]?.items[0]; if (first) pick(first); } }} /></div>
             <span className="ink-ep-btn" title={t('emoji.random')} onClick={() => pick(randomEmoji())}><Icon name="shuffle" size={16} stroke={1.8} /></span>
             <span className="ink-ep-btn ink-ep-skin" title={t('emoji.skin')} onClick={() => setSkin((s) => (s + 1) % SKINS.length)}>{SKINS[skin]}</span>
           </div>
@@ -59,8 +59,10 @@ export function EmojiPicker({ close, onPick, onRemove }: { close: () => void; on
             {q && !sections[0].items.length && <div className="ink-menu-empty">{t('common.noResults')}</div>}
           </div>
           <div className="ink-ep-cats">
-            <span className="ink-ep-cat" onClick={() => jump('recent')}><Icon name="clock" size={16} stroke={1.7} /></span>
-            {CATEGORIES.map((c) => <span key={c.key} className="ink-ep-cat" title={t('emoji.cat.' + c.key)} onClick={() => jump(c.key)}><Icon name={c.icon as IconName} size={16} stroke={1.7} /></span>)}
+            <span className="ink-ep-cat is-active" onClick={() => jump('recent')}><Icon name="clock" size={20} stroke={1.5} /></span>
+            {CATEGORIES.map((c) => <span key={c.key} className="ink-ep-cat" title={t('emoji.cat.' + c.key)} onClick={() => jump(c.key)}><Icon name={c.icon as IconName} size={20} stroke={1.5} /></span>)}
+            <span className="ink-ep-cat" title={t('emoji.custom')} onClick={() => setTab('upload')}><Icon name="apps" size={20} stroke={1.5} /></span>
+            <span className="ink-ep-cat ink-ep-cat-add" title={t('emoji.uploadButton')} onClick={() => setTab('upload')}><Icon name="plusCircle" size={20} stroke={1.5} /></span>
           </div>
         </>
       ) : tab === 'icons' ? (
