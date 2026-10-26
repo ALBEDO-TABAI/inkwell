@@ -54,10 +54,19 @@ export function Editable({ block, className, placeholder, alwaysPlaceholder, tag
       else { lastRendered.current = JSON.stringify(normalize(title || [])); el.classList.toggle('is-empty', !rtPlain(title).length); }
     }
   });
-  useEffect(() => {
-    if (value === undefined) registerEditable(block.id, ref.current);
-    return () => { if (value === undefined) registerEditable(block.id, null); };
-  }, [block.id]);
+  // Register on every commit: the element can be recreated when the tag changes (e.g. text → heading).
+  const registered = useRef<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    if (value !== undefined) return;
+    const el = ref.current;
+    if (el && registered.current !== el) {
+      const was = registered.current && document.activeElement === registered.current;
+      registerEditable(block.id, el, registered.current);
+      registered.current = el;
+      if (was) el.focus({ preventScroll: true });
+    }
+  });
+  useLayoutEffect(() => () => { if (value === undefined) registerEditable(block.id, null, registered.current); }, [block.id]);
   useEffect(() => { if (code) render(ref.current!, title, true); }, [lang]);
 
   const commit = () => {

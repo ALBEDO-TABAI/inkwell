@@ -32,7 +32,7 @@ export function colorMenuSpec(ids: string[]): MenuSpec {
   };
 }
 
-export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect, opts: { placement?: 'bottom-start' | 'left-start' } = {}) {
+export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect, opts: { placement?: 'bottom-start' | 'left-start' | 'left-center' } = {}) {
   const first = store.get(ids[0]); if (!first) return;
   setBlockSelection(ids);
   const k = kindOfBlock(first.type, first.format?.toggleable);
@@ -64,7 +64,7 @@ export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect,
       ],
     ],
     footer: <><EditedFooter block={first} /><div className="ink-edited-line">{t('common.wordsChars', { words: c.words || countInline(first.id).words, chars: c.chars || countInline(first.id).chars })}</div></>,
-  }), { placement: opts.placement || 'bottom-start', offset: 2, onClose: () => { /* keep selection */ } });
+  }), { placement: opts.placement || 'bottom-start', offset: opts.placement === 'left-center' ? 5 : 2, onClose: () => { /* keep selection */ } });
   void focusBlock;
 }
 function countInline(id: string) {

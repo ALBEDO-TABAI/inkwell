@@ -6,12 +6,12 @@ import { getSelectionOffsets, setSelectionOffsets, textLength } from './caret';
 export const editables = new Map<string, HTMLElement>();
 const pendingFocus = new Map<string, { start: number | 'end'; end?: number | 'end' }>();
 
-export function registerEditable(id: string, el: HTMLElement | null) {
+export function registerEditable(id: string, el: HTMLElement | null, prev?: HTMLElement | null) {
   if (el) {
     editables.set(id, el);
     const p = pendingFocus.get(id);
-    if (p) { pendingFocus.delete(id); requestAnimationFrame(() => applyFocus(id, p.start, p.end)); }
-  } else editables.delete(id);
+    if (p) { pendingFocus.delete(id); applyFocus(id, p.start, p.end); }
+  } else if (!prev || editables.get(id) === prev) editables.delete(id);
 }
 
 function applyFocus(id: string, start: number | 'end', end?: number | 'end') {
@@ -34,10 +34,16 @@ export function scrollIntoViewIfNeeded(el: HTMLElement) {
 /** Focus a block's editable at an offset. Works even if the block mounts on the next frame. */
 export function focusBlock(id: string, start: number | 'end' = 'end', end?: number | 'end') {
   clearBlockSelection();
-  if (editables.has(id)) { if (!applyFocus(id, start, end)) pendingFocus.set(id, { start, end }); }
-  else pendingFocus.set(id, { start, end });
-  // retry once after React commit
-  requestAnimationFrame(() => { if (pendingFocus.has(id) && editables.has(id)) { const p = pendingFocus.get(id)!; pendingFocus.delete(id); applyFocus(id, p.start, p.end); } });
+  // Keep the request pending until the next frame: if React swaps the editable element (e.g. a type change)
+  // the newly registered element picks it up in registerEditable.
+  pendingFocus.set(id, { start, end });
+  if (editables.has(id)) applyFocus(id, start, end);
+  requestAnimationFrame(() => {
+    const p = pendingFocus.get(id); if (!p) return;
+    pendingFocus.delete(id);
+    const el = editables.get(id);
+    if (el && document.activeElement !== el) applyFocus(id, p.start, p.end);
+  });
 }
 
 /** The block whose editable currently has the DOM selection. */

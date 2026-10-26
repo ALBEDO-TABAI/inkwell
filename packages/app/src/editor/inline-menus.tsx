@@ -33,7 +33,7 @@ export function openInlineMenu(kind: InlineKind, blockId: string, start: number,
   const lineBottom = blockEl ? Math.max(anchor.bottom, Math.min(blockEl.getBoundingClientRect().bottom, anchor.bottom + 4)) : anchor.bottom;
   openPopover({
     id: 'inline-menu', noFocus: true, placement: 'bottom-start', offset: 0,
-    anchor: { left: anchor.left - 6.5, right: anchor.left, top: anchor.top - 4, bottom: lineBottom + (kind === 'slash' ? 2 : 4) },
+    anchor: { left: anchor.left - (kind === 'slash' ? 12 : 6.5), right: anchor.left, top: anchor.top - 4, bottom: lineBottom + (kind === 'slash' ? 7 : 4) },
     onClose: () => { session = null; keyHandler = null; emit(); markSlash(null); },
     render: (close) => <InlineHost close={close} />,
   });
@@ -128,7 +128,7 @@ function SlashMenu({ s, close }: { s: Session; close: () => void }) {
                 return (
                   <div key={sec.id + k.id} role="option" className={'ink-slash-item' + (my === active ? ' is-active' : '')} onMouseMove={() => setActive(my)} onMouseDown={(e) => { e.preventDefault(); choose(k); }}>
                     <span className="ink-slash-icon"><Icon name={k.icon} size={20} stroke={1.5} /></span>
-                    <span className="ink-slash-text">{k.label()}</span>
+                    <span className="ink-slash-text">{k.label()}{k.sub && <span className="ink-slash-sub"> · {k.sub()}</span>}{k.badge && <span className="ink-badge-new">{k.badge()}</span>}</span>
                     {k.hint && <span className="ink-slash-hint">{k.hint}</span>}
                   </div>
                 );

@@ -9,6 +9,8 @@ import { openInlineMenu } from './inline-menus';
 import { openEmojiPicker } from './emoji-picker';
 import { openPagePicker } from './page-picker';
 import { openEquationEditor } from './equation';
+import { toast } from '../ui/toast';
+import { t } from '../i18n';
 
 const TEXTISH: BlockType[] = ['text', 'header', 'sub_header', 'sub_sub_header', 'header_4', 'bulleted_list', 'numbered_list', 'to_do', 'toggle', 'quote', 'callout'];
 
@@ -25,6 +27,11 @@ export function applyKind(id: string, k: BlockKind, title: RichText, at: number)
     setTitle(id, insertText(title, at, '@'), false);
     focusBlock(id, at + 1);
     requestAnimationFrame(() => openInlineMenu('mention', id, at, '@'));
+    return;
+  }
+  if (k.special === 'ai') {
+    setTitle(id, title, false); focusBlock(id, at);
+    toast(t('toast.aiUnavailable'));
     return;
   }
   if (k.special === 'emoji') {
@@ -88,7 +95,7 @@ export function applyKind(id: string, k: BlockKind, title: RichText, at: number)
   if (k.type === 'equation') extra.props = { tex: '' };
   const nid = createBlockAt(id, empty, k.type, extra, true);
   if (k.type === 'equation') requestAnimationFrame(() => openEquationEditor({ blockId: nid }));
-  else if (k.type === 'image' || k.type === 'bookmark' || k.type === 'video') requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-block-id="${nid}"] .ink-media-empty`)?.click());
+  else if (k.type === 'image' || k.type === 'bookmark' || k.type === 'video' || k.type === 'embed') requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-block-id="${nid}"] .ink-media-empty`)?.click());
   else setBlockSelection([]);
 }
 

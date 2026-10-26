@@ -341,7 +341,7 @@ function BlockHandles({ pageId, pageRef }: { pageId: string; pageRef: React.RefO
         <Icon name="plus" size={16} stroke={1.8} />
       </div>
       <div role="button" ref={handle} className="ink-block-handle" aria-label="drag" onMouseDown={(e) => { if (!getBlockSelection().includes(h.id)) { (document.activeElement as HTMLElement)?.blur?.(); } void e; }}
-        onClick={(e) => { const sel = getBlockSelection(); const ids = sel.includes(h.id) ? sel : [h.id]; openBlockMenuFor(ids, (e.currentTarget as HTMLElement), { placement: 'left-start' }); }}
+        onClick={(e) => { const sel = getBlockSelection(); const ids = sel.includes(h.id) ? sel : [h.id]; openBlockMenuFor(ids, (e.currentTarget as HTMLElement), { placement: 'left-center' }); }}
         {...tip(<><b>{t('ed.handle.drag')}</b><br />{t('ed.handle.click')}</>, undefined, 'bottom')}>
         <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden>{[2, 7, 12].flatMap((y) => [2.5, 7.5].map((x) => <circle key={x + '-' + y} cx={x} cy={y + 0.5} r="1.35" fill="currentColor" />))}</svg>
       </div>

@@ -9,9 +9,13 @@ export interface BlockKind {
   icon: IconName;
   keywords: string[];
   hint?: string; // markdown shortcut shown at right
+  /** grey secondary label after the name, e.g. "· 嵌入" */
+  sub?: () => string;
+  /** small blue badge, e.g. "新" */
+  badge?: () => string;
   toggleable?: boolean;
   /** creates something other than a plain type switch */
-  special?: 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage';
+  special?: 'columns2' | 'columns3' | 'columns4' | 'page' | 'inlineEquation' | 'mentionPerson' | 'mentionPage' | 'date' | 'emoji' | 'linkToPage' | 'ai';
   turnInto?: boolean;
 }
 
@@ -50,14 +54,16 @@ export const BLOCK_KINDS: BlockKind[] = [
   { id: 'mentionPage', type: 'text', label: () => t('b.mentionPage'), icon: 'pageLink', keywords: ['mention page', 'page link', '[['], special: 'mentionPage' },
   { id: 'date', type: 'text', label: () => t('b.date'), icon: 'calendar', keywords: ['date', 'reminder', 'today', 'tomorrow', 'now'], special: 'date' },
   { id: 'emoji', type: 'text', label: () => t('b.emoji'), icon: 'smile', keywords: ['emoji', 'emoticon', ':'], special: 'emoji' },
+  { id: 'aiNotes', type: 'text', label: () => t('b.aiNotes'), icon: 'aiNotes', keywords: ['ai meeting notes', 'ai notes', 'transcribe', 'meeting', 'suji'], special: 'ai' },
+  { id: 'embed', type: 'embed', label: () => t('b.embed'), sub: () => t('b.embedSub'), badge: () => t('b.badgeNew'), icon: 'embedHtml', keywords: ['html', 'embed', 'iframe', 'qianru'] },
   { id: 'inlineEquation', type: 'text', label: () => t('b.inlineEquation'), icon: 'sqrt', keywords: ['inline equation', 'inline math', '$'], special: 'inlineEquation' },
 ];
 export const kind = (id: string) => BLOCK_KINDS.find((k) => k.id === id)!;
 
 export const SLASH_SECTIONS: { id: string; label: () => string; items: string[] }[] = [
-  { id: 'suggested', label: () => t('slash.suggested'), items: ['callout', 'code', 'page', 'toggle'] },
+  { id: 'suggested', label: () => t('slash.suggested'), items: ['aiNotes', 'embed', 'page', 'toggle'] },
   { id: 'basic', label: () => t('slash.basic'), items: ['text', 'h1', 'h2', 'h3', 'h4', 'bulleted', 'numbered', 'todo', 'toggle', 'page', 'callout', 'quote', 'table', 'divider', 'linkToPage'] },
-  { id: 'media', label: () => t('slash.media'), items: ['image', 'video', 'bookmark', 'code'] },
+  { id: 'media', label: () => t('slash.media'), items: ['image', 'video', 'bookmark', 'code', 'embed'] },
   { id: 'advanced', label: () => t('slash.advanced'), items: ['toc', 'equation', 'breadcrumb', 'synced', 'toggleH1', 'toggleH2', 'toggleH3', 'toggleH4'] },
   { id: 'inline', label: () => t('slash.inline'), items: ['mentionPerson', 'mentionPage', 'date', 'emoji', 'inlineEquation'] },
   { id: 'layout', label: () => t('slash.layout'), items: ['columns2', 'columns3', 'columns4'] },

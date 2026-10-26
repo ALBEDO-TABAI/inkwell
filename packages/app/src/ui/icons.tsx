@@ -23,7 +23,7 @@ const REG = {
   shuffle: L.Shuffle, hand: L.Hand, leaf: L.Leaf, carrot: L.Carrot, ball: L.Volleyball, plane: L.Plane, bulb: L.Lightbulb,
   circleCheck: L.CircleCheck, flag: L.Flag, symbols: L.Shapes, wiki: L.BookOpen, bookmark: L.Bookmark, video: L.Video,
   synced: L.RefreshCcw, breadcrumb: L.ChevronsRight, tab: L.PanelTop, arrowLeft: L.ArrowLeft, arrowRight: L.ArrowRight,
-  sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, palette: L.Palette,
+  sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
   turnInto: L.Repeat2, paintBucket: L.PaintBucket, file: L.File, info: L.Info, eye: L.Eye, user: L.User,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };

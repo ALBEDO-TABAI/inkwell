@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import { createPortal } from 'react-dom';
 
 export type Anchor = DOMRect | { left: number; top: number; right: number; bottom: number; width?: number; height?: number };
-export type Placement = 'bottom-start' | 'bottom-end' | 'bottom' | 'top-start' | 'right-start' | 'left-start' | 'top' | 'center';
+export type Placement = 'bottom-start' | 'bottom-end' | 'bottom' | 'top-start' | 'right-start' | 'left-start' | 'left-center' | 'top' | 'center';
 
 export interface PopoverSpec {
   id?: string;
@@ -100,7 +100,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
     const place = () => {
       const a = typeof entry.anchor === 'function' ? entry.anchor() : entry.anchor;
       const w = el.offsetWidth, h = el.offsetHeight;
-      const vw = window.innerWidth, vh = window.innerHeight, off = entry.offset ?? 0, m = 4;
+      const vw = window.innerWidth, vh = window.innerHeight, off = entry.offset ?? 0, m = 12;
       let left = a.left, top = a.bottom + off;
       switch (entry.placement || 'bottom-start') {
         case 'bottom-end': left = a.right - w; break;
@@ -109,6 +109,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
         case 'top': top = a.top - h - off; left = (a.left + a.right) / 2 - w / 2; break;
         case 'right-start': left = a.right + off; top = a.top; if (left + w > vw - m) left = a.left - w - off; break;
         case 'left-start': left = a.left - w - off; top = a.top; break;
+        case 'left-center': left = a.left - w - off; top = (a.top + a.bottom) / 2 - h / 2; break;
         case 'center': left = (vw - w) / 2; top = (vh - h) / 2; break;
       }
       if (entry.placement !== 'center') {
@@ -119,7 +120,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
         left = Math.max(m, Math.min(left, vw - m - w));
         top = Math.max(m, top);
       }
-      setPos({ left: Math.round(left), top: Math.round(top) });
+      setPos({ left, top });
     };
     place();
     const ro = new ResizeObserver(place);

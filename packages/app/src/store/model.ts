@@ -4,7 +4,7 @@ export type BlockType =
   | 'page' | 'text' | 'header' | 'sub_header' | 'sub_sub_header' | 'header_4'
   | 'bulleted_list' | 'numbered_list' | 'to_do' | 'toggle' | 'quote' | 'callout'
   | 'divider' | 'code' | 'equation' | 'column_list' | 'column'
-  | 'image' | 'bookmark' | 'video' | 'table' | 'table_row' | 'table_of_contents'
+  | 'image' | 'bookmark' | 'video' | 'embed' | 'table' | 'table_row' | 'table_of_contents'
   | 'breadcrumb' | 'alias' | 'synced' | 'collection_view_page';
 
 /** Inline marks. Colours are editor colour keys: 'gray' | 'gray_background' etc. */
