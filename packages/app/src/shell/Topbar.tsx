@@ -109,6 +109,7 @@ export function appearanceSpec(pageId: string): MenuSpec {
   };
 }
 
+import { openHistory } from './History';
 export function openPageMenu(el: HTMLElement, pageId: string) {
   openMenu(el.getBoundingClientRect(), () => {
     const p = store.get(pageId)!;
@@ -121,7 +122,7 @@ export function openPageMenu(el: HTMLElement, pageId: string) {
           { id: 'content', label: t('pm.copyContent'), icon: 'copy', onSelect: () => { navigator.clipboard?.writeText(pageToMarkdown(pageId)).catch(() => {}); toast(t('toast.linkCopied').replace('链接', '内容')); } },
           { id: 'dup', label: t('pm.duplicate'), icon: 'duplicate', shortcut: '⌘D', onSelect: () => { const n = duplicateBlock(pageId); if (n) navigate(n); } },
           { id: 'move', label: t('pm.moveTo'), icon: 'move', shortcut: '⌘⇧P', onSelect: () => setTimeout(() => openMoveTo(el, pageId)) },
-          { id: 'history', label: t('pm.history'), icon: 'history' },
+          { id: 'history', label: t('pm.history'), icon: 'history', onSelect: () => setTimeout(() => openHistory(pageId)) },
           { id: 'analytics', label: t('pm.analytics'), icon: 'clock' },
         ],
         [{ id: 'appearance', label: t('pm.appearance'), icon: 'aa', keywords: ['font', 'small', 'full', 'theme', '字体', '小字号', '全宽'], sub: () => appearanceSpec(pageId) }],

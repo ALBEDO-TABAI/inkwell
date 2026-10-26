@@ -6,6 +6,7 @@ import { PageView } from './page/PageView';
 import { OverlayHost, isPopoverOpen } from './ui/overlay';
 import { PeekHost } from './shell/Peek';
 import { FindBar, openFind } from './shell/FindBar';
+import { startHistory } from './app/history';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
 import { openSettings } from './shell/Settings';
@@ -22,6 +23,7 @@ export function App() {
   const sidebarWidth = useUi((s) => s.sidebarWidth);
   const resizing = useUi((s) => s.sidebarResizing);
   const [, force] = useState(0);
+  useEffect(() => startHistory(), []);
   useEffect(() => onLocaleChange(() => force((n) => n + 1)), []);
 
   // global shortcuts

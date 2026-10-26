@@ -91,6 +91,15 @@ await page.keyboard.press('Control+['); await page.waitForTimeout(300);
 ok(await page.evaluate(() => window.__ink.getUi().pageId === 'page-rea'), 'back again');
 await page.keyboard.press('Control+]'); await page.waitForTimeout(300);
 ok(await page.evaluate(() => window.__ink.getUi().pageId === 'page-l1'), 'Cmd+] goes forward');
+
+// version history: restore an older snapshot
+await page.goto(base + '#/p/page-rea'); await page.reload(); await page.waitForFunction(() => window.__inkwellReady); await page.waitForTimeout(400);
+await page.evaluate(async () => { const h = await import('/src/app/history.ts'); const s = window.__ink.store; const id = s.get('page-rea').content.at(-1); h.record('page-rea', Date.now() - 600000); s.transact('e', (tx) => tx.update(id, { title: [['CHANGED']] })); h.record('page-rea'); });
+await page.click('.ink-more-btn'); await page.waitForTimeout(300); await page.click('[data-item-id="history"]'); await page.waitForTimeout(400);
+ok((await page.$$('.ink-hist-item')).length >= 2, 'history lists versions');
+await page.click('.ink-hist-item >> nth=1'); await page.waitForTimeout(200);
+await page.click('.ink-hist-restore'); await page.waitForTimeout(300);
+ok(await page.evaluate(() => { const s = window.__ink.store; const id = s.get('page-rea').content.at(-1); return JSON.stringify(s.get(id).title) !== '[["CHANGED"]]'; }), 'restore brings back the older text');
 // slash inline database
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));
 await browser.close();
