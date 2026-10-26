@@ -1,7 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { Block } from '../store/model';
 import { Icon } from '../ui/icons';
-import { schemaOf, queryRows, addRow, rawValue, setValue, isoOf, parseIso } from './model';
+import { schemaOf, queryRows, addRow, rawValue, setValue, isoOf, parseIso, updateView, type TimelineScale } from './model';
+import { openMenu } from '../ui/menu';
 import { CellValue } from './cells';
 import { defaultsFor, type DbCtx } from './Database';
 
@@ -81,33 +82,48 @@ export function CalendarView({ ctx }: { ctx: DbCtx }) {
 }
 
 /* ---------- timeline ---------- */
-const DAY_W = 12;
+/** timeline scales: px per day, visible range, which days get a tick, and the upper label row */
+export const TL_SCALES: Record<TimelineScale, { label: string; dayW: number; days: number; tick: (d: Date) => boolean; tickLabel: (d: Date) => string; top: 'month' | 'year'; step: number }> = {
+  day: { label: '天', dayW: 72, days: 120, tick: () => true, tickLabel: (d) => `${d.getDate()}日 周${'日一二三四五六'[d.getDay()]}`, top: 'month', step: 7 },
+  week: { label: '周', dayW: 40, days: 180, tick: () => true, tickLabel: (d) => String(d.getDate()), top: 'month', step: 7 },
+  month: { label: '月', dayW: 24, days: 300, tick: (d) => d.getDay() === 1, tickLabel: (d) => String(d.getDate()), top: 'month', step: 14 },
+  quarter: { label: '季度', dayW: 12, days: 400, tick: (d) => d.getDay() === 1, tickLabel: (d) => String(d.getDate()), top: 'month', step: 28 },
+  year: { label: '年', dayW: 3, days: 1100, tick: (d) => d.getDate() === 1, tickLabel: (d) => CN_MONTH[d.getMonth()], top: 'year', step: 91 },
+};
 export function TimelineView({ ctx }: { ctx: DbCtx }) {
   const { db, view } = ctx;
+  const scale = view.timelineScale || 'quarter';
+  const S = TL_SCALES[scale]; const DAY_W = S.dayW;
   const prop = dateProp(ctx);
   const rows = queryRows(db, view, ctx.search);
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const origin = useMemo(() => addDays(today, -180), [isoOf(today)]);
-  const days = 400;
+  const days = S.days;
+  const origin = useMemo(() => addDays(today, -Math.round(days * 0.45)), [isoOf(today), days]);
   const x = (d: Date) => diffDays(d, origin) * DAY_W;
   const scroller = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => { const el = scroller.current; if (el) el.scrollLeft = x(today) - Math.round(el.clientWidth * 0.492); }, []);
+  useLayoutEffect(() => { const el = scroller.current; if (el) el.scrollLeft = x(today) - Math.round(el.clientWidth * 0.492); }, [scale]);
   const [sl, setSl] = useState(0);
-  const ticks: Date[] = []; const months: Date[] = [];
-  for (let i = 0; i < days; i++) { const d = addDays(origin, i); if (d.getDay() === 1) ticks.push(d); if (d.getDate() === 1) months.push(d); }
+  const ticks: Date[] = []; const months: Date[] = []; const years: Date[] = [];
+  for (let i = 0; i < days; i++) { const d = addDays(origin, i); if (S.tick(d)) ticks.push(d); if (d.getDate() === 1) months.push(d); if (d.getDate() === 1 && d.getMonth() === 0) years.push(d); }
   const firstMonday = (m: Date) => { const d = new Date(m); while (d.getDay() !== 1) d.setDate(d.getDate() + 1); return d; };
   const leftDate = addDays(origin, Math.floor(sl / DAY_W) + 2);
   const scrollToday = () => { const el = scroller.current; if (el) el.scrollTo({ left: x(today) - Math.round(el.clientWidth * 0.492), behavior: 'smooth' }); };
+  const topLabels = S.top === 'year'
+    ? years.map((y) => <span key={'y' + isoOf(y)} className="ink-tl-mlabel" style={{ left: x(y) + 4 }}>{y.getFullYear()}年</span>)
+    : months.map((m) => { const at = scale === 'quarter' || scale === 'month' ? firstMonday(m) : m; return <span key={isoOf(m)} className="ink-tl-mlabel" style={{ left: x(at) - (scale === 'quarter' || scale === 'month' ? DAY_W / 2 : -4) }}>{scale === 'quarter' || scale === 'month' ? CN_MONTH[m.getMonth()] : `${m.getFullYear()}年${m.getMonth() + 1}月`}</span>; });
+  const tickX = (d: Date) => (scale === 'day' || scale === 'week' ? x(d) + DAY_W / 2 : scale === 'year' ? x(d) + 4 : x(d));
+  const lines = S.top === 'year' ? years : months;
   return (
     <div className="ink-tl">
       <div className="ink-tl-scroll" ref={scroller} onScroll={(e) => setSl(e.currentTarget.scrollLeft)}>
         <div className="ink-tl-canvas" style={{ width: days * DAY_W, height: 66 + rows.length * 36 + 66 }}>
           <div className="ink-tl-head">
-            {months.map((m) => { const fm = firstMonday(m); return <span key={isoOf(m)} className="ink-tl-mlabel" style={{ left: x(fm) - DAY_W / 2 }}>{CN_MONTH[m.getMonth()]}</span>; })}
-            {ticks.map((d) => <span key={isoOf(d)} className="ink-tl-tick" style={{ left: x(d) }}>{d.getDate()}</span>)}
-            <span className="ink-tl-todaybadge" style={{ left: x(today) }}>{today.getDate()}</span>
+            {topLabels}
+            {ticks.map((d) => <span key={isoOf(d)} className={'ink-tl-tick' + (scale === 'year' ? ' is-left' : '') + ((scale === 'day' || scale === 'week') && (d.getDay() === 0 || d.getDay() === 6) ? ' is-weekend' : '')} style={{ left: tickX(d) }}>{isoOf(d) === isoOf(today) && scale !== 'year' ? '' : S.tickLabel(d)}</span>)}
+            {scale !== 'year' && <span className="ink-tl-todaybadge" style={{ left: tickX(today) }}>{today.getDate()}</span>}
           </div>
-          {months.map((m) => <span key={'l' + isoOf(m)} className="ink-tl-mline" style={{ left: x(m) }} />)}
+          {lines.map((m) => <span key={'l' + isoOf(m)} className="ink-tl-mline" style={{ left: x(m) }} />)}
+          {(scale === 'day' || scale === 'week') && ticks.filter((d) => d.getDay() === 0 || d.getDay() === 6).map((d) => <span key={'w' + isoOf(d)} className="ink-tl-weekend" style={{ left: x(d), width: DAY_W }} />)}
           <span className="ink-tl-todayline" style={{ left: x(today) + DAY_W * nowFrac() }} />
           {prop && rows.map((r, i) => {
             const s = span(r, prop, db); if (!s) return null;
@@ -126,10 +142,10 @@ export function TimelineView({ ctx }: { ctx: DbCtx }) {
         <span style={{ flex: 1 }} />
         <span className="ink-tl-right">
         <button className="ink-cal-manage"><Icon name="calendar" size={14} />在日历中管理</button>
-        <button className="ink-tl-scale">季度<Icon name="chevronDown" size={14} /></button>
-        <button className="ink-cal-nav" aria-label="向前" onClick={() => scroller.current?.scrollBy({ left: -7 * DAY_W * 4, behavior: 'smooth' })}><Icon name="chevronLeft" size={16} /></button>
+        <button className="ink-tl-scale" onClick={(e) => openMenu(e.currentTarget.getBoundingClientRect(), { width: 160, groups: [(Object.keys(TL_SCALES) as TimelineScale[]).map((k) => ({ id: 'sc-' + k, label: TL_SCALES[k].label, checked: k === scale, onSelect: () => updateView(db.id, view.id, { timelineScale: k }, 'timeline scale') }))] }, { placement: 'bottom-end' })}>{S.label}<Icon name="chevronDown" size={14} /></button>
+        <button className="ink-cal-nav" aria-label="向前" onClick={() => scroller.current?.scrollBy({ left: -S.step * DAY_W, behavior: 'smooth' })}><Icon name="chevronLeft" size={16} /></button>
         <button className="ink-cal-today" onClick={scrollToday}>今天</button>
-        <button className="ink-cal-nav" aria-label="向后" onClick={() => scroller.current?.scrollBy({ left: 7 * DAY_W * 4, behavior: 'smooth' })}><Icon name="chevronRight" size={16} /></button>
+        <button className="ink-cal-nav" aria-label="向后" onClick={() => scroller.current?.scrollBy({ left: S.step * DAY_W, behavior: 'smooth' })}><Icon name="chevronRight" size={16} /></button>
         </span>
       </div>
     </div>

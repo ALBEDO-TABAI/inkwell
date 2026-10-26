@@ -9,6 +9,7 @@ import { pageTitle } from '../app/pages';
 
 export type PropType = 'title' | 'text' | 'number' | 'select' | 'multi_select' | 'status' | 'date' | 'person' | 'checkbox' | 'url' | 'email' | 'phone_number' | 'formula' | 'created_time' | 'relation' | 'rollup';
 export interface SelectOption { v: string; c: string; group?: 'todo' | 'doing' | 'done' }
+export type TimelineScale = 'day' | 'week' | 'month' | 'quarter' | 'year';
 export type RollupFn = 'show' | 'count' | 'count_values' | 'sum' | 'average' | 'min' | 'max' | 'range' | 'percent_checked';
 export interface Prop { name: string; type: PropType; options?: SelectOption[]; formula?: string; wrap?: boolean; relation?: { db: string }; rollup?: { relation?: string; target?: string; fn: RollupFn } }
 export type Schema = Record<string, Prop>;
@@ -25,6 +26,7 @@ export interface View {
   frozen?: number;
   calcs?: Record<string, CalcFn>;
   gallerySize?: 'S' | 'M' | 'L';
+  timelineScale?: TimelineScale;
   /** card / list properties shown (board, gallery, list) */
   cardProps?: string[];
   dateProp?: string;

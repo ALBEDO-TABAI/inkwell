@@ -452,3 +452,6 @@ body.is-col-resizing { cursor: col-resize !important; user-select: none; }
 .ink-menu-more { display: none; width: 20px; height: 20px; border-radius: 4px; align-items: center; justify-content: center; color: var(--ink-icon-secondary); }
 .ink-menu-item:hover .ink-menu-more, .ink-menu-item.is-active .ink-menu-more { display: flex; }
 .ink-menu-more:hover { background: var(--ink-background-interactive-translucent); }
+.ink-tl-tick.is-left { transform: none; }
+.ink-tl-tick.is-weekend { color: var(--ink-text-tertiary); }
+.ink-tl-weekend { position: absolute; top: 66px; bottom: 0; background: var(--ink-background-secondary, rgba(0,0,0,.02)); pointer-events: none; }
