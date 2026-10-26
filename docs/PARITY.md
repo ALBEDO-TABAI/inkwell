@@ -30,7 +30,7 @@ Side-by-side images are `reference | ours | diff` (diff = pixels whose channel d
 | B07 help / 更多 / library menus, shortcuts modal, updates panel | `b07.mjs` | help 4.6–4.7%, 更多 4.8%, library 4.3–4.4%, shortcuts 2.5–3.1%, updates panel 5.6% |
 | M7 (quick window, templates, settings panes, zh-TW, high contrast, import/export) | `m7.mjs` | **30/30** |
 | Motion timings vs SPEC (sidebar width, peeks, menu/modal fades, spring, hover bg, chevron, topbar idle, tab-strip blur) | `motion.mjs` | **13/13**; frame strips in `packages/parity/out/motion/` |
-| Electron shell | `electron.mjs` | **20/20** (below) |
+| Electron shell | `electron.mjs` | **24/24** (below; + OG fetch in main, quick window open/size/quick-open) |
 | Native menus vs B02b accessibility dump | `electron.mjs` | **51/51** app-defined items, menu-bar order exact; macOS system-injected items (Services, Speech, AutoFill, window tiling, traditional-Chinese entries) are supplied by the OS |
 | Tab bar B02 (1/5/15 tabs) | earlier window-sim checks | tab pitch and edges exact; real Electron tab bar vs `B02_tabs_1` 6.2% (the Linux capture has no traffic lights) |
 | New-tab window B02 `newtab_empty` | `electron.mjs` | 5.8% (was 35.6% before the new-tab palette landed) |

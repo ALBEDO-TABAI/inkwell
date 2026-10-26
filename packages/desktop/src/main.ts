@@ -232,6 +232,7 @@ function wireIpc() {
   });
   ipcMain.on('inkwell:quick-open', (_e, p: { pageId: string; newTab?: boolean }) => quickOpen(p.pageId, !!p.newTab));
   ipcMain.on('inkwell:quick-close', () => quickWin?.hide());
+  ipcMain.on('inkwell:quick-toggle', () => toggleQuickSearch());
   // every tab is its own renderer with its own in-memory store: fan writes out so the others stay live
   const fanout = (from: WebContents, ch: string, ...a: unknown[]) => { for (const w of windows) for (const t of w.tabs) if (t.view.webContents !== from && !t.view.webContents.isDestroyed()) t.view.webContents.send(ch, ...a); };
   ipcMain.handle(IPC.dbWrite, (e, c) => { db.write(c); fanout(e.sender, 'inkwell:db-changed', c); });

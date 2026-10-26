@@ -39,7 +39,7 @@ const visible = async (c) => c.evaluate('document.visibilityState');
 fs.rmSync(UD, { recursive: true, force: true });
 try { execFileSync('pkill', ['-f', 'remote-debugging-port=9333']); } catch {}
 // ---- run 1: fresh profile
-proc = launch();
+proc = launch([], 9333, { INKWELL_QUICK_KEEP: '1' });
 let { apps, tb } = await waitApps(1);
 await sleep(1500);
 ok('storage backend is sqlite', /storage: sqlite/.test(proc.log), (proc.log.match(/storage: \S+/) || [''])[0]);
@@ -94,6 +94,31 @@ await appC.send('Input.insertText', { text: ' 同步' }); await sleep(1200);
 const c2 = await connect(apps[1].webSocketDebuggerUrl);
 ok('edit in tab 1 shows up live in tab 2', /Electron 持久化测试 同步/.test(await c2.evaluate('document.body.innerText')));
 c2.close();
+// bookmark OG metadata is fetched by the main process (local server stands in for a website)
+{
+  const http = await import('node:http');
+  const srv = http.createServer((q, r) => { r.setHeader('content-type', 'text/html; charset=utf-8'); r.end('<html><head><title>T</title><meta property="og:title" content="本地书签测试"><meta property="og:description" content="描述文字"><meta property="og:image" content="/i.png"></head></html>'); });
+  await new Promise((r) => srv.listen(18777, '127.0.0.1', r));
+  const og = await appC.evaluate(`window.inkwellNative.invoke('inkwell:fetch-og','http://127.0.0.1:18777/p')`).catch((e) => ({ err: String(e) }));
+  ok('bookmark OG fetched in main process', og && og.title === '本地书签测试' && /描述/.test(og.description || ''), JSON.stringify(og));
+  srv.close();
+}
+// quick-search window: frameless 755×700, ⇧⌘K / tray / IPC toggle; picking a result navigates the main window
+const origHash = await appC.evaluate('location.hash');
+await appC.evaluate(`window.inkwellNative.send('inkwell:quick-toggle')`);
+let qt; for (let i = 0; i < 40 && !qt; i++) { await sleep(250); qt = (await targets(9333)).find((t) => t.url.includes('quick=1')); }
+ok('quick-search window opens', !!qt, qt?.url.replace(/^.*\?/, '?'));
+if (qt) {
+  const qc = await connect(qt.webSocketDebuggerUrl); await ready(qc);
+  const dims = await qc.evaluate('[innerWidth, innerHeight, !!document.querySelector(".ink-quick-root .ink-search"), !document.querySelector(".ink-topbar")]');
+  ok('quick window is 755×700 with only the palette', JSON.stringify(dims) === '[755,700,true,true]', JSON.stringify(dims));
+  await qc.evaluate(`window.inkwellNative.send('inkwell:quick-open', { pageId: 'page-rea', newTab: false })`); await sleep(1200);
+  const tsNow = await targets(9333); const act = [];
+  for (const t of tsNow.filter((t) => t.url.includes('index.html') && !t.url.includes('quick=1'))) { const c = await connect(t.webSocketDebuggerUrl); act.push([await c.evaluate('document.visibilityState'), await c.evaluate('location.hash')]); c.close(); }
+  ok('quick-open navigates the active tab', act.some(([v, h]) => v === 'visible' && h === '#/p/page-rea'), JSON.stringify(act));
+  qc.close();
+  await appC.evaluate(`location.hash = ${JSON.stringify(origHash)}`); await sleep(800);
+}
 // ---- quit (SIGTERM -> app.quit -> before-quit persists)
 tbC.close(); appC.close(); vc.close();
 await stop(proc);

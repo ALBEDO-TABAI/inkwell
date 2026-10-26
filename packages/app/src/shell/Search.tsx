@@ -27,7 +27,7 @@ export function QuickSearchApp() {
 export function openSearch(o: { newTab?: boolean } = {}) {
   openPopover({ id: 'search', anchor: { left: 0, top: 0, right: 0, bottom: 0 }, placement: 'center', topFraction: 0.09, modal: true, clearBackdrop: !!o.newTab, className: 'ink-search-pop', render: (close) => <SearchModal close={close} newTab={!!o.newTab} /> });
 }
-const ACTIONS = [{ id: '__chat', icon: 'chat', label: 'sidebar.newChat' }, { id: '__page', icon: 'page', label: 'search.newPage' }, { id: '__tpl', icon: 'layoutTemplate', label: 'search.templates' }] as const;
+const ACTIONS = [{ id: '__chat', icon: 'chat', label: 'sidebar.newChat' }, { id: '__page', icon: 'page', label: 'search.newPage' }] as const;
 
 type Sort = 'best' | 'edited' | 'created';
 interface Hit { id: string; score: number }
@@ -96,7 +96,6 @@ function SearchModal({ close, newTab, quick }: { close: () => void; newTab: bool
 
   const go = (id: string, newTab = false) => {
     if (id === '__page') { createPage('private'); close(); return; }
-    if (id === '__tpl') { close(); void import('./Templates').then((m) => m.openTemplates()); return; }
     if (id === '__chat') { close(); return; }
     if (quick) { shellSend('inkwell:quick-open', { pageId: id, newTab }); close(); return; }
     if (newTab) shellSend('inkwell:new-tab', { url: `#/p/${id}` }); else navigate(id);
