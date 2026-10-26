@@ -6,6 +6,8 @@ import './styles/tabbar.css';
 import { TabBar } from './shell/TabBar';
 import type { TabsSnapshot } from '@shared/ipc';
 import { IPC } from '@shared/ipc';
+import { initMotion } from './app/motion';
+initMotion();
 
 declare global { interface Window { inkwellTabs?: { on(f: (s: TabsSnapshot) => void): void; send(channel: string, ...a: unknown[]): void } } }
 

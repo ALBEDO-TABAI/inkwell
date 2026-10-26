@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { setUi, useUi, toggleSidebar, cycleTheme, setTheme, goBack, goForward, getUi, onNavigate, navigate } from './app/state';
 import { Sidebar, SidebarPeek } from './shell/Sidebar';
 import { Topbar } from './shell/Topbar';
@@ -101,10 +101,22 @@ export function App() {
   useEffect(() => { const q = new URLSearchParams(location.search); if (q.get("newtab") === "1") { openSearch({ newTab: true }); history.replaceState(null, "", location.pathname + location.search.replace(/[?&]newtab=1/, (m) => (m[0] === "?" ? "?" : "")).replace("?&", "?") + location.hash); } }, []);
   const theme = useUi((s) => s.resolvedTheme);
   useEffect(() => { shellSend('inkwell:theme-changed', { theme }); }, [theme]);
+  // sidebar collapse / expand animates its width (the content inside keeps its own width and is clipped)
+  const [sbAnim, setSbAnim] = useState<null | 'opening' | 'closing'>(null);
+  const prevOpen = useRef(sidebarOpen);
+  useLayoutEffect(() => {
+    if (prevOpen.current === sidebarOpen) return;
+    prevOpen.current = sidebarOpen;
+    // opening from the hover-peek is already on screen: no width animation
+    setSbAnim(sidebarOpen ? (getUi().peek ? null : 'opening') : 'closing');
+    const tm = window.setTimeout(() => setSbAnim(null), 1500);
+    return () => clearTimeout(tm);
+  }, [sidebarOpen]);
 
   return (
     <div className={'ink-app' + (resizing ? ' is-resizing' : '') + (sidebarOpen ? ' sb-open' : ' sb-closed')}>
-      {sidebarOpen ? <Sidebar /> : <SidebarPeek />}
+      {sidebarOpen || sbAnim === 'closing' ? <div className={'ink-sb-shell' + (sbAnim ? ' is-' + sbAnim : '')} style={{ width: sidebarWidth }} onAnimationEnd={(e) => { if (e.target === e.currentTarget) setSbAnim(null); }}><Sidebar /></div> : null}
+      {!sidebarOpen && sbAnim !== 'closing' && <SidebarPeek />}
       <main className="ink-main">
         <Topbar pageId={pageId} />
         <PageView key={pageId} pageId={pageId} />

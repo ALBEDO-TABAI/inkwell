@@ -7,6 +7,8 @@ import './styles/db.css';
 import './styles/tabbar.css';
 import { TabBar } from './shell/TabBar';
 import type { TabState } from '@shared/ipc';
+import { initMotion } from './app/motion';
+initMotion();
 
 interface SimTab extends TabState { canGoBack: boolean; canGoForward: boolean; hash: string }
 const q = new URLSearchParams(location.search);

@@ -3,6 +3,7 @@ import 'katex/dist/katex.min.css';
 import '@tokens/tokens.css';
 import './styles/app.css';
 import './styles/db.css';
+import './styles/motion.css';
 import { initPersistence, kv } from './store/persistence';
 import { initUi } from './app/state';
 import { App } from './App';
@@ -12,6 +13,8 @@ import { getUi, setUi, navigate } from './app/state';
 import { editables, focusBlock } from './editor/registry';
 import { setActiveView } from './db/Database';
 import { openPeek, closePeek } from './app/state';
+import { initMotion } from './app/motion';
+initMotion();
 
 async function boot() {
   document.documentElement.lang = getLocale();

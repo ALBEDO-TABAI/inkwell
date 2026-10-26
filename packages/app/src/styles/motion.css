@@ -1,0 +1,71 @@
+/* Motion layer: one place for the app's timings (matched to the reference's measured values).
+   opacity 100ms/150ms ease · hover background 100–150ms ease-out · transform 200ms ease-out / ease-in-out
+   all .2s ease · center-peek .2s ease-in-out · tab-bar opacity 700ms · sidebar width 200ms
+   spring cubic-bezier(.34,1.56,.64,1) 250ms · topbar idle fade opacity .7s */
+:root {
+  --ink-ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --ink-dur-fast: 100ms;
+  --ink-dur-base: 150ms;
+  --ink-dur-move: 200ms;
+}
+
+/* hover backgrounds: rows, menu items, icon buttons, chips */
+.ink-sb-row, .ink-menu-item, .ink-btn, .ink-topbar-icon, .ink-sb-action, .ink-search-row, .ink-search-chip, .ink-search-iconbtn,
+.ink-db-tab, .ink-tv-hcell, .ink-tv-cell, .ink-set-nav-item, .ink-tbar-icon, .ink-tab, .ink-trash-btn, .ink-block-handle span,
+.ink-set-close, .ink-tpl-back, .ink-tpl-search, .ink-page-controls [role="button"], .ink-cover-actions [role="button"], .ink-sc-tab,
+.ink-gp-eye, .ink-tr-grip, .ink-tc-grip, .ink-mtb [role="button"] {
+  transition-property: background, background-color, color, opacity, box-shadow;
+  transition-duration: var(--ink-dur-fast);
+  transition-timing-function: ease-out;
+}
+.ink-card, .ink-cal-cell, .ink-gallery-card, .ink-set-import-card { transition: background var(--ink-dur-base) ease-out, box-shadow var(--ink-dur-base) ease-out; }
+
+/* overlays fade in: menus/popovers 100ms, modals 150ms, tooltips 150ms */
+@keyframes ink-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.ink-popover { animation: ink-fade-in var(--ink-dur-fast) ease; }
+.ink-popover.ink-settings-pop, .ink-popover.ink-tpl-pop, .ink-modal-backdrop, .ink-popover.ink-tooltip-wrap { animation-duration: var(--ink-dur-base); }
+.ink-modal-backdrop { animation: ink-fade-in var(--ink-dur-base) ease; }
+
+/* center peek: scrim fades, panel grows in with ease-in-out over .2s */
+@keyframes ink-cpeek-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+.ink-peek-scrim { animation: ink-fade-in var(--ink-dur-move) ease-in-out; }
+.ink-peek-center { animation: ink-cpeek-in var(--ink-dur-move) ease-in-out; }
+/* side peek: slide in 200ms ease-out */
+.ink-peek-side { animation: ink-peek-in var(--ink-dur-move) ease-out; }
+.ink-rpanel { animation-duration: var(--ink-dur-move) !important; animation-timing-function: ease-out !important; }
+
+/* sidebar collapse / expand */
+.ink-sb-shell { flex: none; height: 100%; display: flex; overflow: hidden; position: relative; z-index: 2; }
+.ink-sb-shell > .ink-sidebar { flex: none; }
+@keyframes ink-sb-open { from { width: 0; } }
+@keyframes ink-sb-close { to { width: 0; } }
+.ink-sb-shell.is-opening { animation: ink-sb-open var(--ink-dur-move) ease-out; }
+.ink-sb-shell.is-closing { animation: ink-sb-close var(--ink-dur-move) ease-out forwards; }
+.ink-sb-peek { transition: transform var(--ink-dur-move) ease-out, opacity var(--ink-dur-move) ease; }
+
+/* chevrons / toggles rotate: transform 200ms ease-out */
+.ink-triangle svg, .ink-sb-disclosure svg, .ink-tv-gtoggle { transition: transform var(--ink-dur-move) ease-out; }
+
+/* spring: switches, to-do check, favourite star */
+.ink-switch-knob { transition: transform 250ms var(--ink-ease-spring); }
+.ink-switch { transition: background .2s ease; }
+@keyframes ink-spring-pop { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
+.ink-check.is-on > svg { animation: ink-spring-pop 250ms var(--ink-ease-spring); }
+.ink-check { transition: background var(--ink-dur-base) ease-out, border-color var(--ink-dur-base) ease-out; }
+.ink-fav-on svg, .ink-topbar-icon.is-fav svg { animation: ink-spring-pop 250ms var(--ink-ease-spring); }
+
+/* topbar idle fade (typing) */
+.ink-topbar { transition: opacity .7s ease, color .7s ease; }
+.ink-topbar.is-idle { opacity: 0; }
+
+/* hover-revealed controls: opacity 100ms ease */
+.ink-cover-actions, .ink-page-controls, .ink-code-bar, .ink-cm-actions, .ink-block-handle { transition: opacity var(--ink-dur-fast) ease; }
+.ink-tv-gutter, .ink-rs-handle, .ink-tab-close { transition: opacity var(--ink-dur-base) ease; }
+
+/* everything generic that animated with "all" */
+.ink-tpl-card { transition: all .2s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+html.no-motion *, html.no-motion *::before, html.no-motion *::after { animation: none !important; transition: none !important; }

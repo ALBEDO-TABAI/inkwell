@@ -32,3 +32,6 @@ html.is-harness body { font-family: Inter, "Noto Sans CJK SC", sans-serif; }
 .ink-tbar-new { margin: auto 6px; flex: none; }
 .ink-tabstrip::after { content: ""; flex: 1; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
 .ink-tabbar-right { flex: none; width: 62px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+/* inactive window: tab strip contents fade (opacity 700ms) */
+.ink-tabbar > * { transition: opacity 700ms ease; }
+html.is-blurred .ink-tabbar > * { opacity: .55; }
