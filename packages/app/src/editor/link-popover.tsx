@@ -85,14 +85,14 @@ export function attachLinkHover(root: HTMLElement) {
       openPopover({ id: 'link-hover', anchor: a.getBoundingClientRect(), placement: 'bottom-start', offset: 4, noFocus: true, render: () => (
         <div className="ink-link-hover" onMouseLeave={() => closePopover('link-hover')}>
           <Icon name="globe" size={14} stroke={1.7} />
-          <span className="ink-link-hover-url">{href.replace(/^https?:\/\//, '')}</span>
-          <span className="ink-link-hover-btn" role="button" onClick={() => { navigator.clipboard?.writeText(href).catch(() => {}); }}><Icon name="copy" size={14} /></span>
+          <span className="ink-link-hover-url">{href}</span>
+          <span className="ink-link-hover-btn is-icon" role="button" title={t('ed.linkCopy')} onClick={() => { navigator.clipboard?.writeText(href).catch(() => {}); }}><Icon name="copy" size={14} /></span>
           <span className="ink-link-hover-btn" role="button" onClick={() => {
             const ed = a.closest<HTMLElement>('[data-editable-id]'); if (!ed) return;
             const id = ed.dataset.editableId!; const b = store.get(id)!;
             const text = a.textContent || ''; const all = (b.title || []).map((s) => s[0]).join('');
             const s = all.indexOf(text); closePopover('link-hover'); if (s >= 0) openLinkPopover(id, s, s + text.length);
-          }}><Icon name="pencil" size={14} /></span>
+          }}>{t('ed.linkEdit')}</span>
         </div>
       ) });
     }, 450);

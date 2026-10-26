@@ -93,6 +93,7 @@ function InlineHost({ close }: { close: () => void }) {
 /* ---------------- slash ---------------- */
 function SlashMenu({ s, close }: { s: Session; close: () => void }) {
   const [active, setActive] = useState(0);
+  const [kbd, setKbd] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const misses = useRef(0);
   const sections = useMemo(() => {
@@ -109,8 +110,8 @@ function SlashMenu({ s, close }: { s: Session; close: () => void }) {
     applyKind(c.blockId, k, c.title, c.at);
   };
   keyHandler = (e) => {
-    if (e.key === 'ArrowDown') { setActive((a) => (a + 1) % Math.max(1, flat.length)); return true; }
-    if (e.key === 'ArrowUp') { setActive((a) => (a - 1 + flat.length) % Math.max(1, flat.length)); return true; }
+    if (e.key === 'ArrowDown') { setKbd(true); setActive((a) => (a + 1) % Math.max(1, flat.length)); return true; }
+    if (e.key === 'ArrowUp') { setKbd(true); setActive((a) => (a - 1 + flat.length) % Math.max(1, flat.length)); return true; }
     if (e.key === 'Enter' || e.key === 'Tab') { const it = flat[active]; if (it) { choose(it.k); return true; } close(); return false; }
     if (e.key === 'Escape') { close(); return true; }
     return false;
@@ -127,7 +128,7 @@ function SlashMenu({ s, close }: { s: Session; close: () => void }) {
               {sec.items.map((k) => {
                 idx++; const my = idx;
                 return (
-                  <div key={sec.id + k.id} role="option" className={'ink-slash-item' + (my === active ? ' is-active' : '')} onMouseMove={() => setActive(my)} onMouseDown={(e) => { e.preventDefault(); choose(k); }}>
+                  <div key={sec.id + k.id} role="option" className={'ink-slash-item' + (my === active ? ' is-active' + (kbd ? ' is-kbd' : '') : '')} onMouseMove={() => { setKbd(false); setActive(my); }} onMouseDown={(e) => { e.preventDefault(); choose(k); }}>
                     <span className="ink-slash-icon"><Icon name={k.icon} size={20} stroke={1.5} /></span>
                     <span className="ink-slash-text">{k.label()}{k.sub && <span className="ink-slash-sub"> · {k.sub()}</span>}{k.badge && <span className="ink-badge-new">{k.badge()}</span>}</span>
                     {k.hint && <span className="ink-slash-hint">{k.hint}</span>}

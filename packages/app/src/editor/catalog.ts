@@ -28,7 +28,7 @@ export const BLOCK_KINDS: BlockKind[] = [
   { id: 'bulleted', type: 'bulleted_list', label: () => t('b.bulleted'), icon: 'bullet', keywords: ['bulleted list', 'bullet', 'unordered', 'ul', '-'], hint: '-', turnInto: true },
   { id: 'numbered', type: 'numbered_list', label: () => t('b.numbered'), icon: 'numbered', keywords: ['numbered list', 'ordered', 'ol', '1.'], hint: '1.', turnInto: true },
   { id: 'todo', type: 'to_do', label: () => t('b.todo'), icon: 'todo', keywords: ['to-do list', 'todo', 'checkbox', 'task', '[]'], hint: '[]', turnInto: true },
-  { id: 'toggle', type: 'toggle', label: () => t('b.toggle'), icon: 'toggle', keywords: ['toggle list', 'collapse', 'expand', '>'], hint: '>', turnInto: true },
+  { id: 'toggle', type: 'toggle', label: () => t('b.toggle'), icon: 'toggle', keywords: ['toggle list', 'toggle', 'collapse', 'expand', '>'], hint: '>', turnInto: true },
   { id: 'page', type: 'page', label: () => t('b.page'), icon: 'page', keywords: ['page', 'subpage', 'yemian'], special: 'page', turnInto: true },
   { id: 'callout', type: 'callout', label: () => t('b.callout'), icon: 'callout', keywords: ['callout', 'note', 'tip', 'biaozhu'], turnInto: true },
   { id: 'quote', type: 'quote', label: () => t('b.quote'), icon: 'quote', keywords: ['quote', 'blockquote', 'citation', '"'], hint: '"', turnInto: true },
@@ -43,16 +43,16 @@ export const BLOCK_KINDS: BlockKind[] = [
   { id: 'synced', type: 'synced', label: () => t('b.synced'), icon: 'synced', keywords: ['synced block', 'sync', 'transclusion'], turnInto: true },
   { id: 'toc', type: 'table_of_contents', label: () => t('b.toc'), icon: 'toc', keywords: ['table of contents', 'toc', 'outline'] },
   { id: 'breadcrumb', type: 'breadcrumb', label: () => t('b.breadcrumb'), icon: 'breadcrumb', keywords: ['breadcrumb', 'path'] },
-  { id: 'toggleH1', type: 'header', label: () => t('b.toggleH1'), icon: 'th1', keywords: ['toggle heading 1', 'toggle h1', '>#'], toggleable: true, hint: '>#', turnInto: true },
-  { id: 'toggleH2', type: 'sub_header', label: () => t('b.toggleH2'), icon: 'th2', keywords: ['toggle heading 2', 'toggle h2', '>##'], toggleable: true, hint: '>##', turnInto: true },
-  { id: 'toggleH3', type: 'sub_sub_header', label: () => t('b.toggleH3'), icon: 'th3', keywords: ['toggle heading 3', 'toggle h3', '>###'], toggleable: true, hint: '>###', turnInto: true },
-  { id: 'toggleH4', type: 'header_4', label: () => t('b.toggleH4'), icon: 'th4', keywords: ['toggle heading 4', 'toggle h4'], toggleable: true, turnInto: true },
+  { id: 'toggleH1', type: 'header', label: () => t('b.toggleH1'), icon: 'th1', keywords: ['toggle heading 1', '>#'], toggleable: true, hint: '# >', turnInto: true },
+  { id: 'toggleH2', type: 'sub_header', label: () => t('b.toggleH2'), icon: 'th2', keywords: ['toggle heading 2', '>##'], toggleable: true, hint: '## >', turnInto: true },
+  { id: 'toggleH3', type: 'sub_sub_header', label: () => t('b.toggleH3'), icon: 'th3', keywords: ['toggle heading 3', '>###'], toggleable: true, hint: '### >', turnInto: true },
+  { id: 'toggleH4', type: 'header_4', label: () => t('b.toggleH4'), icon: 'th4', keywords: ['toggle heading 4'], toggleable: true, turnInto: true },
   { id: 'columns2', type: 'column_list', label: () => t('b.columns2'), icon: 'columns', keywords: ['2 columns', 'two columns', 'columns', 'layout'], special: 'columns2' },
   { id: 'columns3', type: 'column_list', label: () => t('b.columns3'), icon: 'columns3', keywords: ['3 columns', 'three columns', 'columns'], special: 'columns3' },
   { id: 'columns4', type: 'column_list', label: () => t('b.columns4'), icon: 'columns', keywords: ['4 columns', 'four columns'], special: 'columns4' },
   { id: 'mentionPerson', type: 'text', label: () => t('b.mentionPerson'), icon: 'at', keywords: ['mention person', 'person', 'user', '@'], special: 'mentionPerson' },
   { id: 'mentionPage', type: 'text', label: () => t('b.mentionPage'), icon: 'pageLink', keywords: ['mention page', 'page link', '[['], special: 'mentionPage' },
-  { id: 'date', type: 'text', label: () => t('b.date'), icon: 'calendar', keywords: ['date', 'reminder', 'today', 'tomorrow', 'now'], special: 'date' },
+  { id: 'date', type: 'text', label: () => t('b.date'), icon: 'calendar', keywords: ['date', 'reminder', 'now', '@today'], special: 'date' },
   { id: 'emoji', type: 'text', label: () => t('b.emoji'), icon: 'smile', keywords: ['emoji', 'emoticon', ':'], special: 'emoji' },
   { id: 'aiNotes', type: 'text', label: () => t('b.aiNotes'), icon: 'aiNotes', keywords: ['ai meeting notes', 'ai notes', 'transcribe', 'meeting', 'suji'], special: 'ai' },
   { id: 'embed', type: 'embed', label: () => t('b.embed'), sub: () => t('b.embedSub'), badge: () => t('b.badgeNew'), icon: 'embedHtml', keywords: ['html', 'embed', 'iframe', 'qianru'] },
@@ -78,9 +78,15 @@ export function kindOfBlock(type: BlockType, toggleable?: boolean): BlockKind | 
 export function matches(k: BlockKind, q: string): number {
   const s = q.trim().toLowerCase(); if (!s) return 1;
   const label = k.label().toLowerCase();
-  if (label.startsWith(s)) return 3;
-  if (label.includes(s)) return 2;
-  if (k.keywords.some((w) => w.startsWith(s))) return 2;
-  if (k.keywords.some((w) => w.includes(s))) return 1;
-  return 0;
+  if (label.startsWith(s)) return 200 - label.length;
+  if (label.includes(s)) return 150 - label.length;
+  // keyword matches rank by how specific (short) the matching keyword is
+  let best = 0;
+  for (const w of k.keywords) {
+    let sc = 0;
+    if (w.startsWith(s) || w.split(/[\s-]+/).some((p) => p.startsWith(s))) sc = 100 - Math.min(99, w.length);
+    else if (s.length >= 3 && w.includes(s)) sc = 20 - Math.min(19, w.length);
+    best = Math.max(best, sc);
+  }
+  return best;
 }
