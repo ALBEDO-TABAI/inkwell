@@ -119,6 +119,16 @@ await page.click('.ink-rel-editor .ink-menu-item:has-text("Task 03")'); await pa
 await page.keyboard.press('Escape'); await page.waitForTimeout(200);
 ok((await page.textContent(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${relIds.rel}"]`)).includes('Task 02'), 'relation cell shows linked pages');
 ok((await page.textContent(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${relIds.ru}"]`)).trim() === '50', 'rollup sum of linked scores = 50');
+
+// M5: database templates
+await page.goto(base + '#/p/page-db'); await page.reload(); await page.waitForFunction(() => window.__inkwellReady); await page.waitForTimeout(400);
+const tpl = await page.evaluate(async () => { const m = await import('/src/db/model.ts'); const id = m.addTemplate('page-db'); const s = window.__ink.store;
+  s.transact('t', (tx) => { tx.update(id, (b) => ({ title: [['Bug report']], props: { ...b.props, category: 'Beta', score: 5 } })); tx.update(s.get(id).content[0], { title: [['Steps to reproduce']] }); }); return id; });
+ok((await page.$$('.ink-tv-row')).length === 12, 'template is not listed as a row');
+await page.click('.ink-main .ink-db-new-more'); await page.waitForTimeout(300);
+await page.click(`[data-item-id="tpl-${tpl}"]`); await page.waitForTimeout(400);
+ok((await page.$$('.ink-tv-row')).length === 13, 'new row from template');
+ok(await page.evaluate(() => { const t = document.querySelector('.ink-peek'); return !!t && t.textContent.includes('Bug report') && t.textContent.includes('Steps to reproduce') && t.textContent.includes('Beta'); }), 'row copies title, body and values');
 // slash inline database
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));
 await browser.close();

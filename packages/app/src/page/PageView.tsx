@@ -62,6 +62,7 @@ export function PageView({ pageId, variant = 'main' }: { pageId: string; variant
   const blankRow = !!rowDb && (content.length === 0 || (content.length === 1 && store.get(content[0])?.type === 'text' && !rtPlain(store.get(content[0])!.title).length));
   return (
     <div className="ink-scroller" ref={scroller} onMouseDown={(e) => rubberBandStart(e, pageId, scroller.current!)}>
+      {rowDb && !!page.props?.isTemplate && <div className="ink-template-banner">正在编辑“{pageTitle(rowDb)}”中的模板</div>}
       {trashed && <div className="ink-trash-banner">{t('trash.banner')}<button className="ink-btn-outline-white" onClick={() => restorePage(pageId)}>{t('trash.restore')}</button></div>}
       <LockContext.Provider value={locked}>
       <div className={cls} ref={pageRef} data-page-id={pageId}>

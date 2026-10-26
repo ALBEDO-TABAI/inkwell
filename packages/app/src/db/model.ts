@@ -310,6 +310,39 @@ export function addRow(dbId: string, opts: { values?: Record<string, Value>; ind
   });
   return id;
 }
+/* ---------- templates: pages parented to the DB but kept out of its row list ---------- */
+export const templatesOf = (db: Block): Block[] => ((db.props?.templates as string[]) || []).map((id) => store.get(id)!).filter((b) => b && b.alive !== false);
+export const isTemplate = (row?: Block) => !!row?.props?.isTemplate;
+export function addTemplate(dbId: string): string {
+  const id = newId(); const tid = newId();
+  store.transact('new template', (tx) => {
+    tx.create({ id, type: 'page', title: [['新模板']], parent: dbId, parentTable: 'block', content: [tid], props: { isTemplate: true } });
+    tx.create({ id: tid, type: 'text', title: [], parent: id, parentTable: 'block', content: [] });
+    tx.update(dbId, (b) => ({ props: { ...b.props, templates: [...((b.props?.templates as string[]) || []), id] } }));
+  });
+  return id;
+}
+export function deleteTemplate(dbId: string, id: string) {
+  store.transact('delete template', (tx) => { tx.update(id, { alive: false }); tx.update(dbId, (b) => ({ props: { ...b.props, templates: ((b.props?.templates as string[]) || []).filter((x) => x !== id) } })); });
+}
+/** new row from a template: title, property values and a deep copy of the body */
+export function addRowFromTemplate(dbId: string, tplId: string, opts: { values?: Record<string, Value>; index?: number } = {}): string {
+  const tpl = store.get(tplId)!; const id = newId();
+  const { isTemplate: _t, ...values } = (tpl.props || {}) as Record<string, Value>;
+  store.transact('new row from template', (tx) => {
+    const copy = (srcId: string, parent: string): string => {
+      const b = store.get(srcId)!; const nid = newId();
+      const kids = (b.content || []).filter((k) => store.get(k)?.alive !== false);
+      tx.create({ ...structuredClone({ type: b.type, title: b.title, props: b.props, format: b.format }), id: nid, parent, parentTable: 'block', content: [] });
+      tx.update(nid, { content: kids.map((k) => copy(k, nid)) });
+      return nid;
+    };
+    tx.create({ id, type: 'page', title: structuredClone(tpl.title || []), parent: dbId, parentTable: 'block', content: [], props: { ...values, ...(opts.values || {}) }, format: structuredClone(tpl.format) });
+    tx.update(id, { content: (tpl.content || []).filter((k) => store.get(k)?.alive !== false).map((k) => copy(k, id)) });
+    tx.insertChild(dbId, id, opts.index);
+  });
+  return id;
+}
 export function deleteRow(rowId: string) {
   const row = store.get(rowId); if (!row) return;
   store.transact('delete row', (tx) => { tx.removeChild(row.parent, rowId); tx.update(rowId, { alive: false }); });

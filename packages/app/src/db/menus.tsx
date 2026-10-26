@@ -10,12 +10,13 @@ import { openPeek } from '../app/state';
 import { duplicateBlock, pageTitle } from '../app/pages';
 import {
   schemaOf, viewsOf, propIds, updateDb, updateView, addProp, addRow, deleteRow, VIEW_NAMES, PROP_DEFAULT_NAME, STATUS_DEFAULT,
-  ROLLUP_LABEL, type Prop, type RollupFn,
+  ROLLUP_LABEL, templatesOf, addTemplate, deleteTemplate, addRowFromTemplate, type Prop, type RollupFn,
   type View, type ViewType, type PropType, type CalcFn, type FilterRule, type FilterOp, type SortRule,
 } from './model';
 import { PropIcon, Tag, StatusPill } from './cells';
 import { DatePicker } from './editors';
-import { setActiveView, VIEW_ICON, setBarOpen } from './Database';
+import { setActiveView, VIEW_ICON, setBarOpen, defaultsFor } from './Database';
+import { PageIcon } from '../ui/PageIcon';
 
 const R = (el: HTMLElement) => el.getBoundingClientRect();
 const live = (f: () => void) => { const [, set] = useState(0); useEffect(() => store.subscribe(() => set((x) => x + 1)), []); void f; };
@@ -369,7 +370,15 @@ export function openSettingsMenu(anchor: HTMLElement, db: Block, view: View) {
 
 /* ---------- new + cards ---------- */
 export function openNewMenu(anchor: HTMLElement, db: Block, view: View) {
-  openMenu(R(anchor), { width: 240, groups: [[{ kind: 'label', label: `${db.title?.length ? '' : ''}模板` }, { id: 'blank', label: '空白页', icon: 'page', onSelect: () => openPeek(addRow(db.id), view.openIn || 'side') }], [{ id: 'tpl', label: '新模板', icon: 'plus', disabled: true }]] }, { placement: 'bottom-end', anchorEl: anchor });
+  const mode = view.openIn || 'side';
+  const tpls = templatesOf(db);
+  openMenu(R(anchor), { width: 260, groups: [
+    [{ kind: 'label', label: `“${pageTitle(db)}”的模板` },
+      ...tpls.map((t) => ({ id: 'tpl-' + t.id, label: pageTitle(t) || '新模板', icon: <PageIcon block={t} size={16} />, onSelect: () => openPeek(addRowFromTemplate(db.id, t.id, { values: defaultsFor(view) }), mode),
+        right: <span className="ink-menu-more" role="button" aria-label="模板选项" onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }} onClick={(e) => { e.stopPropagation(); openMenu(R(e.currentTarget as HTMLElement), { width: 200, groups: [[{ id: 'edit', label: '编辑', icon: 'pencil' as IconName, onSelect: () => { closePopover('db-new-menu'); openPeek(t.id, mode); } }, { id: 'del', label: '删除', icon: 'trash' as IconName, danger: true, onSelect: () => { closePopover('db-new-menu'); deleteTemplate(db.id, t.id); } }]] }, { placement: 'bottom-start', parent: 'db-new-menu' }); }}><Icon name="more" size={14} /></span> })),
+      { id: 'blank', label: '空白页', icon: 'page', onSelect: () => openPeek(addRow(db.id, { values: defaultsFor(view) }), mode) }],
+    [{ id: 'tpl', label: '新模板', icon: 'plus', onSelect: () => openPeek(addTemplate(db.id), mode) }],
+  ] }, { placement: 'bottom-end', anchorEl: anchor, id: 'db-new-menu' });
 }
 export function openCardMenu(anchor: HTMLElement, db: Block, row: Block) {
   openMenu(R(anchor), { width: 240, groups: [
