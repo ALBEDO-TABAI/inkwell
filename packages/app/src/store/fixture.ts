@@ -75,7 +75,7 @@ export function buildFixture(): FixtureData {
     mk('text', c.id, r(label));
   }
   mk('image', P, undefined, { props: { src: 'fixture://landscape' }, format: { image_aspect: 316.06 / 704 } });
-  mk('bookmark', P, undefined, { props: { url: 'https://www.wikipedia.org', bookmark: { title: 'Wikipedia, the free encyclopedia', description: 'Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.', url: 'https://www.wikipedia.org' } } });
+  mk('bookmark', P, undefined, { props: { url: 'https://www.wikipedia.org', bookmark: { title: 'Wikipedia, the free encyclopedia', description: 'Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.', url: 'https://www.wikipedia.org', image: 'fixture://cover-3' } } });
   mk('video', P, undefined, { props: { url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ' }, format: { image_aspect: 396.61 / 704 } });
   mk('breadcrumb', P);
   mk('sub_sub_header', P, r('Colors'));

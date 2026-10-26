@@ -119,7 +119,7 @@ function numberLabel(n: number, depth: number) {
 function Triangle({ open, onClick, big }: { open: boolean; onClick: () => void; big?: boolean }) {
   return (
     <div role="button" aria-expanded={open} className={'ink-triangle' + (open ? ' is-open' : '') + (big ? ' is-big' : '')} onMouseDown={(e) => e.preventDefault()} onClick={onClick}>
-      <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden><path d="M4.2 2.6 L9 6 L4.2 9.4 Z" fill="currentColor" /></svg>
+      <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden><path d="M2.25 1.75 L10.25 6 L2.25 10.25 Z" fill="currentColor" /></svg>
     </div>
   );
 }
@@ -194,7 +194,7 @@ function BlockBody({ b, ctx }: { b: Block; ctx: Ctx }) {
         <div className={'ink-callout' + (c ? ' ' + colorClass(c.endsWith('_background') ? c : c) : ' ink-callout-default')}>
           <div className="ink-callout-icon" contentEditable={false}>
             <div role="button" className="ink-callout-icon-btn" onMouseDown={(e) => e.preventDefault()} onClick={(e) => openEmojiPicker({ anchor: (e.currentTarget as HTMLElement).getBoundingClientRect(), onPick: (ch) => store.transact('icon', (tx) => tx.update(b.id, (x) => ({ format: { ...x.format, page_icon: ch } }))), onRemove: () => store.transact('icon', (tx) => tx.update(b.id, (x) => ({ format: { ...x.format, page_icon: undefined } }))) })}>
-              <PageIcon block={b} size={24} emojiSize={18} />
+              <PageIcon block={b} size={24} emojiSize={16} />
             </div>
           </div>
           <div className="ink-callout-body">
@@ -399,9 +399,12 @@ function BreadcrumbBlock({ b }: { b: Block }) {
       {path.map((p, i) => (
         <span key={p.id} className="ink-crumbs-item-wrap">
           {i > 0 && <span className="ink-crumbs-sep">/</span>}
-          <span role="link" className="ink-crumbs-item" onClick={() => navigate(p.id)}><PageIcon block={p} size={18} /><span>{pageTitle(p)}</span></span>
+          <span role="link" className="ink-crumbs-item" onClick={() => navigate(p.id)}>{(p.format?.page_icon || i > 0) && <PageIcon block={p} size={18} emojiSize={16} />}<span>{pageTitle(p)}</span></span>
         </span>
       ))}
+      {path[0] && store.space.privatePages.includes(path[0].id) && (
+        <span role="button" className="ink-crumbs-scope"><Icon name="lock" size={12} stroke={2} /><span>{t('top.private')}</span><Icon name="chevronDown" size={12} stroke={2} /></span>
+      )}
     </div>
   );
 }

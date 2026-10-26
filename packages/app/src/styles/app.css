@@ -39,7 +39,7 @@ button { font: inherit; color: inherit; }
   display: flex; align-items: center; height: 32px; padding: 0 6px 0 8px;
   border: 1px solid var(--ink-border-primary-translucent); border-radius: 8px;
   font-size: 14px; line-height: 16.8px; font-weight: 400; color: var(--ink-text-tertiary);
-  background: var(--ink-background-primary);
+  background: transparent;
 }
 .ink-sb-search:hover { background: var(--ink-background-interactive); }
 .ink-sb-search-text { flex: 1; white-space: nowrap; overflow: hidden; }
@@ -85,7 +85,7 @@ button { font: inherit; color: inherit; }
 .ink-sb-section-title { flex: 1; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--ink-text-tertiary); }
 .ink-sb-addnew { margin-top: 3px; }
 .ink-sb-empty { height: 30px; display: flex; align-items: center; font-size: 14px; color: var(--ink-text-tertiary); font-weight: 400; }
-.ink-team-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: var(--ink-background-tertiary-translucent); color: var(--ink-icon-secondary); }
+.ink-team-icon { width: 20px; height: 20px; border-radius: 4px; display: flex; align-items: center; justify-content: center; background: var(--ink-background-tertiary-translucent); color: var(--ink-icon-primary); }
 .ink-cal-badge { display: flex; }
 .ink-sb-bottom { flex: none; padding: 8px 8px 0; }
 .ink-sb-customize { margin-bottom: 7px; }
@@ -250,8 +250,8 @@ html.is-harness .ink-code-text { font-family: "JetBrains Mono", "Liberation Mono
 .ink-column { position: relative; min-width: 0; flex: none; }
 .ink-column-resizer { position: absolute; top: 0; bottom: 0; right: -27px; width: 8px; cursor: col-resize; }
 .ink-column > .ink-children > .ink-block { padding-left: 6px; padding-right: 6px; }
-.ink-image-frame { position: relative; overflow: hidden; border-radius: 10px; }
-.ink-image-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ink-image-frame { position: relative; border-radius: 10px; }
+.ink-image-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
 .ink-caption { font-size: 14px; line-height: 21px; color: var(--ink-text-secondary); padding: 6px 2px 0; }
 .ink-video-frame { position: relative; border-radius: 10px; overflow: hidden; background: #191919; }
 .ink-video-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #fff; }
@@ -264,9 +264,9 @@ html.is-harness .ink-code-text { font-family: "JetBrains Mono", "Liberation Mono
 .ink-bookmark-desc { font-size: 12px; line-height: 16px; color: var(--ink-text-secondary); height: 32px; overflow: hidden; }
 .ink-bookmark-url { display: flex; gap: 6px; align-items: center; font-size: 12px; line-height: 16px; margin-top: 6px; white-space: nowrap; overflow: hidden; }
 .ink-bookmark-img { flex: 1 1 180px; position: relative; }
-.ink-bookmark-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ink-bookmark-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 2px; }
 .ink-media-ph { display: flex; align-items: center; gap: 12px; padding: 12px 36px 12px 12px; border-radius: 6px; background: var(--ink-background-tertiary-translucent); color: var(--ink-text-secondary); font-size: 14px; }
-.ink-table-wrap { position: relative; padding: 8.5px 0 24.5px; }
+.ink-table-wrap { position: relative; padding: 8px 0 24px; }
 .ink-table-scroll { position: relative; padding-left: 6.5px; overflow-x: auto; display: flex; }
 .ink-table { border-collapse: collapse; table-layout: fixed; }
 .ink-table td, .ink-table th { border: 1px solid var(--ink-border-primary); padding: 0; vertical-align: top; text-align: left; font-weight: 400; min-height: 32px; }
@@ -280,6 +280,8 @@ html.is-harness .ink-code-text { font-family: "JetBrains Mono", "Liberation Mono
 .ink-toc-item:hover { background: var(--ink-state-hover); }
 .ink-toc-empty { color: var(--ink-text-tertiary); font-size: 14px; padding: 6px 2px; }
 .ink-crumbs-block { display: flex; align-items: center; flex-wrap: wrap; height: 28px; }
+.ink-crumbs-scope { display: flex; align-items: center; gap: 4px; height: 24px; padding: 0 6px; border-radius: 6px; font-size: 14px; line-height: 16.8px; color: var(--ink-text-secondary); cursor: pointer; }
+.ink-crumbs-scope:hover { background: var(--ink-button-hovered-background); }
 .ink-crumbs-item-wrap { display: flex; align-items: center; }
 .ink-crumbs-item { display: flex; align-items: center; gap: 6px; height: 28px; padding: 2px 6px; border-radius: 6px; line-height: 19.2px; cursor: pointer; }
 .ink-crumbs-item:hover { background: var(--ink-button-hovered-background); }
