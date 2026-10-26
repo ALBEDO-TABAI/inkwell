@@ -14,7 +14,7 @@ html.is-harness body { font-family: Inter, "Noto Sans CJK SC", sans-serif; }
 .ink-tbar-sidebar { margin-left: 2px; }
 .ink-tbar-spacer { flex: 1; }
 .ink-tabbar-left.is-sidebar .ink-tbar-icon + .ink-tbar-icon { margin-left: 2px; }
-.ink-tabbar-nav { flex: none; width: 68px; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tabbar-nav { flex: none; width: 68px; display: flex; align-items: center; justify-content: center; gap: 0; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
 .ink-tabstrip { flex: 1; min-width: 0; display: flex; align-items: stretch; position: relative; padding-right: 0; }
 .ink-tabstrip > .ink-tab:first-child { box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
 .ink-tab { position: relative; flex: 0 1 200px; min-width: 36px; max-width: 200px; display: flex; align-items: center; padding: 0 8px 0 16px; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--ink-text-secondary); box-shadow: inset 1px 0 0 var(--ink-chrome-sidebar-divider), inset 0 -1px 0 var(--ink-chrome-sidebar-divider); overflow: hidden; }
@@ -25,10 +25,10 @@ html.is-harness body { font-family: Inter, "Noto Sans CJK SC", sans-serif; }
 .ink-tab.is-active .ink-tab-icon { opacity: 1; }
 .ink-tab-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 9px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 9px), transparent); }
 .ink-tab-close { flex: none; width: 20px; height: 20px; padding: 2px; border-radius: 6px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 150ms ease; color: var(--ink-chrome-enabled-button-color); }
-.ink-tab.is-hover .ink-tab-close, .ink-tab.is-active .ink-tab-close { opacity: 1; }
+.ink-tab.is-hover .ink-tab-close { opacity: 1; }
 .ink-tab-close:hover { background: var(--ink-chrome-button-background); }
 .ink-tab-drop { position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: rgba(35,131,226,.43); }
 .ink-tab-drop.is-end { position: relative; }
 .ink-tbar-new { margin: auto 6px; flex: none; }
 .ink-tabstrip::after { content: ""; flex: 1; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
-.ink-tabbar-right { flex: none; width: 67px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }
+.ink-tabbar-right { flex: none; width: 62px; box-shadow: inset 0 -1px 0 var(--ink-chrome-sidebar-divider); }

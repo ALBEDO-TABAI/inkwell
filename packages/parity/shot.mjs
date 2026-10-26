@@ -8,9 +8,10 @@ const page = await browser.newPage({ viewport: { width: +w, height: +h }, device
 const errs = [];
 page.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
 page.on('console', (m) => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
+  page.on('response', (r) => { if (r.status() >= 400) errs.push('http ' + r.status() + ' ' + r.url()); });
 await page.goto('http://127.0.0.1:5200/' + path);
 await page.waitForFunction(() => window.__inkwellReady || document.querySelector('.ink-window'), null, { timeout: 10000 }).catch(() => errs.push('not ready'));
-await page.waitForTimeout(500);
+await page.waitForTimeout(+(process.env.WAIT || 500));
 if (js) { await page.evaluate(js); await page.waitForTimeout(400); }
 await page.screenshot({ path: out });
 console.log(errs.join('\n') || 'ok');

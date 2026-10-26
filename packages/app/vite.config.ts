@@ -11,7 +11,7 @@ export default defineConfig({
       '@tokens': path.resolve(__dirname, '../tokens/generated'),
     },
   },
-  server: { port: 5200, strictPort: true, host: '127.0.0.1', fs: { allow: [path.resolve(__dirname, '..')] } },
+  server: { port: 5200, strictPort: true, host: '127.0.0.1', fs: { allow: [path.resolve(__dirname, '../..')] } },
   build: {
     outDir: 'dist',
     rollupOptions: {

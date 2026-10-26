@@ -37,7 +37,7 @@ export function TabBar(p: TabBarProps) {
       <div className={'ink-tabbar-left' + (p.sidebarOpen ? ' is-sidebar' : '')} style={{ width: leftW }}>
         {p.trafficLights && <div className="ink-traffic" aria-hidden><span className="tl-close" /><span className="tl-min" /><span className="tl-max" /></div>}
         <div className="ink-tbar-icon ink-tbar-sidebar" role="button" aria-label={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} title={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} onClick={p.onToggleSidebar}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.25" aria-hidden><rect x="1.6" y="2.6" width="12.8" height="10.8" rx="2.2" /><path d="M5.6 2.6v10.8" /></svg>
+          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden><rect x="1.6" y="2.6" width="12.8" height="10.8" rx="2.2" /><path d="M5.6 2.6v10.8" /></svg>
         </div>
         {p.sidebarOpen && <>
           <div className="ink-tbar-spacer" />
@@ -46,8 +46,8 @@ export function TabBar(p: TabBarProps) {
         </>}
       </div>
       <div className="ink-tabbar-nav">
-        <div className={'ink-tbar-icon' + (p.canGoBack ? '' : ' is-disabled')} role="button" aria-label={t('tabs.back')} title={t('tabs.back')} onClick={() => p.canGoBack && p.onBack()}><Icon name="chevronLeft" size={16} stroke={1.5} /></div>
-        <div className={'ink-tbar-icon' + (p.canGoForward ? '' : ' is-disabled')} role="button" aria-label={t('tabs.forward')} title={t('tabs.forward')} onClick={() => p.canGoForward && p.onForward()}><Icon name="chevronRight" size={16} stroke={1.5} /></div>
+        <div className={'ink-tbar-icon' + (p.canGoBack ? '' : ' is-disabled')} role="button" aria-label={t('tabs.back')} title={t('tabs.back')} onClick={() => p.canGoBack && p.onBack()}><Icon name="chevronLeft" size={24} stroke={1.25} /></div>
+        <div className={'ink-tbar-icon' + (p.canGoForward ? '' : ' is-disabled')} role="button" aria-label={t('tabs.forward')} title={t('tabs.forward')} onClick={() => p.canGoForward && p.onForward()}><Icon name="chevronRight" size={24} stroke={1.25} /></div>
       </div>
       <div className="ink-tabstrip" ref={strip}
         onDragOver={(e) => { if (!drag) return; e.preventDefault(); setDrag({ ...drag, over: dropIndex(e.clientX) }); }}
@@ -67,7 +67,7 @@ export function TabBar(p: TabBarProps) {
           </div>
         ))}
         {drag && drag.over === p.tabs.length && <div className="ink-tab-drop is-end" />}
-        <div className="ink-tbar-icon ink-tbar-new" role="button" aria-label={t('tabs.newTab')} title={t('tabs.newTab')} onClick={p.onNew}><Icon name="plus" size={16} stroke={1.5} /></div>
+        <div className="ink-tbar-icon ink-tbar-new" role="button" aria-label={t('tabs.newTab')} title={t('tabs.newTab')} onClick={p.onNew}><Icon name="plus" size={24} stroke={1.25} /></div>
       </div>
       <div className="ink-tabbar-right" />
     </div>

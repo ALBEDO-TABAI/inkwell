@@ -11,7 +11,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME || '/
 const results = [];
 for (const theme of ['light', 'dark']) {
   const page = await browser.newPage({ viewport: { width: 1320, height: 824 }, deviceScaleFactor: 2 });
-  await page.goto(`http://127.0.0.1:5200/index.html?fixture=1&storage=memory&harness=1&idle=1&theme=${theme}#/p/page-rea`);
+  await page.goto(`http://127.0.0.1:5200/index.html?fixture=1&storage=memory&harness=1${theme === "light" ? "&idle=1" : ""}&theme=${theme}#/p/page-rea`);
   await page.waitForFunction(() => window.__inkwellReady);
   await page.waitForTimeout(600);
   for (let i = 1; i <= 7; i++) {
