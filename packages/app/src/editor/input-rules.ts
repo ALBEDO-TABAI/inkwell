@@ -96,8 +96,8 @@ export function afterInput(id: string, _el: HTMLElement, caret: number) {
   if (before.endsWith('[[') && b.type !== 'code') {
     const nt = deleteRange(title, caret - 2, caret);
     const withAt = concat(slice(nt, 0, caret - 2), [['@']], slice(nt, caret - 2));
-    setTitle(id, withAt, false); focusBlock(id, caret - 1);
-    requestAnimationFrame(() => openInlineMenu('mention', id, caret - 2, '@'));
+    setTitle(id, withAt, false, { start: caret - 1, end: caret - 1 }); focusBlock(id, caret - 1);
+    setTimeout(() => { focusBlock(id, caret - 1); openInlineMenu('mention', id, caret - 2, '@', { pagesOnly: true }); }, 16);
     return;
   }
   if (typed === ':' && b.type !== 'code' && (!prevCh || /\s/.test(prevCh))) { openInlineMenu('emoji', id, caret - 1, ':'); return; }

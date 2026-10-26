@@ -16,7 +16,7 @@ import { EMOJI, searchEmoji, type EmojiEntry, recentEmoji, pushRecentEmoji } fro
 import { pageTitle, breadcrumbPath, isInTrash, createPage } from '../app/pages';
 
 export type InlineKind = 'slash' | 'mention' | 'emoji';
-interface Session { kind: InlineKind; blockId: string; start: number; query: string; anchor: DOMRect; trigger: string }
+interface Session { kind: InlineKind; blockId: string; start: number; query: string; anchor: DOMRect; trigger: string; pagesOnly?: boolean }
 let session: Session | null = null;
 const subs = new Set<() => void>();
 const emit = () => subs.forEach((f) => f());
@@ -26,10 +26,10 @@ export function isInlineMenuOpen() { return !!session; }
 export function inlineMenuKey(e: KeyboardEvent): boolean { return keyHandler ? keyHandler(e) : false; }
 export function getSession() { return session; }
 
-export function openInlineMenu(kind: InlineKind, blockId: string, start: number, trigger: string) {
+export function openInlineMenu(kind: InlineKind, blockId: string, start: number, trigger: string, opts: { pagesOnly?: boolean } = {}) {
   const r = caretRect();
   const anchor = r ? new DOMRect(r.left, r.top, r.width, r.height) : new DOMRect(0, 0, 0, 0);
-  session = { kind, blockId, start, query: '', anchor, trigger };
+  session = { kind, blockId, start, query: '', anchor, trigger, pagesOnly: opts.pagesOnly };
   const blockEl = document.querySelector(`[data-editable-id="${blockId}"]`);
   const lineBottom = blockEl ? Math.max(anchor.bottom, Math.min(blockEl.getBoundingClientRect().bottom, anchor.bottom + 4)) : anchor.bottom;
   openPopover({
@@ -169,9 +169,9 @@ function MentionMenu({ s, close }: { s: Session; close: () => void }) {
     { id: 'today', label: t('mention.today'), icon: <Icon name="clock" size={20} />, section: t('mention.date'), run: () => insertToken([['‣', { mention: { kind: 'date', value: iso(today) } }]]) },
     { id: 'remind', label: t('mention.remind'), inlineSub: t('mention.remindSub'), icon: <Icon name="alarm" size={20} />, section: t('mention.date'), run: () => insertToken([['‣', { mention: { kind: 'date', value: iso(tomorrow) } }]]) },
   ];
-  rows.push(...dateRows.filter((r) => !q || r.label.toLowerCase().includes(q) || 'today tomorrow remind date'.includes(q)));
-  if (q && (u.name.toLowerCase().includes(q) || 'person people user'.includes(q))) rows.push({ id: 'me', label: u.name, icon: <span className="ink-avatar" style={{ width: 20, height: 20, fontSize: 8.5 }}>{u.avatar}</span>, section: t('mention.people'), run: () => insertToken([['‣', { mention: { kind: 'user', id: u.id } }]]) });
-  rows.push({ id: 'invite', label: t('mention.invite'), icon: <Icon name="addUser" size={20} />, section: t('mention.people'), run: () => close() });
+  if (!s.pagesOnly) rows.push(...dateRows.filter((r) => !q || r.label.toLowerCase().includes(q) || 'today tomorrow remind date'.includes(q)));
+  if (!s.pagesOnly && q && (u.name.toLowerCase().includes(q) || 'person people user'.includes(q))) rows.push({ id: 'me', label: u.name, icon: <span className="ink-avatar" style={{ width: 20, height: 20, fontSize: 8.5 }}>{u.avatar}</span>, section: t('mention.people'), run: () => insertToken([['‣', { mention: { kind: 'user', id: u.id } }]]) });
+  if (!s.pagesOnly) rows.push({ id: 'invite', label: t('mention.invite'), icon: <Icon name="addUser" size={20} />, section: t('mention.people'), run: () => close() });
   const here = store.pageOf(s.blockId)?.id;
   const pathSub = (id: string) => { const path = breadcrumbPath(id).slice(0, -1); return (path.length > 2 ? `${pageTitle(path[0])} / … / ${pageTitle(path[path.length - 1])}` : path.map((p) => pageTitle(p)).join(' / ')) || undefined; };
   const pages = allPageIds().filter((id) => id !== here && (!q || pageTitle(store.get(id)).toLowerCase().includes(q))).slice(0, 8);

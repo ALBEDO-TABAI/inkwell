@@ -122,4 +122,4 @@ export function placeCaretAtX(root: HTMLElement, x: number, edge: 'top' | 'botto
   if (pos) { const off = domToOffset(root, pos.node, pos.offset); setSelectionOffsets(root, off); }
   else setSelectionOffsets(root, edge === 'top' ? 0 : nodeLen(root));
 }
-export const textLength = (root: HTMLElement) => nodeLen(root);
+export const textLength = (root: HTMLElement) => { let s = 0; root.childNodes.forEach((c) => (s += nodeLen(c))); return s; }; // root may carry data-placeholder

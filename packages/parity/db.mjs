@@ -11,7 +11,11 @@ const view = (id, extra = '') => `(() => { window.__ink.setActiveView('page-db',
 const gallery = (size) => view('view-3', `const s = window.__ink.store; s.transact('t', (tx) => tx.update('page-db', (b) => ({ props: { ...b.props, views: b.props.views.map((v) => v.id === 'view-3' ? { ...v, gallerySize: '${size}' } : v) } })), { noUndo: true });`);
 const clickSel = (sel, i = 0, dx = 0.5, dy = 0.5) => async (page) => { const b = await page.evaluate(([s, i]) => { const el = document.querySelectorAll(s)[i]; if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height }; }, [sel, i]); if (!b) throw new Error('missing ' + sel); await page.mouse.click(b.x + b.w * dx, b.y + b.h * dy); await page.waitForTimeout(350); };
 const cell = (row, prop) => `.ink-tv-row[data-row-id="${row}"] .ink-tv-cell[data-prop="${prop}"]`;
+const hoverTitle = async (p) => { await p.hover('.ink-main .ink-title-editable'); await p.waitForTimeout(300); };
+const B01C = (v, view_) => ({ ref: `B01c/B01c_db_${v}`, b01c: true, q: '&promo=1', js: view(view_), act: hoverTitle, keepMouse: true });
 const CASES = {
+  b01c_table: B01C('table', 'view-0'), b01c_board: B01C('board', 'view-1'), b01c_list: B01C('list', 'view-2'),
+  b01c_gallery: B01C('gallery', 'view-3'), b01c_calendar: B01C('calendar', 'view-4'), b01c_timeline: B01C('timeline', 'view-5'),
   view_table: { ref: 'B06/1x/B06_view_table', js: view('view-0') },
   view_board: { ref: 'B06/1x/B06_view_board', js: view('view-1') },
   view_list: { ref: 'B06/1x/B06_view_list', js: view('view-2') },
@@ -37,8 +41,9 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME || '/
 const res = [];
 for (const theme of ['light', 'dark']) for (const [name, c] of Object.entries(CASES)) {
   if (only && !name.includes(only)) continue;
-  const ref = `${R}/${c.ref}_${theme}@1x.png`;
+  let ref = c.b01c ? `${R}/${c.ref}_${theme}.png` : `${R}/${c.ref}_${theme}@1x.png`;
   if (!fs.existsSync(ref)) { console.log('no ref', ref); continue; }
+  if (c.b01c) { const crop = `${OUT}ref_${name}_${theme}.png`; execFileSync('python3', ['-c', `from PIL import Image; Image.open('${ref}').convert('RGB').crop((0,36,1320,860)).save('${crop}')`]); ref = crop; }
   const page = await browser.newPage({ viewport: { width: 1320, height: 824 }, deviceScaleFactor: 1 });
   page.on('pageerror', (e) => console.log('pageerror', e.message));
   await page.goto(`http://127.0.0.1:5200/index.html?fixture=1&storage=memory&harness=1&expand=page-rea&theme=${theme}${c.q || ''}#/p/page-db`);
@@ -47,7 +52,7 @@ for (const theme of ['light', 'dark']) for (const [name, c] of Object.entries(CA
   if (c.js) await page.evaluate(c.js);
   await page.waitForTimeout(500);
   try { if (c.act) await c.act(page); } catch (e) { console.log(name, 'act failed', e.message); }
-  await page.mouse.move(1310, 815);
+  if (!c.keepMouse) await page.mouse.move(1310, 815);
   await page.waitForTimeout(300);
   const ours = `${OUT}B06_${name}_${theme}.png`;
   await page.screenshot({ path: ours });

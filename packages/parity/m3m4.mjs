@@ -72,6 +72,25 @@ ok(!(await page.$('.ink-peek')), 'scrim click closes center peek');
 // alt+click page link → side peek
 await page.goto(base + '#/p/page-rea'); await page.reload(); await page.waitForFunction(() => window.__inkwellReady); await page.waitForTimeout(400);
 const link = await page.$('.ink-pagelink'); if (link) { await link.click({ modifiers: ['Alt'] }); await page.waitForTimeout(300); ok(!!(await page.$('.ink-peek-side')), 'Alt+click page link → side peek'); } else ok(false, 'no page link on page-rea');
+
+// [[ / @ mentions, back/forward
+await page.goto(base + '#/p/page-rea'); await page.reload(); await page.waitForFunction(() => window.__inkwellReady); await page.waitForTimeout(400);
+const H = '.ink-main .ink-page-blocks > [data-type="header"] [data-editable-id]';
+const newBlock = async () => { await page.click(H); await page.keyboard.press('End'); await page.keyboard.press('Enter'); await page.waitForTimeout(150); };
+await newBlock(); await page.keyboard.type('[['); await page.waitForTimeout(300);
+ok(!!(await page.$('.ink-mention-menu')), '[[ opens the page-link menu');
+await page.keyboard.type('L2'); await page.waitForTimeout(250); await page.keyboard.press('Enter'); await page.waitForTimeout(250);
+ok(await page.evaluate(() => !![...document.querySelectorAll('.ink-main .ink-mention')].some((m) => JSON.parse(m.dataset.mention).kind === 'page')), '[[ inserts a page mention');
+await newBlock(); await page.keyboard.type('@today'); await page.waitForTimeout(300); await page.keyboard.press('Enter'); await page.waitForTimeout(250);
+ok(await page.evaluate(() => [...document.querySelectorAll('.ink-main .ink-mention')].some((m) => JSON.parse(m.dataset.mention).kind === 'date')), '@today inserts a date mention');
+await page.evaluate(() => window.__ink.navigate('page-l1')); await page.waitForTimeout(300);
+await page.evaluate(() => window.__ink.navigate('page-db')); await page.waitForTimeout(300);
+await page.keyboard.press('Control+['); await page.waitForTimeout(300);
+ok(await page.evaluate(() => window.__ink.getUi().pageId === 'page-l1'), 'Cmd+[ goes back');
+await page.keyboard.press('Control+['); await page.waitForTimeout(300);
+ok(await page.evaluate(() => window.__ink.getUi().pageId === 'page-rea'), 'back again');
+await page.keyboard.press('Control+]'); await page.waitForTimeout(300);
+ok(await page.evaluate(() => window.__ink.getUi().pageId === 'page-l1'), 'Cmd+] goes forward');
 // slash inline database
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));
 await browser.close();
