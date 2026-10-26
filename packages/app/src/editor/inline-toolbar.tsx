@@ -12,6 +12,7 @@ import { openLinkPopover } from './link-popover';
 import { TURN_INTO_ORDER, kind, kindOfBlock } from './catalog';
 import { COLORS, colorLabel, recentColors, pushColor } from './colors';
 import { isInlineMenuOpen } from './inline-menus';
+import { commentOnSelection } from '../comments/Comments';
 
 interface TbState { blockId: string; start: number; end: number; rect: DOMRect }
 let state: TbState | null = null;
@@ -136,7 +137,7 @@ function Toolbar() {
       </div>
       <div className="ink-tb-sep" />
       <div className="ink-tb-comment">
-        <span className="ink-tb-row ink-tb-comment-btn" role="button"><Icon name="comment" size={16} stroke={1.8} /><span>{t('tb.comment')}</span></span>
+        <span className="ink-tb-row ink-tb-comment-btn" role="button" onClick={() => { const st = state!; hideToolbar(); commentOnSelection(st.blockId, st.start, st.end); }}><Icon name="comment" size={16} stroke={1.8} /><span>{t('tb.comment')}</span></span>
         <span className="ink-tb-spacer" />
         <span className="ink-tb-btn" role="button" {...tip(t('tb.reaction'), undefined, 'top')}><Icon name="emojiAdd" size={16} stroke={1.8} /></span>
         <span className="ink-tb-btn" role="button" {...tip(t('tb.suggest'), undefined, 'top')}><Icon name="suggest" size={16} stroke={1.8} /></span>

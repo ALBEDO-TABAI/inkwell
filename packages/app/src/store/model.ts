@@ -16,6 +16,8 @@ export interface Marks {
   eq?: string;
   /** mention (segment text is '‣') */
   mention?: { kind: 'page' | 'user' | 'date'; id?: string; value?: string };
+  /** inline comment thread id */
+  cm?: string;
 }
 export type Seg = [string, Marks?];
 export type RichText = Seg[];
@@ -28,7 +30,9 @@ export interface BlockFormat {
   page_font?: 'default' | 'serif' | 'mono';
   page_small_text?: boolean;
   page_full_width?: boolean;
-  page_toc?: boolean; // floating outline on the right
+  page_toc?: boolean;
+  /** show page-level discussions under the title */
+  page_discussions?: boolean; // floating outline on the right
   toggleable?: boolean; // toggle heading
   column_ratio?: number;
   code_wrap?: boolean;

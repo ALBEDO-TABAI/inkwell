@@ -28,6 +28,7 @@ import { rtPlain } from '../editor/richtext';
 import { LockContext } from '../editor/Editable';
 import { Database } from '../db/Database';
 import { RowProps } from '../db/RowProps';
+import { PageComments, addPageComment } from '../comments/Comments';
 import { dbOfRow } from '../db/model';
 
 /* ================= page ================= */
@@ -120,9 +121,10 @@ function PageHeader({ page }: { page: Block }) {
         <div className={'ink-page-controls' + (hover ? ' is-visible' : '')}>
           {!icon && <button className="ink-page-ctl" onClick={(e) => { setPageFormat(page.id, { page_icon: randomEmoji() }, 'icon'); void e; }}><Icon name="smile" size={16} /><span>{t('page.addIcon')}</span></button>}
           {!cover && <button className="ink-page-ctl" onClick={addCover}><Icon name="image" size={16} /><span>{t('page.addCover')}</span></button>}
-          <button className="ink-page-ctl"><Icon name="comment" size={16} /><span>{t('page.addComment')}</span></button>
+          <button className="ink-page-ctl" onClick={() => addPageComment(page.id)}><Icon name="comment" size={16} /><span>{t('page.addComment')}</span></button>
         </div>
         <PageTitle page={page} />
+        {page.format?.page_discussions !== false && !dbOfRow(page) && <PageComments pageId={page.id} />}
       </div>
     </div>
   );

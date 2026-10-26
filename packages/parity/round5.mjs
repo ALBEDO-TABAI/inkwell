@@ -66,6 +66,35 @@ T.groupPanel = async () => {
   await page.click('.ink-group-panel .ink-menu-item:has-text("删除分组")'); await page.waitForTimeout(300);
   ok((await page.$$('.ink-main .ink-tv-group')).length === 0, 'remove grouping');
 };
+T.comments = async () => {
+  await go('page-rea');
+  // select the first 5 chars of the first paragraph and comment via the toolbar
+  const sel = '.ink-main .ink-page-blocks > [data-type="text"] [data-editable-id]';
+  const id = await page.$eval(sel, (el) => el.dataset.editableId);
+  await page.evaluate(({ sel }) => { const el = document.querySelector(sel); el.focus(); window.__ink.focusBlock(el.dataset.editableId, { start: 0, end: 4 }); }, { sel });
+  await page.evaluate(async ({ id }) => { const m = await import('/src/comments/Comments.tsx'); m.commentOnSelection(id, 0, 4); }, { id });
+  await page.waitForTimeout(200);
+  await page.keyboard.type('第一条评论'); await page.keyboard.press('Enter'); await page.waitForTimeout(300);
+  ok(!!(await page.$(sel + ' .ink-cm')), 'inline comment highlights the text');
+  await page.click(sel + ' .ink-cm'); await page.waitForTimeout(300);
+  ok((await page.textContent('.ink-cm-card')).includes('第一条评论'), 'clicking the highlight opens the thread');
+  await page.click('.ink-cm-card textarea'); await page.keyboard.type('回复一下'); await page.keyboard.press('Enter'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-cm-card .ink-cm-item')).length === 2, 'reply adds a second comment');
+  await page.hover('.ink-cm-card .ink-cm-item'); await page.click('.ink-cm-card .ink-cm-act[aria-label="解决"]'); await page.waitForTimeout(300);
+  ok(!(await page.$(sel + ' .ink-cm')), 'resolving removes the highlight');
+  await page.keyboard.press('Escape');
+  // page-level comment
+  await page.evaluate(async () => { const m = await import('/src/comments/Comments.tsx'); m.addPageComment('page-rea'); }); await page.waitForTimeout(200);
+  await page.keyboard.type('页面评论'); await page.keyboard.press('Enter'); await page.waitForTimeout(300);
+  ok((await page.textContent('.ink-page-comments')).includes('页面评论'), 'page-level comment under the title');
+  ok(!!(await page.$('.ink-topbar .ink-cm-toggle')), 'topbar shows the comments button');
+  await page.click('.ink-topbar .ink-cm-toggle'); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-rpanel .ink-rp-thread')).length === 1, 'comments sidebar lists the open thread');
+  await page.click('.ink-rp-chip'); await page.click('[data-item-id="f-resolved"]'); await page.waitForTimeout(200);
+  ok((await page.$$('.ink-rpanel .ink-rp-thread')).length === 1 && (await page.textContent('.ink-rpanel')).includes('Thi'), 'resolved filter shows the inline thread with its quote');
+  await page.evaluate(() => window.__ink.setUi({ rightPanel: 'updates' })); await page.waitForTimeout(300);
+  ok((await page.$$('.ink-rpanel .ink-up-entry')).length >= 1, 'updates panel lists entries');
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

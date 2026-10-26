@@ -11,6 +11,8 @@ import { EditedFooter } from '../shell/MenuFooter';
 import { openMoveTo, allPages, moveBlockTo } from '../shell/MoveTo';
 import { BRAND } from '@shared/brand';
 import { toast } from '../ui/toast';
+import { commentOnSelection } from '../comments/Comments';
+import { rtPlain } from './richtext';
 import { countWords, pageTitle } from '../app/pages';
 
 function ColorIcon({ c }: { c: string }) {
@@ -59,7 +61,7 @@ export function openBlockMenuFor(ids: string[], anchorEl: HTMLElement | DOMRect,
         { id: 'delete', label: t('bm.delete'), icon: 'trash', shortcut: 'Del', onSelect: () => { deleteBlocks(ids); clearBlockSelection(); } },
       ],
       [
-        { id: 'comment', label: t('bm.comment'), icon: 'comment', shortcut: '⌘⇧M' },
+        { id: 'comment', label: t('bm.comment'), icon: 'comment', shortcut: '⌘⇧M', onSelect: () => { const b = store.get(ids[0]); const len = rtPlain(b?.title).length; if (b && len) setTimeout(() => commentOnSelection(b.id, 0, len)); } },
         { id: 'suggest', label: t('bm.suggest'), icon: 'suggest', shortcut: '⌘⇧⌥X' },
       ],
       [

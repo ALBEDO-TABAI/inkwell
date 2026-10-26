@@ -4,7 +4,7 @@ import type { Marks, RichText, Seg } from '../store/model';
 export const rtLength = (rt: RichText | undefined) => (rt || []).reduce((n, s) => n + s[0].length, 0);
 export const rtPlain = (rt: RichText | undefined) => (rt || []).map((s) => s[0]).join('');
 
-const MARK_KEYS: (keyof Marks)[] = ['b', 'i', 'u', 's', 'code', 'color', 'link', 'eq', 'mention'];
+const MARK_KEYS: (keyof Marks)[] = ['b', 'i', 'u', 's', 'code', 'color', 'link', 'eq', 'mention', 'cm'];
 export function marksEqual(a?: Marks, b?: Marks): boolean {
   for (const k of MARK_KEYS) {
     const x = a?.[k], y = b?.[k];
@@ -112,6 +112,8 @@ export const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&a
 export interface RenderCtx {
   mention?: (m: NonNullable<Marks['mention']>) => string;
   equation?: (tex: string) => string;
+  /** false when an inline comment thread is resolved/deleted (no highlight) */
+  commentOpen?: (id: string) => boolean;
 }
 export function colorClass(c?: string) { return c ? (c.endsWith('_background') ? `ink-bg-${c.replace('_background', '')}` : `ink-fg-${c}`) : ''; }
 
@@ -130,6 +132,7 @@ export function toHtml(rt: RichText | undefined, ctx: RenderCtx = {}): string {
     if (m.s) cls.push('ink-s');
     if (m.code) cls.push('ink-code-mark');
     if (m.color) cls.push(colorClass(m.color));
+    if (m.cm && (!ctx.commentOpen || ctx.commentOpen(m.cm))) cls.push('ink-cm');
     const attrs = `data-m="${escapeHtml(JSON.stringify(m))}"`;
     if (m.link) inner = `<a class="ink-link${cls.length ? ' ' + cls.join(' ') : ''}" href="${escapeHtml(m.link)}" ${attrs}>${inner}</a>`;
     else inner = `<span class="${cls.join(' ')}" ${attrs}>${inner}</span>`;

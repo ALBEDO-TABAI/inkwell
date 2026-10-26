@@ -3,6 +3,7 @@ import type { Block, RichText } from '../store/model';
 import { store } from '../store/store';
 import { toHtml, fromDom, rtPlain, normalize } from './richtext';
 import { inlineCtx } from './render-inline';
+import { cmSig } from '../comments/model';
 import { registerEditable } from './registry';
 import { getSelectionOffsets, setSelectionOffsets } from './caret';
 import { setTitle } from './commands';
@@ -42,19 +43,20 @@ export function Editable({ block, className, placeholder, alwaysPlaceholder, tag
     const sel = keepCaret && document.activeElement === el ? getSelectionOffsets(el) : null;
     const html = code ? highlightCode(rtPlain(rt), lang || 'plain') : toHtml(rt, inlineCtx);
     if (el.innerHTML !== html) el.innerHTML = html;
-    lastRendered.current = JSON.stringify(normalize(rt || []));
+    lastRendered.current = JSON.stringify(normalize(rt || [])) + cmSig(rt);
     if (sel) setSelectionOffsets(el, sel.start, sel.end);
     el.classList.toggle('is-empty', !rtPlain(rt).length);
   };
 
   useLayoutEffect(() => {
     const el = ref.current!;
-    if (JSON.stringify(normalize(title || [])) !== lastRendered.current || code) {
+    if (JSON.stringify(normalize(title || [])) + cmSig(title) !== lastRendered.current || code) {
       if (composing.current) return;
       // skip re-render when DOM already represents the value (typing)
       const domVal = code ? [[el.textContent || '']] as RichText : fromDom(el);
-      if (!sameRt(domVal, title) || !el.childNodes.length && rtPlain(title).length || code) render(el, title, true);
-      else { lastRendered.current = JSON.stringify(normalize(title || [])); el.classList.toggle('is-empty', !rtPlain(title).length); }
+ const cmChanged = !lastRendered.current.endsWith(cmSig(title)) || (cmSig(title) === '' && /ink-cm/.test(el.innerHTML));
+      if (!sameRt(domVal, title) || !el.childNodes.length && rtPlain(title).length || code || cmChanged) render(el, title, true);
+      else { lastRendered.current = JSON.stringify(normalize(title || [])) + cmSig(title); el.classList.toggle('is-empty', !rtPlain(title).length); }
     }
   });
   // Register on every commit: the element can be recreated when the tag changes (e.g. text → heading).

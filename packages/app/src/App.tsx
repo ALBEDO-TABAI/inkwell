@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useUi, toggleSidebar, cycleTheme, setTheme, goBack, goForward, getUi, onNavigate, navigate } from './app/state';
+import { setUi, useUi, toggleSidebar, cycleTheme, setTheme, goBack, goForward, getUi, onNavigate, navigate } from './app/state';
 import { Sidebar, SidebarPeek } from './shell/Sidebar';
 import { Topbar } from './shell/Topbar';
 import { PageView } from './page/PageView';
 import { OverlayHost, isPopoverOpen } from './ui/overlay';
 import { PeekHost } from './shell/Peek';
 import { FindBar, openFind } from './shell/FindBar';
+import { RightPanel } from './shell/RightPanel';
+import { commentOnSelection } from './comments/Comments';
+import { activeEditable } from './editor/registry';
+import { getSelectionOffsets } from './editor/caret';
 import { startHistory } from './app/history';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
@@ -41,6 +45,8 @@ export function App() {
         if (k === 'k' && inText && sel && !sel.isCollapsed) return; // link popover
         e.preventDefault(); openSearch(); return;
       }
+      if (k === 'm' && e.shiftKey) { const a = activeEditable(); const o = a && getSelectionOffsets(a.el); if (a && o && o.start !== o.end) { e.preventDefault(); commentOnSelection(a.id, o.start, o.end); } return; }
+      if (k === 'u' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'updates' ? null : 'updates' }); return; }
       if (k === 'f' && !e.shiftKey && !e.altKey) { e.preventDefault(); openFind(); return; }
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }
@@ -95,6 +101,7 @@ export function App() {
         <Topbar pageId={pageId} />
         <PageView key={pageId} pageId={pageId} />
       </main>
+      <RightPanel />
       <PeekHost />
       <FindBar />
       <OverlayHost />

@@ -34,6 +34,7 @@ const REG = {
   form: L.FormInput, feed: L.Rss, dashboard: L.LayoutDashboard, openPage: L.SquareArrowOutUpRight, userRound: L.UserRound, sortDown: L.ArrowDownUp,
   sigma: L.Sigma, caseUpper: L.CaseUpper, chevronUp: L.ChevronUp, minus: L.Minus, paperclip: L.Paperclip, arrowUp: L.ArrowUp, arrowDown: L.ArrowDown,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
+  rotateCcw: L.RotateCcw, messageSquare: L.MessageSquare, gift: L.Gift, storeFront: L.Store, squareCheck: L.SquareCheck, filePen: L.FilePenLine, notebookPen: L.NotebookPen, codeTag: L.CodeXml, star2: L.Star, bookOpen: L.BookOpen,
 };
 
 export function Icon({ name, size = 20, stroke = 1.5, style, className }: { name: IconName; size?: number; stroke?: number; style?: CSSProperties; className?: string }) {

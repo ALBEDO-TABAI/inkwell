@@ -8,6 +8,7 @@ import { openCellEditor } from './editors';
 import { openHeaderMenu } from './menus';
 import { openMenu } from '../ui/menu';
 import { PROP_ICON } from './cells';
+import { PageComments } from '../comments/Comments';
 
 const TYPE_LIST: [Prop['type'], string][] = [['text', '文本'], ['number', '数字'], ['select', '选择'], ['multi_select', '多选'], ['status', '状态'], ['date', '日期'], ['person', '人员'], ['checkbox', '复选框'], ['url', '网址'], ['email', '电子邮件'], ['phone_number', '电话'], ['formula', '函数'], ['created_time', '创建时间']];
 void PROP_ICON;
@@ -38,7 +39,7 @@ export function RowProps({ row, db, locked }: { row: Block; db: Block; locked?: 
       </div>}
       <div className="ink-rowcomments">
         <div className="ink-rowcomments-title">评论</div>
-        <div className="ink-rowcomments-new"><Avatar userId={'user-1'} size={24} /><input placeholder="添加评论…" /></div>
+        <PageComments pageId={row.id} always />
       </div>
     </div>
   );

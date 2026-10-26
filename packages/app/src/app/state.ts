@@ -20,6 +20,10 @@ export interface UiState {
   sidebarResizing: boolean;
   /** a page open in side or center peek over the current page */
   rowPeek: { id: string; mode: 'side' | 'center' } | null;
+  /** right sidebar (updates & analytics / comments) */
+  rightPanel: 'updates' | 'comments' | null;
+  /** page id whose page-level comment composer is open */
+  commentComposer: string | null;
 }
 
 const mq = typeof matchMedia !== 'undefined' ? matchMedia('(prefers-color-scheme: dark)') : null;
@@ -59,6 +63,8 @@ export function initUi() {
     sidebarOpen: q.get('sidebar') === 'closed' ? false : kvGet('sidebarOpen', true),
     peek: false,
     rowPeek: null,
+    rightPanel: (q.get('panel') as UiState['rightPanel']) || null,
+    commentComposer: null,
     chromeHidden: q.get('idle') === '1',
     expanded: kvGet('sidebarExpanded', {} as Record<string, boolean>),
     highContrast: kvGet('highContrast', false),

@@ -12,13 +12,15 @@ import { copyPageLink } from './RowMenu';
 import { openMoveTo } from './MoveTo';
 import { toast } from '../ui/toast';
 import { pageToMarkdown } from '../editor/clipboard';
+import { pageHasComments, toggleRightPanel } from '../comments/Comments';
+import { setUi } from '../app/state';
 
 export function Topbar({ pageId }: { pageId: string }) {
   useStoreVersion();
   const page = useBlock(pageId);
   const hidden = useUi((s) => s.chromeHidden);
+  const panel = useUi((s) => s.rightPanel);
   const path = breadcrumbPath(pageId);
-  const fav = store.space.favorites.includes(pageId);
   const inPrivate = path.length === 1 && store.space.privatePages.includes(path[0].id);
   return (
     <header className={'ink-topbar' + (hidden ? ' is-idle' : '')}>
@@ -43,13 +45,25 @@ export function Topbar({ pageId }: { pageId: string }) {
           </span>
         )}
       </div>
-      <div className="ink-topbar-right">
+      {!panel && <div className="ink-topbar-right"><TopbarActions pageId={pageId} /></div>}
+    </header>
+  );
+}
+
+export function TopbarActions({ pageId }: { pageId: string }) {
+  useStoreVersion();
+  const page = store.get(pageId);
+  const fav = store.space.favorites.includes(pageId);
+  const panel = useUi((s) => s.rightPanel);
+  const hasCm = pageHasComments(pageId);
+  return (
+    <>
         <span className="ink-topbar-btn ink-share-btn" role="button" onClick={(e) => openShare(e.currentTarget)}><Icon name="lock" size={12} stroke={2} /><span>{t('top.share')}</span></span>
+        {(hasCm || panel === 'comments') && <span className={'ink-topbar-icon ink-cm-toggle' + (panel === 'comments' ? ' is-on' : '')} role="button" {...tip(t('rp.comments'))} onClick={() => toggleRightPanel('comments')}><Icon name="comment" size={20} stroke={1.6} /></span>}
         <span className="ink-topbar-icon" role="button" {...tip(t('top.copyLink'))} onClick={() => copyPageLink(pageId)}><Icon name="link" size={20} stroke={1.6} /></span>
         <span className={'ink-topbar-icon' + (fav ? ' is-fav' : '')} role="button" {...tip(fav ? t('top.unfavorite') : t('top.favorite'))} onClick={() => toggleFavorite(pageId)}><Icon name="star" size={20} stroke={1.6} style={fav ? { fill: '#F6C050', color: '#F6C050' } : undefined} /></span>
         <span className="ink-topbar-icon ink-more-btn" role="button" {...tip(t('top.more'))} onClick={(e) => page && openPageMenu(e.currentTarget, pageId)}><Icon name="more" size={20} stroke={2} /></span>
-      </div>
-    </header>
+    </>
   );
 }
 
@@ -98,7 +112,7 @@ export function appearanceSpec(pageId: string): MenuSpec {
         { id: 'small', label: t('pm.smallText'), icon: 'smallText', toggle: !!f.page_small_text, onSelect: () => setPageFormat(pageId, { page_small_text: !store.get(pageId)!.format?.page_small_text }) },
         { id: 'full', label: t('pm.fullWidth'), icon: 'fullWidth', toggle: !!f.page_full_width, onSelect: () => setPageFormat(pageId, { page_full_width: !store.get(pageId)!.format?.page_full_width }) },
         { id: 'toc', label: t('pm.toc'), icon: 'toc', toggle: f.page_toc !== false, onSelect: () => setPageFormat(pageId, { page_toc: store.get(pageId)!.format?.page_toc === false }) },
-        { id: 'disc', label: t('pm.discussion'), icon: 'comment', toggle: true, onSelect: () => {} },
+        { id: 'disc', label: t('pm.discussion'), icon: 'comment', toggle: f.page_discussions !== false, onSelect: () => setPageFormat(pageId, { page_discussions: store.get(pageId)!.format?.page_discussions === false }) },
         { id: 'inline', label: t('pm.inlineComments'), icon: 'comment', sub: () => ({ width: 220, groups: [[{ id: 'a', label: '默认', checked: true }, { id: 'b', label: '最小化' }]] }) },
       ],
       [
@@ -123,7 +137,7 @@ export function openPageMenu(el: HTMLElement, pageId: string) {
           { id: 'dup', label: t('pm.duplicate'), icon: 'duplicate', shortcut: '⌘D', onSelect: () => { const n = duplicateBlock(pageId); if (n) navigate(n); } },
           { id: 'move', label: t('pm.moveTo'), icon: 'move', shortcut: '⌘⇧P', onSelect: () => setTimeout(() => openMoveTo(el, pageId)) },
           { id: 'history', label: t('pm.history'), icon: 'history', onSelect: () => setTimeout(() => openHistory(pageId)) },
-          { id: 'analytics', label: t('pm.analytics'), icon: 'clock' },
+          { id: 'analytics', label: t('pm.analytics'), icon: 'clock', onSelect: () => setUi({ rightPanel: 'updates' }) },
         ],
         [{ id: 'appearance', label: t('pm.appearance'), icon: 'aa', keywords: ['font', 'small', 'full', 'theme', '字体', '小字号', '全宽'], sub: () => appearanceSpec(pageId) }],
         [{ id: 'ai', label: t('pm.useWithAi'), icon: 'ai', sub: () => ({ width: 220, groups: [[{ id: 'x', label: t('tb.skill.improve'), disabled: true }]] }) }],

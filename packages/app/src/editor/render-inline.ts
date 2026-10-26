@@ -35,4 +35,5 @@ export function mentionHtml(m: NonNullable<Marks['mention']>): string {
   return `${icon}<span class="ink-mention-title">${escapeHtml(pageTitle(p))}</span>`;
 }
 
-export const inlineCtx: RenderCtx = { mention: mentionHtml, equation: (tex) => renderTex(tex) };
+import { commentOpen } from '../comments/model';
+export const inlineCtx: RenderCtx = { mention: mentionHtml, equation: (tex) => renderTex(tex), commentOpen };
