@@ -157,6 +157,25 @@ T.table = async () => {
   const ratios = await page.evaluate((id) => window.__ink.store.get(id).content.map((c) => window.__ink.store.get(c).format.column_ratio.toFixed(2)), cl);
   ok(Number(ratios[0]) > Number(ratios[1]), 'dragging the column gap resizes columns: ' + ratios.join('/'));
 };
+T.reminders = async () => {
+  await go('page-rea');
+  await page.evaluate(() => { window.__notes = []; window.Notification = class { static permission = 'granted'; static requestPermission() { return Promise.resolve('granted'); } constructor(t, o) { window.__notes.push(t + '|' + o.body); } }; });
+  const iso = await page.evaluate(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; });
+  await page.evaluate((iso) => { const s = window.__ink.store; s.transact('t', (tx) => { tx.create({ id: 'rem-1', type: 'text', title: [['开会 '], ['‣', { mention: { kind: 'date', value: iso } }]], parent: 'page-rea', parentTable: 'block', content: [], alive: true }); tx.insertChild('page-rea', 'rem-1', 0); }); }, iso);
+  await page.waitForTimeout(300);
+  await page.click('[data-editable-id="rem-1"] .ink-mention'); await page.waitForTimeout(300);
+  ok(!!(await page.$('.ink-datepicker')), 'clicking a date mention opens the date picker');
+  await page.click('.ink-datepicker [data-dp="time"]'); await page.waitForTimeout(200);
+  const t = await page.evaluate(() => { const d = new Date(Date.now() + 61000); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); });
+  await page.fill('.ink-dp-time', t); await page.waitForTimeout(200);
+  await page.click('.ink-datepicker [data-dp="remind"]'); await page.waitForTimeout(200); await page.click('[data-item-id="rm-5"]'); await page.waitForTimeout(300);
+  const m = await page.evaluate(() => window.__ink.store.get('rem-1').title[1][1].mention);
+  ok(m.time === t && m.remind === 5, 'mention stores time + reminder: ' + JSON.stringify(m));
+  ok(!!(await page.$('[data-editable-id="rem-1"] .ink-mention-bell')), 'mention shows the reminder bell');
+  await page.waitForTimeout(1200);
+  const notes = await page.evaluate(() => window.__notes);
+  ok(notes.length === 1 && notes[0].startsWith('REA'), 'reminder fired a local notification: ' + notes.join(';'));
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

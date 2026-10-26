@@ -16,7 +16,7 @@ export interface Marks {
   /** inline equation source (segment text is '⁍') */
   eq?: string;
   /** mention (segment text is '‣') */
-  mention?: { kind: 'page' | 'user' | 'date'; id?: string; value?: string };
+  mention?: { kind: 'page' | 'user' | 'date'; id?: string; value?: string; /** HH:MM */ time?: string; /** minutes before the date/time; absent = no reminder */ remind?: number };
   /** inline comment thread id */
   cm?: string;
 }

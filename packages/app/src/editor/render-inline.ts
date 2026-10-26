@@ -27,7 +27,9 @@ export function mentionHtml(m: NonNullable<Marks['mention']>): string {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
     const label = diff === 0 ? t('common.today') : diff === 1 ? t('common.tomorrow') : diff === -1 ? t('common.yesterday') : `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
-    return `<span class="ink-mention-at">@</span>${escapeHtml(label)}`;
+    const time = m.time ? ' ' + escapeHtml(m.time) : '';
+    const bell = m.remind != null ? '<span class="ink-mention-bell" aria-label="提醒"></span>' : '';
+    return `<span class="ink-mention-at">@</span>${escapeHtml(label)}${time}${bell}`;
   }
   const p = store.get(m.id || '');
   const ic = p?.format?.page_icon;

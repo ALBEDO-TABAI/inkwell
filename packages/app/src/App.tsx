@@ -12,6 +12,8 @@ import { commentOnSelection } from './comments/Comments';
 import { activeEditable } from './editor/registry';
 import { getSelectionOffsets } from './editor/caret';
 import { startHistory } from './app/history';
+import { startReminders } from './app/reminders';
+import './editor/date-mention';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
 import { openSettings } from './shell/Settings';
@@ -29,6 +31,7 @@ export function App() {
   const resizing = useUi((s) => s.sidebarResizing);
   const [, force] = useState(0);
   useEffect(() => startHistory(), []);
+  useEffect(() => startReminders(), []);
   useEffect(() => onLocaleChange(() => force((n) => n + 1)), []);
 
   // global shortcuts

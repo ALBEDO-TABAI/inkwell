@@ -251,7 +251,9 @@ const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
 const slash = (iso?: string) => (iso ? iso.replace(/-/g, '/') : '');
 const unslash = (s: string) => { const m = s.trim().match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/); return m ? `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}` : null; };
 
-export function DatePicker({ value, onChange, onClear, showEnd = true, todayIso = isoOf(new Date()) }: { value: string[]; onChange: (v: string[]) => void; onClear?: () => void; showEnd?: boolean; todayIso?: string }) {
+export const REMIND_OPTS: [number | null, string][] = [[null, '无'], [0, '事件发生时'], [5, '提前 5 分钟'], [10, '提前 10 分钟'], [15, '提前 15 分钟'], [30, '提前 30 分钟'], [60, '提前 1 小时'], [120, '提前 2 小时'], [1440, '提前 1 天'], [2880, '提前 2 天']];
+export const remindLabel = (r?: number | null) => REMIND_OPTS.find(([v]) => v === (r ?? null))?.[1] || '无';
+export function DatePicker({ value, onChange, onClear, showEnd = true, todayIso = isoOf(new Date()), time, onTime, remind, onRemind }: { value: string[]; onChange: (v: string[]) => void; onClear?: () => void; showEnd?: boolean; todayIso?: string; time?: string; onTime?: (t: string | undefined) => void; remind?: number | null; onRemind?: (r: number | null) => void }) {
   const [start, end] = value;
   const [hasEnd, setHasEnd] = useState(!!end);
   const [month, setMonth] = useState(() => { const d = start ? parseIso(start) : parseIso(todayIso); return new Date(d.getFullYear(), d.getMonth(), 1); });
@@ -273,6 +275,7 @@ export function DatePicker({ value, onChange, onClear, showEnd = true, todayIso 
       <div className="ink-dp-inputs">
         <input className={'ink-dp-input' + (editing === 'start' ? ' is-focus' : '')} value={s1} data-autofocus onFocus={(e) => { setEditing('start'); e.currentTarget.select(); }} onChange={(e) => setS1(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { const v = unslash(s1); if (v) { onChange(hasEnd ? [v, end && end >= v ? end : v] : [v]); setMonth(new Date(parseIso(v).getFullYear(), parseIso(v).getMonth(), 1)); } } }} />
+        {time !== undefined && onTime && <input className="ink-dp-input ink-dp-time" type="time" aria-label="时间" value={time} onChange={(e) => onTime(e.target.value || '09:00')} />}
         {hasEnd && <input className={'ink-dp-input' + (editing === 'end' ? ' is-focus' : '')} value={s2} onFocus={() => setEditing('end')} onChange={(e) => setS2(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { const v = unslash(s2); if (v) onChange([start || v, v]); } }} />}
       </div>
@@ -295,8 +298,8 @@ export function DatePicker({ value, onChange, onClear, showEnd = true, todayIso 
       <div className="ink-menu-sep" />
       {showEnd && <div className="ink-menu-item" onClick={() => { const v = !hasEnd; setHasEnd(v); if (start) onChange(v ? [start, start] : [start]); setEditing(v ? 'end' : 'start'); }}><span style={{ flex: 1 }}>结束日期</span><Switch on={hasEnd} /></div>}
       <div className="ink-menu-item"><span style={{ flex: 1 }}>日期格式</span><span className="ink-menu-right">完整日期 <Icon name="chevronRight" size={14} /></span></div>
-      <div className="ink-menu-item"><span style={{ flex: 1 }}>包含时间</span><Switch on={false} /></div>
-      <div className="ink-menu-item"><span style={{ flex: 1 }}>提醒</span><span className="ink-menu-right">无 <Icon name="chevronRight" size={14} /></span></div>
+      <div className="ink-menu-item" data-dp="time" onClick={() => onTime?.(time === undefined ? '09:00' : undefined)}><span style={{ flex: 1 }}>包含时间</span><Switch on={time !== undefined} /></div>
+      <div className="ink-menu-item" data-dp="remind" onClick={(e) => { if (!onRemind) return; openMenu(e.currentTarget.getBoundingClientRect(), { width: 180, groups: [REMIND_OPTS.map(([v, l]) => ({ id: 'rm-' + (v ?? 'none'), label: l, checked: (remind ?? null) === v, onSelect: () => onRemind(v) }))] }, { placement: 'right-start', parent: 'mention-date' }); }}><span style={{ flex: 1 }}>提醒</span><span className="ink-menu-right">{remindLabel(remind)} <Icon name="chevronRight" size={14} /></span></div>
       <div className="ink-menu-sep" />
       {onClear && <div className="ink-menu-item" onClick={onClear}>清除</div>}
       <div className="ink-menu-sep" />
