@@ -26,6 +26,8 @@ export interface PopoverSpec {
   /** parent popover id — children close with parent and outside-clicks inside children don't close parent */
   parent?: string;
   zIndex?: number;
+  /** exact placement, no viewport clamping (docked panels) */
+  noClamp?: boolean;
 }
 
 interface Entry extends PopoverSpec { id: string }
@@ -117,7 +119,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
         case 'left-center': left = a.left - w - off; top = (a.top + a.bottom) / 2 - h / 2; break;
         case 'center': left = (vw - w) / 2; top = (vh - h) / 2; if (entry.topFraction != null && vh * entry.topFraction + h <= vh - m) top = vh * entry.topFraction; break;
       }
-      if (entry.placement !== 'center') {
+      if (entry.placement !== 'center' && !entry.noClamp) {
         if (top + h > vh - m) {
           const above = a.top - h - off;
           top = above >= m && !(entry.placement || '').startsWith('right') ? above : Math.max(m, vh - m - h);

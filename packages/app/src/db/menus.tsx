@@ -322,7 +322,12 @@ function SortPanel({ dbId, viewId, close }: { dbId: string; viewId: string; clos
 
 /* ---------- settings / group ---------- */
 export function openGroupPanel(anchor: HTMLElement, db: Block, view: View) {
-  openPopover({ id: 'db-group', anchor: R(anchor), placement: 'bottom-end', offset: 4, className: 'ink-group-pop', render: (close) => <GroupPanel dbId={db.id} viewId={view.id} close={close} /> });
+  // docked to the right of the database, from just under the toolbar to the window bottom (like the reference's view-settings panel)
+  const bar = anchor.closest('.ink-db-bar')?.getBoundingClientRect();
+  if (!bar) { openPopover({ id: 'db-group', anchor: R(anchor), placement: 'bottom-end', offset: 4, className: 'ink-group-pop', render: (close) => <GroupPanel dbId={db.id} viewId={view.id} close={close} /> }); return; }
+  const left = Math.round(bar.right - 283), top = Math.round(bar.bottom + 9);
+  openPopover({ id: 'db-group', anchor: { left, right: left, top, bottom: top }, placement: 'bottom-start', offset: 0, noClamp: true, className: 'ink-group-pop is-docked',
+    render: (close) => <div className="ink-gp-dock" style={{ width: window.innerWidth - left, height: window.innerHeight - top }}><GroupPanel dbId={db.id} viewId={view.id} close={close} /></div> });
 }
 const DATE_BY = { day: '天', week: '周', month: '月', year: '年' } as const;
 function GroupPanel({ dbId, viewId, close }: { dbId: string; viewId: string; close: () => void }) {
@@ -330,7 +335,7 @@ function GroupPanel({ dbId, viewId, close }: { dbId: string; viewId: string; clo
   useEffect(() => store.subscribe(() => force((x) => x + 1)), []);
   const db = store.get(dbId)!; const view = viewsOf(db).find((v) => v.id === viewId)!; const s = schemaOf(db);
   const [pickProp, setPickProp] = useState(!view.group);
-  const groupable = sortedProps(db).filter((id) => !['title', 'formula', 'relation', 'rollup', 'file'].includes(s[id].type));
+  const groupable = sortedProps(db).filter((id) => !['relation', 'rollup', 'file'].includes(s[id].type));
   const o = view.groupOpts || {};
   const setO = (patch: Partial<GroupOpts>) => updateView(db.id, view.id, (v) => ({ groupOpts: { ...(v.groupOpts || {}), ...patch } }), 'group options');
   const head = (title: string, back?: () => void) => <div className="ink-gp-head"><button className="ink-gp-back" aria-label="返回" onClick={back || close}><Icon name="arrowLeft" size={16} /></button><span>{title}</span><span style={{ flex: 1 }} /><button className="ink-gp-back" aria-label="关闭" onClick={close}><Icon name="x" size={16} /></button></div>;

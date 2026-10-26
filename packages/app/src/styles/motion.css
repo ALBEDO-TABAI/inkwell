@@ -35,7 +35,8 @@
 .ink-rpanel { animation-duration: var(--ink-dur-move) !important; animation-timing-function: ease-out !important; }
 
 /* sidebar collapse / expand */
-.ink-sb-shell { flex: none; height: 100%; display: flex; overflow: hidden; position: relative; z-index: 2; }
+.ink-sb-shell { flex: none; height: 100%; display: flex; position: relative; z-index: 2; }
+.ink-sb-shell.is-opening, .ink-sb-shell.is-closing { overflow: hidden; }
 .ink-sb-shell > .ink-sidebar { flex: none; }
 @keyframes ink-sb-open { from { width: 0; } }
 @keyframes ink-sb-close { to { width: 0; } }

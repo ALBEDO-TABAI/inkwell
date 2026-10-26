@@ -662,3 +662,7 @@ body.is-col-resizing iframe { pointer-events: none; }
 html.is-quick, html.is-quick body { background: transparent; overflow: hidden; }
 .ink-quick-root { position: fixed; inset: 0; display: flex; }
 .ink-quick-root > .ink-search { width: 100% !important; max-width: none !important; height: 100% !important; max-height: none !important; border-radius: 12px; box-shadow: none; }
+/* docked group panel */
+.ink-gp-dock { background: var(--ink-background-primary); box-shadow: inset 1px 0 0 var(--ink-border-primary); overflow-y: auto; }
+.ink-gp-dock > .ink-group-panel { box-shadow: none; border-radius: 0; background: transparent; width: 290px !important; padding-left: 1px; }
+.ink-group-pop.is-docked { animation: none; }

@@ -35,6 +35,7 @@ const CASES = {
   cell_text: { ref: 'B06b/1x/B06b_cell_edit_text', js: view('view-0'), act: clickSel(cell('row-03', 'notes')) },
   filter_menu: { ref: 'B06b/1x/B06b_filter_menu', js: view('view-0'), act: clickSel('.ink-db-tool[aria-label="筛选"]') },
   sort_menu: { ref: 'B06b/1x/B06b_sort_menu', js: view('view-0'), act: clickSel('.ink-db-tool[aria-label="排序"]') },
+  group_menu: { ref: 'B06b/1x/B06b_group_menu', js: view('view-0'), act: async (p) => { await clickSel('.ink-db-tool[aria-label="设置"]')(p); await p.waitForTimeout(200); await clickSel('[data-item-id="group"]')(p); } },
   calc_menu: { ref: 'B06b/1x/B06b_calc_menu', js: view('view-0'), act: async (p) => { await clickSel('.ink-tv-hcell[data-prop="score"]')(p); await clickSel('[data-item-id="calc"]')(p); } },
 };
 const browser = await chromium.launch({ executablePath: process.env.CHROME || '/home/box/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome' });
