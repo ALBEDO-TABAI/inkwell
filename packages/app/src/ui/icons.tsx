@@ -25,11 +25,21 @@ const REG = {
   synced: L.RefreshCcw, breadcrumb: L.ChevronsRight, tab: L.PanelTop, arrowLeft: L.ArrowLeft, arrowRight: L.ArrowRight,
   sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, panelRight: L.PanelRight, filterCircle: L.ListFilter, caseSensitive: L.CaseSensitive, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
   turnInto: L.Repeat2, paintBucket: L.PaintBucket, file: L.File, info: L.Info, eye: L.Eye, user: L.User,
+  th1: L.Heading1, th2: L.Heading2, th3: L.Heading3, th4: L.Heading4,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };
 
 export function Icon({ name, size = 20, stroke = 1.5, style, className }: { name: IconName; size?: number; stroke?: number; style?: CSSProperties; className?: string }) {
   const C = REG[name] as L.LucideIcon;
+  if (/^th\d$/.test(name)) {
+    // toggle heading: a small disclosure triangle in front of the heading glyph
+    return (
+      <span className={className} style={{ display: 'flex', alignItems: 'center', width: size, height: size, flexShrink: 0, ...style }} aria-hidden>
+        <svg width={size * 0.22} height={size * 0.3} viewBox="0 0 4 6" style={{ flexShrink: 0 }}><path d="M0 0L4 3L0 6Z" fill="currentColor" /></svg>
+        <C size={size * 0.78} strokeWidth={stroke} style={{ flexShrink: 0, display: 'block' }} />
+      </span>
+    );
+  }
   return <C size={size} strokeWidth={stroke} style={{ flexShrink: 0, display: 'block', ...style }} className={className} aria-hidden />;
 }
 

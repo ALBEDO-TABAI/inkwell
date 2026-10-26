@@ -34,7 +34,9 @@ export interface MenuSpec {
   search?: string;
   groups: MenuEntry[][];
   footer?: ReactNode;
-  maxHeight?: number;
+  maxHeight?: number | string;
+  /** as a submenu: centre vertically on the parent item instead of top-aligning */
+  centered?: boolean;
   className?: string;
 }
 
@@ -52,9 +54,9 @@ export function openMenu(anchor: Anchor | (() => Anchor), spec: MenuSpec | (() =
   return id;
 }
 
-export function Menu({ spec, close, popId, closeAll }: { spec: MenuSpec; close: () => void; popId: string; closeAll?: () => void }) {
+export function Menu({ spec, close, popId, closeAll, initialActive = -1 }: { spec: MenuSpec; close: () => void; popId: string; closeAll?: () => void; initialActive?: number }) {
   const [q, setQ] = useState('');
-  const [active, setActive] = useState(-1);
+  const [active, setActive] = useState(initialActive);
   const subRef = useRef<{ id: string; item: string } | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
   const root = useRef<HTMLDivElement>(null);
@@ -80,9 +82,10 @@ export function Menu({ spec, close, popId, closeAll }: { spec: MenuSpec; close: 
     const id = popId + '-sub';
     subRef.current = { id, item: it.id };
     const r = el.getBoundingClientRect();
-    openPopover({ id, parent: popId, anchor: { left: r.left - 4, right: r.right + 4, top: r.top - 6, bottom: r.bottom }, placement: 'right-start', offset: 0, noFocus: false,
+    const subSpec = it.sub();
+    openPopover({ id, parent: popId, anchor: subSpec.centered ? { left: r.left - 4, right: r.right + 4, top: r.top, bottom: r.bottom } : { left: r.left - 4, right: r.right + 4, top: r.top - 6, bottom: r.bottom }, placement: subSpec.centered ? 'right-center' : 'right-start', offset: 0, noFocus: false,
       onClose: () => { if (subRef.current?.id === id) subRef.current = null; el.classList.remove('is-sub-open'); },
-      render: (c) => <Menu spec={it.sub!()} close={c} popId={id} closeAll={doCloseAll} /> });
+      render: (c) => <Menu spec={subSpec} close={c} popId={id} closeAll={doCloseAll} initialActive={subSpec.centered ? 0 : -1} /> });
     el.classList.add('is-sub-open');
   };
   const select = (it: MenuItemSpec, el?: HTMLElement) => {

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, typ
 import { createPortal } from 'react-dom';
 
 export type Anchor = DOMRect | { left: number; top: number; right: number; bottom: number; width?: number; height?: number };
-export type Placement = 'bottom-start' | 'bottom-end' | 'bottom' | 'top-start' | 'right-start' | 'left-start' | 'left-center' | 'top' | 'center';
+export type Placement = 'bottom-start' | 'bottom-end' | 'bottom' | 'top-start' | 'right-start' | 'left-start' | 'left-center' | 'right-center' | 'top' | 'center';
 
 export interface PopoverSpec {
   id?: string;
@@ -111,6 +111,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
         case 'top': top = a.top - h - off; left = (a.left + a.right) / 2 - w / 2; break;
         case 'right-start': left = a.right + off; top = a.top; if (left + w > vw - m) left = a.left - w - off; break;
         case 'left-start': left = a.left - w - off; top = a.top; break;
+        case 'right-center': left = a.right + off; top = (a.top + a.bottom) / 2 - h / 2; if (left + w > vw - m) left = a.left - w - off; break;
         case 'left-center': left = a.left - w - off; top = (a.top + a.bottom) / 2 - h / 2; break;
         case 'center': left = (vw - w) / 2; top = (vh - h) / 2; if (entry.topFraction != null && vh * entry.topFraction + h <= vh - m) top = vh * entry.topFraction; break;
       }

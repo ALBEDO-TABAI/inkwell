@@ -5,7 +5,7 @@ import { PageIcon } from '../ui/PageIcon';
 import { openPopover } from '../ui/overlay';
 import { pageTitle, isInTrash } from '../app/pages';
 
-function allPages(): string[] {
+export function allPages(): string[] {
   const out: string[] = [];
   const walk = (id: string) => { const b = store.get(id); if (!b?.alive || isInTrash(id)) return; if (b.type === 'page') out.push(id); for (const c of b.content || []) walk(c); };
   store.space.privatePages.forEach(walk);
