@@ -7,14 +7,18 @@
     "build": "node build.mjs",
     "start": "node build.mjs && electron .",
     "dev": "node build.mjs && INKWELL_DEV_URL=http://127.0.0.1:5200 electron .",
-    "rebuild": "electron-rebuild -f -w better-sqlite3"
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "dist:mac": "node build.mjs && electron-builder --mac zip --arm64"
   },
   "dependencies": {
-    "better-sqlite3": "^12.4.0"
+    "better-sqlite3": "^13.0.3"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.0.0",
     "electron": "44.9.3",
+    "electron-builder": "^26.18.0",
     "esbuild": "^0.25.0"
-  }
+  },
+  "description": "Inkwell desktop",
+  "author": "Inkwell"
 }

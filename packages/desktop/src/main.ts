@@ -16,7 +16,8 @@ import { labels } from './labels';
 const TABBAR_H = 36;
 const DEFAULT_W = 1320, DEFAULT_H = 860;
 const DEV_URL = process.env.INKWELL_DEV_URL; // e.g. http://127.0.0.1:5200 (vite)
-const APP_DIST = path.resolve(__dirname, '../../app/dist');
+// packaged: renderer ships as Resources/renderer (extraResources); dev: the workspace build
+const APP_DIST = [path.join(process.resourcesPath || '', 'renderer'), path.resolve(__dirname, '../../app/dist')].find((d) => fs.existsSync(path.join(d, 'index.html'))) || path.resolve(__dirname, '../../app/dist');
 const BG = { light: '#f9f8f7', dark: '#202020' };
 
 if (process.env.INKWELL_USER_DATA) app.setPath('userData', path.resolve(process.env.INKWELL_USER_DATA));

@@ -1,0 +1,23 @@
+<!-- Inkwell app icon: original artwork. A single ink drop falling into a pool, on a paper tile. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FDFCFA"/><stop offset="1" stop-color="#ECE8E1"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#3B5BDB"/><stop offset="1" stop-color="#1C2541"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#paper)" filter="url(#shadow)"/>
+  <rect x="100.5" y="100.5" width="823" height="823" rx="184.5" fill="none" stroke="#000" stroke-opacity="0.06"/>
+  <!-- pool -->
+  <ellipse cx="512" cy="742" rx="196" ry="38" fill="#1C2541" opacity="0.16"/>
+  <ellipse cx="512" cy="736" rx="132" ry="22" fill="url(#ink)" opacity="0.9"/>
+  <!-- drop -->
+  <path d="M512 214 C 512 214 336 446 336 562 C 336 662 414 728 512 728 C 610 728 688 662 688 562 C 688 446 512 214 512 214 Z" fill="url(#ink)"/>
+  <path d="M430 540 C 430 470 468 412 500 368" fill="none" stroke="#fff" stroke-opacity="0.55" stroke-width="30" stroke-linecap="round"/>
+  <circle cx="432" cy="600" r="16" fill="#fff" fill-opacity="0.5"/>
+</svg>

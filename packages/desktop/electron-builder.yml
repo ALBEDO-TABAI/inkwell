@@ -1,0 +1,41 @@
+# Inkwell desktop packaging. Test builds are unsigned (ad-hoc signed afterwards for Apple Silicon).
+appId: app.inkwell.desktop
+productName: Inkwell
+copyright: Copyright © 2026 Inkwell
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**
+  - package.json
+  - "!dist/**/*.map"
+  - "!**/node_modules/better-sqlite3/{deps,src,docs,benchmark}/**"
+  - "!**/node_modules/better-sqlite3/prebuilds/{linux,linuxmusl,win32,darwin-x64}*"
+  - "!**/node_modules/node-addon-api/**/*.{h,gypi,cc}"
+  - "!**/node_modules/better-sqlite3/binding.gyp"
+extraResources:
+  - from: ../app/dist
+    to: renderer
+asar: true
+asarUnpack:
+  - "**/node_modules/better-sqlite3/**"
+protocols:
+  - name: Inkwell
+    schemes: [inkwell]
+mac:
+  target:
+    - target: zip
+      arch: [arm64]
+  icon: build/icon.icns
+  category: public.app-category.productivity
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  darkModeSupport: true
+  extendInfo:
+    NSMicrophoneUsageDescription: Inkwell uses the microphone only when you record audio into a page.
+    NSCameraUsageDescription: Inkwell uses the camera only when you capture media into a page.
+npmRebuild: false
+nodeGypRebuild: false
+electronVersion: 44.9.3
+electronLanguages: [zh_CN, zh_TW, en, en_GB]

@@ -5,3 +5,4 @@ out
 .vite
 packages/parity/out
 packages/tokens/dist
+release
