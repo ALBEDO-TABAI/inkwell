@@ -49,9 +49,9 @@ export const zhCN = {
   'sidebar.resizeClick': '点击以关闭',
   'sidebar.trash': '垃圾箱',
   'sidebar.settings': '设置',
-  'sidebar.promo.title': '工作与生活，各放一处',
-  'sidebar.promo.body': '再添加一个工作空间，用不同的邮箱登录，随时一键切换。',
-  'sidebar.promo.cta': '添加工作空间',
+  'sidebar.promo.title': '将工作和个人生活分开',
+  'sidebar.promo.body': '添加工作电子邮件地址，以创建仅用于工作的空间。帐号可随时切换。',
+  'sidebar.promo.cta': '添加你的工作帐号',
 
   // row menu
   'row.header': '页面',

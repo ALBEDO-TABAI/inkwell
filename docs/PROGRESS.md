@@ -47,9 +47,10 @@ npm run parity         # Playwright parity harness (in progress)
   - tab bar: tab pitch/edges exact for 1/5/15 tabs
   - menus: block menu, page menu, slash menu, handles within 1px; search modal + inline toolbar pending
 - [x] Smoke tests: 16/16 pass
-- [ ] Search modal rebuild (filters row, preview pane, footer hints) to match B07
-- [ ] Inline toolbar geometry vs reference
-- [ ] B03 sidebar variants, B05/B05b menus pixel checks, docs/PARITY.md
+- [x] Search modal rebuilt to B07 (filters row, recents/results, preview pane, footer hints); geometry exact (surface/input/rows within 0.4px)
+- [x] Inline toolbar grid (editor.mjs 37/38 light & dark; remaining miss is a test artifact)
+- [x] B03 sidebar variants (`b03.mjs`: default/collapsed/peek/max/min/restored, 2.7–4.6% mismatch, mostly font glyphs); promo card restyled, customise row moved into the scroller, bottom fade
+- [ ] B05/B05b menus pixel checks, docs/PARITY.md
 - [ ] Electron shell (window, tab views, native menus, state restore, SQLite)
 
 ## Next

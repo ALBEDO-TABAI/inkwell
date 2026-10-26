@@ -25,6 +25,15 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
   const favs = space.favorites.filter((id) => !isInTrash(id) && store.get(id)?.alive);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const el = scrollRef.current; if (!el) return;
+    const check = () => setMore(el.scrollHeight - el.scrollTop - el.clientHeight > 1);
+    check();
+    const ro = new ResizeObserver(check); ro.observe(el); if (el.firstElementChild) ro.observe(el.firstElementChild);
+    const mo = new MutationObserver(check); mo.observe(el, { childList: true, subtree: true });
+    return () => { ro.disconnect(); mo.disconnect(); };
+  }, []);
 
   return (
     <nav className={'ink-sidebar' + (floating ? ' is-floating' : '')} style={{ width }} aria-label="sidebar">
@@ -35,7 +44,7 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
             <span className="ink-kbd-chip">⌘K</span>
           </div>
         </div>
-        <div ref={scrollRef} className={'ink-sb-scroll' + (scrolled ? ' is-scrolled' : '')} onScroll={(e) => setScrolled((e.target as HTMLElement).scrollTop > 0)}>
+        <div ref={scrollRef} className={'ink-sb-scroll' + (scrolled ? ' is-scrolled' : '') + (more ? ' has-more' : '')} onScroll={(e) => { const el = e.target as HTMLElement; setScrolled(el.scrollTop > 0); setMore(el.scrollHeight - el.scrollTop - el.clientHeight > 1); }}>
           <div className="ink-sb-home">
             <div className="ink-sb-home-pill is-active" role="button"><Icon name="home" size={16} stroke={2} style={{ fill: 'currentColor' }} /><span>{t('sidebar.home')}</span></div>
             <div className="ink-sb-home-btn" role="button" {...tip(t('sidebar.chat'))}><Icon name="chat" size={16} stroke={2} style={{ fill: 'currentColor' }} /></div>
@@ -62,10 +71,10 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
           <Section id="private" title={t('sidebar.private')} spaced onAdd={() => createPage('private')}>
             {priv.map((id) => <TreeRow key={id} id={id} level={0} />)}
           </Section>
+          <NavRow icon="sliders" label={t('sidebar.customize')} muted className="ink-sb-customize" iconSize={18} />
         </div>
         {promo && <PromoCard onClose={() => { setPromo(false); kvPut('promoDismissed', true); }} />}
         <div className="ink-sb-bottom">
-          <NavRow icon="sliders" label={t('sidebar.customize')} muted className="ink-sb-customize" iconSize={18} />
           <div className="ink-sb-divider" />
           <div className="ink-sb-footer">
             <div className="ink-sb-switcher" role="button" onClick={(e) => openWorkspaceSwitcher(e.currentTarget)}>
@@ -192,7 +201,7 @@ function PromoCard({ onClose }: { onClose: () => void }) {
   return (
     <div className="ink-sb-promo">
       <div className="ink-sb-promo-art" aria-hidden>
-        <svg width="72" height="36" viewBox="0 0 72 36" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="96" height="48" viewBox="0 0 72 36" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
           <rect x="4" y="10" width="26" height="20" rx="4" /><rect x="40" y="6" width="28" height="24" rx="4" fill="currentColor" fillOpacity=".08" />
           <path d="M10 18h14M10 23h9M46 14h16M46 19h10" /><path d="M32 20h6m-2-2 2 2-2 2" />
         </svg>
