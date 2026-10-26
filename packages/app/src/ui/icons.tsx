@@ -34,7 +34,7 @@ const REG = {
   form: L.FormInput, feed: L.Rss, dashboard: L.LayoutDashboard, openPage: L.SquareArrowOutUpRight, userRound: L.UserRound, sortDown: L.ArrowDownUp,
   sigma: L.Sigma, caseUpper: L.CaseUpper, chevronUp: L.ChevronUp, minus: L.Minus, paperclip: L.Paperclip, arrowUp: L.ArrowUp, arrowDown: L.ArrowDown,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
-  rotateCcw: L.RotateCcw, audio: L.Music, pdf: L.FileText, alignCenter: L.AlignCenter, alignRight: L.AlignRight, maximize: L.Maximize2, captions: L.Captions, replace: L.Replace, externalLink: L.ExternalLink, tabsBlock: L.AppWindow, bellRing: L.BellRing, columns2: L.Columns2, messageSquare: L.MessageSquare, gift: L.Gift, storeFront: L.Store, squareCheck: L.SquareCheck, filePen: L.FilePenLine, notebookPen: L.NotebookPen, codeTag: L.CodeXml, star2: L.Star, bookOpen: L.BookOpen,
+  rotateCcw: L.RotateCcw, audio: L.Music, pdf: L.FileText, alignCenter: L.AlignCenter, alignRight: L.AlignRight, maximize: L.Maximize2, captions: L.Captions, replace: L.Replace, externalLink: L.ExternalLink, tabsBlock: L.AppWindow, bellRing: L.BellRing, columns2: L.Columns2, messageSquare: L.MessageSquare, gift: L.Gift, storeFront: L.Store, squareCheck: L.SquareCheck, filePen: L.FilePenLine, notebookPen: L.NotebookPen, codeTag: L.CodeXml, star2: L.Star, bookOpen: L.BookOpen, layoutGrid: L.LayoutGrid, briefcase: L.Briefcase, layoutTemplate: L.LayoutTemplate,
 };
 
 export function Icon({ name, size = 20, stroke = 1.5, style, className }: { name: IconName; size?: number; stroke?: number; style?: CSSProperties; className?: string }) {

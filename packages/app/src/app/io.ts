@@ -34,7 +34,7 @@ export async function exportPage(pageId: string, kind: 'md' | 'html' | 'pdf') {
   window.print();
 }
 
-function createFromParsed(title: string, parsed: ParsedBlock[], parent: string | 'private'): string {
+export function createFromParsed(title: string, parsed: ParsedBlock[], parent: string | 'private', format?: Block['format']): string {
   const id = newId();
   store.transact('import', (tx) => {
     const mk = (pb: ParsedBlock, par: string): string => {
@@ -44,9 +44,9 @@ function createFromParsed(title: string, parsed: ParsedBlock[], parent: string |
     };
     const kids = parsed.map((pb) => mk(pb, id));
     if (parent === 'private') {
-      tx.create({ id, type: 'page', title: [[title]], parent: store.space.id, parentTable: 'space', content: kids, alive: true, created: Date.now(), edited: Date.now() });
+      tx.create({ id, type: 'page', title: [[title]], format, parent: store.space.id, parentTable: 'space', content: kids, alive: true, created: Date.now(), edited: Date.now() });
       tx.space((s) => ({ ...s, privatePages: [...s.privatePages, id] }));
-    } else { tx.create({ id, type: 'page', title: [[title]], parent, parentTable: 'block', content: kids, alive: true, created: Date.now(), edited: Date.now() }); tx.insertChild(parent, id); }
+    } else { tx.create({ id, type: 'page', title: [[title]], format, parent, parentTable: 'block', content: kids, alive: true, created: Date.now(), edited: Date.now() }); tx.insertChild(parent, id); }
   });
   return id;
 }

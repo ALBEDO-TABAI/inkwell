@@ -146,7 +146,7 @@ function Cover({ page }: { page: Block }) {
   };
   return (
     <div className={'ink-cover' + (repos ? ' is-repos' : '')} onMouseDown={drag}>
-      <img src={src} alt="" draggable={false} style={{ objectPosition: `center ${pos * 100}%` }} />
+      {src && /^(linear|radial)-gradient\(/.test(src) ? <div className="ink-cover-fill" style={{ background: src }} /> : <img src={src} alt="" draggable={false} style={{ objectPosition: `center ${pos * 100}%` }} />}
       {repos && <div className="ink-cover-hint">{t('page.dragToReposition')}</div>}
       <div className="ink-cover-actions">
         {repos ? <>

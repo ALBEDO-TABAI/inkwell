@@ -174,9 +174,9 @@ export function parseMarkdown(src: string): ParsedBlock[] {
       continue;
     }
     if ((m = line.match(/^(#{1,4})\s+(.*)$/))) push(indent, { type: (['header', 'sub_header', 'sub_sub_header', 'header_4'] as BlockType[])[m[1].length - 1], title: fromMarkdownInline(m[2]), children: [] });
-    else if ((m = line.match(/^[-*+]\s+\[([ xX])\]\s+(.*)$/))) push(indent, { type: 'to_do', title: fromMarkdownInline(m[2]), props: { checked: m[1].toLowerCase() === 'x' }, children: [] });
-    else if ((m = line.match(/^[-*+]\s+(.*)$/))) push(indent, { type: 'bulleted_list', title: fromMarkdownInline(m[1]), children: [] });
-    else if ((m = line.match(/^(\d+|[a-z]|[ivx]+)[.)]\s+(.*)$/))) push(indent, { type: 'numbered_list', title: fromMarkdownInline(m[2]), children: [] });
+    else if ((m = line.match(/^[-*+]\s+\[([ xX])\](?:\s+(.*))?$/))) push(indent, { type: 'to_do', title: fromMarkdownInline(m[2] ?? ''), props: { checked: m[1].toLowerCase() === 'x' }, children: [] });
+    else if ((m = line.match(/^[-*+](?:\s+(.*))?$/))) push(indent, { type: 'bulleted_list', title: fromMarkdownInline(m[1] ?? ''), children: [] });
+    else if ((m = line.match(/^(\d+)[.)]()$/) || line.match(/^(\d+|[a-z]|[ivx]+)[.)]\s+(.*)$/))) push(indent, { type: 'numbered_list', title: fromMarkdownInline(m[2]), children: [] });
     else if ((m = line.match(/^>\s?(.*)$/))) push(indent, { type: 'quote', title: fromMarkdownInline(m[1]), children: [] });
     else if (/^(-{3,}|\*{3,}|_{3,})$/.test(line)) push(indent, { type: 'divider', title: [], children: [] });
     else if ((m = line.match(/^\$\$(.*)\$\$$/))) push(indent, { type: 'equation', title: [], props: { tex: m[1] }, children: [] });

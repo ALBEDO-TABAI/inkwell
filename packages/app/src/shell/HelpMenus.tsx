@@ -80,7 +80,7 @@ export function openLibraryMenu(el: HTMLElement) {
       { id: 'ainotes', label: t('lib.aiNotes'), icon: 'aiNotes', onSelect: () => toast(t('lib.soon')) },
       { id: 'skills', label: t('lib.skills'), icon: 'filePen', onSelect: () => toast(t('lib.soon')) },
       { id: 'tasks', label: t('lib.tasks'), icon: 'squareCheck', onSelect: () => toast(t('lib.soon')) },
-      { id: 'market', label: t('lib.market'), icon: 'storeFront', onSelect: () => toast(t('lib.soon')) },
+      { id: 'market', label: t('lib.market'), icon: 'storeFront', onSelect: () => void import('./Templates').then((m) => m.openTemplates()) },
       { id: 'trash', label: t('sidebar.trash'), icon: 'trash', onSelect: () => openTrash() },
     ]],
   }, { placement: 'top-start', offset: 6, id: 'library-menu' });
