@@ -104,7 +104,7 @@ await test('drag block moves it', async (p) => {
   await p.mouse.move(r.x + 100, r.y + 15); await p.waitForTimeout(150);
   const h = await p.evaluate(() => { const b = document.querySelector('.ink-block-handle').getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; });
   const tgt = await p.evaluate((id) => { const b = document.querySelector(`[data-block-id="${id}"]`).getBoundingClientRect(); return { x: b.x + 200, y: b.y + b.height - 3 }; }, blocks[4]);
-  await p.mouse.move(h.x, h.y); await p.mouse.down(); await p.mouse.move(h.x + 5, h.y + 5, { steps: 3 }); await p.mouse.move(tgt.x, tgt.y, { steps: 12 }); await p.waitForTimeout(150); await p.mouse.up(); await p.waitForTimeout(300);
+  await p.mouse.move(h.x, h.y); await p.mouse.down(); await p.mouse.move(h.x + 5, h.y + 5, { steps: 3 }); await p.mouse.move(tgt.x, tgt.y, { steps: 12 }); await p.waitForTimeout(150); await p.mouse.move(tgt.x + 4, tgt.y, { steps: 2 }); await p.waitForTimeout(150); await p.mouse.up(); await p.waitForTimeout(300);
   const after = await p.evaluate(() => [...document.querySelectorAll('.ink-page-blocks > [data-block-id]')].slice(0, 6).map((e) => e.dataset.blockId));
   await expect(after.indexOf(blocks[1]) > after.indexOf(blocks[4]) || after.indexOf(blocks[1]) === -1 ? after.indexOf(blocks[1]) !== -1 : false, 'order ' + after.join(','));
 });

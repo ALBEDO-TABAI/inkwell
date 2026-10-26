@@ -33,7 +33,7 @@ export function TabBar(p: TabBarProps) {
     return i;
   };
   return (
-    <div className="ink-tabbar" onDoubleClick={(e) => { if (e.target === e.currentTarget) window.inkwellNative?.send('inkwell:titlebar-dblclick'); }}>
+    <div className="ink-tabbar" onDoubleClick={(e) => { if (e.target === e.currentTarget) (window.inkwellTabs || window.inkwellNative)?.send('inkwell:titlebar-dblclick'); }}>
       <div className={'ink-tabbar-left' + (p.sidebarOpen ? ' is-sidebar' : '')} style={{ width: leftW }}>
         {p.trafficLights && <div className="ink-traffic" aria-hidden><span className="tl-close" /><span className="tl-min" /><span className="tl-max" /></div>}
         <div className="ink-tbar-icon ink-tbar-sidebar" role="button" aria-label={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} title={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} onClick={p.onToggleSidebar}>

@@ -1,5 +1,5 @@
 /** Messages between the app renderer and its window shell (Electron main via preload, or the browser window simulator via postMessage). */
-export type ShellCommand = 'back' | 'forward' | 'toggle-sidebar' | 'search' | 'new-page' | 'theme-light' | 'theme-dark' | 'theme-system' | 'toggle-theme' | 'undo' | 'redo' | 'settings' | 'reload' | 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'find' | 'copy-link' | 'focus';
+export type ShellCommand = 'back' | 'forward' | 'toggle-sidebar' | 'search' | 'new-page' | 'theme-light' | 'theme-dark' | 'theme-system' | 'toggle-theme' | 'undo' | 'redo' | 'settings' | 'reload' | 'zoom-in' | 'zoom-out' | 'zoom-reset' | 'find' | 'copy-link' | 'copy-title' | 'navigate' | 'focus';
 export const inShell = () => !!window.inkwellNative || window.parent !== window;
 
 export function shellSend(type: string, payload: Record<string, unknown> = {}) {

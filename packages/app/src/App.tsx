@@ -40,7 +40,7 @@ export function App() {
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }
       if (k === ',' ) { e.preventDefault(); openSettings(); return; }
-      if (k === 'n' && !e.shiftKey && !window.inkwellNative) { e.preventDefault(); createPage('private'); return; }
+      if (k === 'n' && !e.shiftKey) { e.preventDefault(); createPage('private'); return; }
       if (k === 'l' && e.altKey) { e.preventDefault(); copyPageLink(getUi().pageId); return; }
       if (k === 'z' && !(e.target as HTMLElement).closest?.('[contenteditable="true"], input, textarea') && !isPopoverOpen()) { e.preventDefault(); e.shiftKey ? redo() : undo(); }
     };
@@ -59,7 +59,9 @@ export function App() {
     report();
     const off1 = onNavigate(report);
     const off2 = store.subscribe(() => { const p = store.get(getUi().pageId); if (p && document.title !== pageTitle(p)) report(); });
-    const off3 = onShellCommand((cmd) => {
+    const off3 = onShellCommand((cmd, arg) => {
+      if (cmd === 'navigate' && typeof arg === 'string') { navigate(arg); return; }
+      if (cmd === 'copy-title') { const p = store.get(getUi().pageId); navigator.clipboard?.writeText(p ? pageTitle(p) : '').catch(() => {}); return; }
       if (cmd === 'back') goBack(); else if (cmd === 'forward') goForward();
       else if (cmd === 'toggle-sidebar') toggleSidebar();
       else if (cmd === 'search') openSearch();
