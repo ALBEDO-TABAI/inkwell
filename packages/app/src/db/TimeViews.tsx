@@ -8,6 +8,8 @@ import { defaultsFor, type DbCtx } from './Database';
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 const CN_MONTH = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
 const DAY = 86400000;
+/** the today line sits at the current time of day */
+const nowFrac = () => { const n = new Date(); return (n.getHours() * 60 + n.getMinutes()) / 1440; };
 const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const diffDays = (a: Date, b: Date) => Math.round((Date.UTC(a.getFullYear(), a.getMonth(), a.getDate()) - Date.UTC(b.getFullYear(), b.getMonth(), b.getDate())) / DAY);
 function dateProp(ctx: DbCtx) { const s = schemaOf(ctx.db); return ctx.view.dateProp && s[ctx.view.dateProp] ? ctx.view.dateProp : Object.keys(s).find((k) => s[k].type === 'date'); }
@@ -101,12 +103,12 @@ export function TimelineView({ ctx }: { ctx: DbCtx }) {
       <div className="ink-tl-scroll" ref={scroller} onScroll={(e) => setSl(e.currentTarget.scrollLeft)}>
         <div className="ink-tl-canvas" style={{ width: days * DAY_W, height: 66 + rows.length * 36 + 66 }}>
           <div className="ink-tl-head">
-            {months.map((m) => { const fm = firstMonday(m); return <span key={isoOf(m)} className="ink-tl-mlabel" style={{ left: x(fm) }}>{CN_MONTH[m.getMonth()]}</span>; })}
-            {ticks.map((d) => <span key={isoOf(d)} className="ink-tl-tick" style={{ left: x(d) + DAY_W / 2 }}>{d.getDate()}</span>)}
-            <span className="ink-tl-todaybadge" style={{ left: x(today) + DAY_W / 2 }}>{today.getDate()}</span>
+            {months.map((m) => { const fm = firstMonday(m); return <span key={isoOf(m)} className="ink-tl-mlabel" style={{ left: x(fm) - DAY_W / 2 }}>{CN_MONTH[m.getMonth()]}</span>; })}
+            {ticks.map((d) => <span key={isoOf(d)} className="ink-tl-tick" style={{ left: x(d) }}>{d.getDate()}</span>)}
+            <span className="ink-tl-todaybadge" style={{ left: x(today) }}>{today.getDate()}</span>
           </div>
           {months.map((m) => <span key={'l' + isoOf(m)} className="ink-tl-mline" style={{ left: x(m) }} />)}
-          <span className="ink-tl-todayline" style={{ left: x(today) + DAY_W / 2 }} />
+          <span className="ink-tl-todayline" style={{ left: x(today) + DAY_W * nowFrac() }} />
           {prop && rows.map((r, i) => {
             const s = span(r, prop, db); if (!s) return null;
             return (
@@ -122,11 +124,13 @@ export function TimelineView({ ctx }: { ctx: DbCtx }) {
         <button className="ink-tl-expand" aria-label="显示表格"><Icon name="chevronsRight" size={16} /></button>
         <span className="ink-tl-cur">{leftDate.getFullYear()}年{leftDate.getMonth() + 1}月</span>
         <span style={{ flex: 1 }} />
+        <span className="ink-tl-right">
         <button className="ink-cal-manage"><Icon name="calendar" size={14} />在日历中管理</button>
         <button className="ink-tl-scale">季度<Icon name="chevronDown" size={14} /></button>
         <button className="ink-cal-nav" aria-label="向前" onClick={() => scroller.current?.scrollBy({ left: -7 * DAY_W * 4, behavior: 'smooth' })}><Icon name="chevronLeft" size={16} /></button>
         <button className="ink-cal-today" onClick={scrollToday}>今天</button>
         <button className="ink-cal-nav" aria-label="向后" onClick={() => scroller.current?.scrollBy({ left: 7 * DAY_W * 4, behavior: 'smooth' })}><Icon name="chevronRight" size={16} /></button>
+        </span>
       </div>
     </div>
   );

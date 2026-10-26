@@ -374,3 +374,4 @@ body.is-col-resizing { cursor: col-resize !important; user-select: none; }
 .ink-cal-wd { margin-left: 1px; }
 .ink-cal-grid { margin-top: 0; }
 .ink-cal-day.is-today { right: 4px; }
+.ink-tl-right { display: flex; align-items: center; gap: 4px; height: 100%; padding: 0 104px 0 8px; margin-right: -104px; background: var(--ink-timeline-background, var(--ink-background-primary)); pointer-events: auto; }
