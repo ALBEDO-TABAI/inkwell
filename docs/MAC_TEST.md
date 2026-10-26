@@ -3,7 +3,8 @@
 适用于 Apple Silicon（M1 及以后）的 Mac，macOS 13 或更新版本。
 
 ## 文件
-- 最新：`/workspace/dist-parts/inkwell-mac-arm64-v3.zip`（约 115 MB，2026-10-26 22:54 JST，来自 df41571：另含版本历史、关联关系 / 汇总、数据库模板、`[[` 修复）
+- 最新：`/workspace/dist-parts/inkwell-mac-arm64-v4.zip`（约 115 MB，2026-10-26 23:53 JST，来自 77ad0f2，版本 0.4.0：评论、媒体块、标签页块、提醒、快速搜索窗口（⇧⌘K）、托盘、模板库、完整设置、导入导出、繁体中文、动效）
+- 上一版：v3（df41571）
   - md5 `437b1772530885d411c82e8ff01a1292`
 - `inkwell-mac-arm64-v2.zip`（22:26，来自 0915893：数据库视图 / 预览 / 页面内查找），md5 `0de66e7361477ab8158e590497e394d3`
 - 旧版：`inkwell-mac-arm64-v1.zip`（21:45，M4 之前），md5 `59cedbcf2a33597b69b9cd433263470a`
@@ -12,8 +13,8 @@
 
 如果下载的是分卷，先合并，再核对 md5：
 ```bash
-cat inkwell-mac-arm64-v3.zip.part* > inkwell-mac-arm64-v3.zip
-md5 inkwell-mac-arm64-v3.zip        # 应与 MD5SUMS-v3.txt 第一行一致
+cat inkwell-mac-arm64-v4.zip.part* > inkwell-mac-arm64-v4.zip
+md5 inkwell-mac-arm64-v4.zip        # 应与 MD5SUMS-v4.txt 第一行一致
 ```
 
 ## 安装与打开
