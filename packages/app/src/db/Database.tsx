@@ -7,7 +7,7 @@ import { useBlock, useStoreVersion } from '../hooks/useStore';
 import { Icon, type IconName } from '../ui/icons';
 import { tip } from '../ui/overlay';
 import { openPeek } from '../app/state';
-import { viewsOf, addRow, type View, type ViewType } from './model';
+import { viewsOf, addRow, updateDb, type View, type ViewType } from './model';
 import { TableView } from './TableView';
 import { BoardView, ListView, GalleryView } from './CardViews';
 import { CalendarView, TimelineView } from './TimeViews';
@@ -149,10 +149,41 @@ export function defaultsFor(view: View, extra: Record<string, unknown> = {}) {
   return { ...out, ...extra } as Record<string, never>;
 }
 
+/** drag a view tab sideways to reorder the views (drop marker on the tab edge) */
+function startTabDrag(e: React.PointerEvent<HTMLButtonElement>, db: Block, v: View, dragged: { current: boolean }) {
+  if (e.button !== 0) return;
+  const el = e.currentTarget; const x0 = e.clientX; dragged.current = false;
+  const row = el.parentElement!; let target: { id: string; after: boolean } | null = null;
+  const clear = () => row.querySelectorAll('.is-drop-before, .is-drop-after').forEach((n) => n.classList.remove('is-drop-before', 'is-drop-after'));
+  const move = (ev: PointerEvent) => {
+    if (!dragged.current && Math.abs(ev.clientX - x0) < 5) return;
+    if (!dragged.current) { dragged.current = true; el.classList.add('is-dragging'); document.body.classList.add('ink-dragging-x'); }
+    clear(); target = null;
+    for (const t of row.querySelectorAll<HTMLElement>('.ink-db-tab[data-view-id]')) {
+      const r = t.getBoundingClientRect();
+      if (ev.clientX >= r.left && ev.clientX < r.right && t.dataset.viewId !== v.id) { const after = ev.clientX > r.left + r.width / 2; target = { id: t.dataset.viewId!, after }; t.classList.add(after ? 'is-drop-after' : 'is-drop-before'); }
+    }
+  };
+  const up = () => {
+    window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up);
+    el.classList.remove('is-dragging'); document.body.classList.remove('ink-dragging-x'); clear();
+    if (dragged.current && target) {
+      const t = target;
+      updateDb(db.id, ({ views }) => {
+        const rest = views.filter((x) => x.id !== v.id); const i = rest.findIndex((x) => x.id === t.id);
+        rest.splice(i + (t.after ? 1 : 0), 0, views.find((x) => x.id === v.id)!); return { views: rest };
+      }, 'reorder views');
+    }
+    setTimeout(() => { dragged.current = false; }, 0);
+  };
+  window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+}
 function ViewTab({ db, v, active }: { db: Block; v: View; active: boolean }) {
+  const dragged = useRef(false);
   return (
-    <button className={'ink-db-tab' + (active ? ' is-active' : '')} role="tab" aria-selected={active}
-      onClick={(e) => { if (active) openViewTabMenu(e.currentTarget, db, v); else setActiveView(db.id, v.id); }}
+    <button className={'ink-db-tab' + (active ? ' is-active' : '')} role="tab" aria-selected={active} data-view-id={v.id}
+      onPointerDown={(e) => startTabDrag(e, db, v, dragged)}
+      onClick={(e) => { if (dragged.current) return; if (active) openViewTabMenu(e.currentTarget, db, v); else setActiveView(db.id, v.id); }}
       onContextMenu={(e) => { e.preventDefault(); openViewTabMenu(e.currentTarget, db, v); }}>
       <Icon name={VIEW_ICON[v.type]} size={16} /><span>{v.name}</span>
     </button>

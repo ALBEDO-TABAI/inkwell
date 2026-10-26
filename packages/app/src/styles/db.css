@@ -455,3 +455,8 @@ body.is-col-resizing { cursor: col-resize !important; user-select: none; }
 .ink-tl-tick.is-left { transform: none; }
 .ink-tl-tick.is-weekend { color: var(--ink-text-tertiary); }
 .ink-tl-weekend { position: absolute; top: 66px; bottom: 0; background: var(--ink-background-secondary, rgba(0,0,0,.02)); pointer-events: none; }
+.ink-db-tab { position: relative; }
+.ink-db-tab.is-dragging { opacity: .5; }
+.ink-db-tab.is-drop-before::before, .ink-db-tab.is-drop-after::after { content: ''; position: absolute; top: 4px; bottom: 4px; width: 2px; border-radius: 1px; background: rgba(35, 131, 226, .8); }
+.ink-db-tab.is-drop-before::before { left: -2px; } .ink-db-tab.is-drop-after::after { right: -2px; }
+body.ink-dragging-x, body.ink-dragging-x * { cursor: grabbing !important; }
