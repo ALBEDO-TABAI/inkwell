@@ -19,6 +19,10 @@ export const VIEW_ICON: Record<ViewType, IconName> = { table: 'table', board: 'b
 const activeViews = new Map<string, string>();
 const viewSubs = new Set<() => void>();
 export function setActiveView(dbId: string, viewId: string) { activeViews.set(dbId, viewId); viewSubs.forEach((f) => f()); }
+const bars = new Set<string>();
+/** the sort / filter chip bar under the tabs (opened by the toolbar buttons, stays while rules exist) */
+export function setBarOpen(viewId: string, open: boolean) { if (open) bars.add(viewId); else bars.delete(viewId); viewSubs.forEach((f) => f()); }
+export const isBarOpen = (viewId: string) => bars.has(viewId);
 export function getActiveView(db: Block): View | undefined { const vs = viewsOf(db); return vs.find((v) => v.id === activeViews.get(db.id)) || vs[0]; }
 
 export interface DbCtx { db: Block; view: View; search: string; inline: boolean; openRow: (rowId: string) => void; locked: boolean }
@@ -38,7 +42,7 @@ export function Database({ dbId, inline = false, locked = false }: { dbId: strin
     <div className={'ink-db' + (inline ? ' is-inline' : ' is-page')} data-db-id={db.id} data-view-type={view.type}>
       {inline && <DbInlineTitle db={db} />}
       <DbBar db={db} view={view} search={search} setSearch={setSearch} />
-      {(view.filter?.length || 0) + (view.sort?.length || 0) > 0 && <DbChips db={db} view={view} />}
+      {(isBarOpen(view.id) && (!!view.filter?.length || !!view.sort?.length)) && <DbChips db={db} view={view} />}
       <div className="ink-db-body">
         {view.type === 'table' && <TableView ctx={ctx} />}
         {view.type === 'board' && <BoardView ctx={ctx} />}
@@ -65,8 +69,8 @@ function DbChips({ db, view }: { db: Block; view: View }) {
   const s = schemaOf(db);
   return (
     <div className="ink-db-chips">
-      {!!view.sort?.length && <button className="ink-db-chip is-sort" onClick={(e) => openSortMenu(e.currentTarget, db, view)}><Icon name="sort" size={14} />{view.sort.length === 1 ? s[view.sort[0].prop]?.name : `${view.sort.length} 个排序`}<Icon name="chevronDown" size={12} /></button>}
-      {!!view.sort?.length && !!view.filter?.length && <span className="ink-db-chip-sep" />}
+      {!!view.sort?.length && <button className="ink-db-chip is-sort" onClick={(e) => openSortMenu(e.currentTarget, db, view, true)}><Icon name={view.sort.length === 1 && view.sort[0].dir === 'desc' ? 'arrowDown' : 'arrowUp'} size={14} />{view.sort.length === 1 ? s[view.sort[0].prop]?.name : `${view.sort.length} 个排序`}<Icon name="chevronDown" size={12} /></button>}
+      {!!view.sort?.length && <span className="ink-db-chip-sep" />}
       {(view.filter || []).map((f, i) => {
         const p = s[f.prop]; if (!p) return null;
         const v = Array.isArray(f.value) ? f.value.join(', ') : f.value || '';

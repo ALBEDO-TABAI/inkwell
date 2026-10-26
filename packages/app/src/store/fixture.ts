@@ -146,7 +146,7 @@ function buildDb(db: Block, mk: (t: BlockType, p: string, title?: RichText, extr
       double: { name: 'Double', type: 'formula', formula: 'prop("Score") * 2' }, created: { name: 'Created', type: 'created_time' },
     },
     views: [
-      { id: 'view-0', name: 'Table', type: 'table', widths: { title: 160, score: 100, category: 110, tags: 140 } },
+      { id: 'view-0', name: 'Table', type: 'table', widths: { title: 160, score: 100, category: 110, tags: 140 }, sort: [{ prop: 'title', dir: 'asc' }] },
       { id: 'view-1', name: 'Board', type: 'board', group: 'status', manual: desc, cardProps: [] },
       { id: 'view-2', name: 'List', type: 'list', manual: desc, cardProps: ['category'] },
       { id: 'view-3', name: 'Gallery', type: 'gallery', manual: desc, gallerySize: 'M', cardProps: ['notes', 'category', 'status'], openIn: 'center' },

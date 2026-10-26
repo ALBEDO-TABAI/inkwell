@@ -42,7 +42,6 @@ export function PeekHost() {
           ? <button className="ink-peek-btn" aria-label="关闭预览" onClick={closePeek} {...tip('关闭预览', 'Esc')}><Icon name="chevronsRight" size={18} /></button>
           : <button className="ink-peek-btn" aria-label="关闭预览" onClick={closePeek} {...tip('关闭预览', 'Esc')}><Icon name="x" size={18} /></button>}
         <button className="ink-peek-btn" aria-label="以整页打开" onClick={() => navigate(peek.id)} {...tip('以整页打开')}><Icon name="expand" size={16} /></button>
-        <button className="ink-peek-btn" aria-label={peek.mode === 'side' ? '切换到中心预览' : '切换到侧边预览'} onClick={() => openPeek(peek.id, peek.mode === 'side' ? 'center' : 'side')} {...tip(peek.mode === 'side' ? '中心预览' : '侧边预览')}><Icon name={peek.mode === 'side' ? 'centerPeek' : 'sidePeek'} size={16} /></button>
       </div>
       <div className="ink-peek-right">
         <span className="ink-topbar-btn ink-share-btn" role="button"><Icon name="lock" size={12} stroke={2} /><span>共享</span></span>

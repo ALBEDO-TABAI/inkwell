@@ -19,7 +19,7 @@ export function Topbar({ pageId }: { pageId: string }) {
   const hidden = useUi((s) => s.chromeHidden);
   const path = breadcrumbPath(pageId);
   const fav = store.space.favorites.includes(pageId);
-  const inPrivate = path[0] && store.space.privatePages.includes(path[0].id);
+  const inPrivate = path.length === 1 && store.space.privatePages.includes(path[0].id);
   return (
     <header className={'ink-topbar' + (hidden ? ' is-idle' : '')}>
       <div className="ink-topbar-left">
@@ -27,7 +27,7 @@ export function Topbar({ pageId }: { pageId: string }) {
           <span key={p.id} className="ink-crumb-wrap">
             {i > 0 && <span className="ink-crumb-sep">/</span>}
             <span className="ink-crumb" role="button" onClick={() => navigate(p.id)}>
-              {(p.format?.page_icon || i > 0) && <span className="ink-crumb-icon"><PageIcon block={p} size={16} emojiSize={14} /></span>}
+              {p.format?.page_icon && <span className="ink-crumb-icon"><PageIcon block={p} size={16} emojiSize={14} /></span>}
               <span className="ink-crumb-text">{pageTitle(p)}</span>
             </span>
           </span>

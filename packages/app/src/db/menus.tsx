@@ -14,7 +14,7 @@ import {
 } from './model';
 import { PropIcon, Tag, StatusPill } from './cells';
 import { DatePicker } from './editors';
-import { setActiveView, VIEW_ICON } from './Database';
+import { setActiveView, VIEW_ICON, setBarOpen } from './Database';
 
 const R = (el: HTMLElement) => el.getBoundingClientRect();
 const live = (f: () => void) => { const [, set] = useState(0); useEffect(() => store.subscribe(() => set((x) => x + 1)), []); void f; };
@@ -30,9 +30,9 @@ export function openViewsMenu(anchor: HTMLElement, db: Block) {
         right: <span className="ink-vm-more" role="button" onClick={(e) => { e.stopPropagation(); openViewTabMenu(e.currentTarget as HTMLElement, store.get(db.id)!, v); }}><Icon name="more" size={16} /></span>,
         onSelect: () => setActiveView(db.id, v.id) })),
       [{ id: 'new', label: '新视图', icon: 'plus', onSelect: () => setTimeout(() => openNewViewMenu(anchor, store.get(db.id)!), 0) },
-        { id: 'src', label: '新数据源', icon: 'openPage', disabled: true }],
+        { id: 'src', label: '新数据源', icon: 'duplicate', onSelect: () => toast('多数据源将在后续版本提供') }],
     ],
-  }, { placement: 'bottom-end', anchorEl: anchor });
+  }, { placement: 'bottom-start', anchorEl: anchor });
 }
 
 const NEW_VIEW_TYPES: { type: ViewType | null; label: string; icon: IconName }[] = [
@@ -195,14 +195,16 @@ function propPicker(db: Block, title: string, onPick: (id: string) => void, extr
   return { width: 290, search: title, maxHeight: 440, groups: [sortedProps(db).map((id) => ({ id, label: s[id].name, text: s[id].name, icon: <PropIcon type={s[id].type} />, onSelect: () => onPick(id) })), ...extra] };
 }
 export function openFilterMenu(anchor: HTMLElement, db: Block, view: View) {
+  if (view.filter?.length && !anchor.closest('.ink-db-chips')) { setBarOpen(view.id, true); setTimeout(() => { const c = chipEl(db.id, '[data-filter-index="0"]'); if (c) openFilterRule(c, db.id, view.id, 0); }, 30); return; }
   openMenu(R(anchor), propPicker(db, '筛选方式…', (id) => setTimeout(() => addFilter(store.get(db.id)!, view, id, anchor), 0),
-    [[{ id: 'adv', label: '添加高级筛选', icon: 'plus', disabled: true }]]), { placement: 'bottom-end', anchorEl: anchor });
+    [[{ id: 'adv', label: '添加高级筛选', icon: 'plus', disabled: true }]]), { placement: 'bottom-start', anchorEl: anchor });
 }
 function addFilter(db: Block, view: View, propId: string, anchor: HTMLElement) {
   const p = schemaOf(db)[propId];
   const op = (OPS[p.type] || ['contains'])[0];
   const idx = (viewsOf(db).find((v) => v.id === view.id)?.filter || []).length;
   updateView(db.id, view.id, (v) => ({ filter: [...(v.filter || []), { prop: propId, op }] }), 'filter');
+  setBarOpen(view.id, true);
   setTimeout(() => {
     const chip = document.querySelector<HTMLElement>(`[data-db-id="${db.id}"] .ink-db-chip[data-filter-index="${idx}"]`);
     openFilterRule(chip || anchor, db.id, view.id, idx);
@@ -247,14 +249,18 @@ function FilterRuleEditor({ dbId, viewId, index, close }: { dbId: string; viewId
 }
 
 /* ---------- sort ---------- */
-export function openSortMenu(anchor: HTMLElement, db: Block, view: View) {
+const chipEl = (dbId: string, sel: string) => document.querySelector<HTMLElement>(`[data-db-id="${dbId}"] .ink-db-chips ${sel}`);
+export function openSortMenu(anchor: HTMLElement, db: Block, view: View, fromChip = false) {
+  const viaBar = () => { setBarOpen(view.id, true); setTimeout(() => openSortPanel(chipEl(db.id, '.is-sort') || anchor, db.id, view.id), 30); };
+  if (fromChip) { openSortPanel(anchor, db.id, view.id); return; }
   if (!view.sort?.length) {
-    openMenu(R(anchor), propPicker(db, '排序方式…', (id) => { updateView(db.id, view.id, { sort: [{ prop: id, dir: 'asc' }] }, 'sort'); setTimeout(() => openSortPanel(anchor, db.id, view.id), 0); }), { placement: 'bottom-end', anchorEl: anchor });
-  } else openSortPanel(anchor, db.id, view.id);
+    openMenu(R(anchor), propPicker(db, '排序方式…', (id) => { updateView(db.id, view.id, { sort: [{ prop: id, dir: 'asc' }] }, 'sort'); viaBar(); }), { placement: 'bottom-start', anchorEl: anchor });
+  } else viaBar();
 }
 function openSortPanel(anchor: HTMLElement, dbId: string, viewId: string) {
-  openPopover({ id: 'db-sort', anchor: R(anchor), placement: 'bottom-end', offset: 4, render: (close) => <SortPanel dbId={dbId} viewId={viewId} close={close} /> });
+  openPopover({ id: 'db-sort', anchor: R(anchor), placement: 'bottom-start', offset: 5, render: (close) => <SortPanel dbId={dbId} viewId={viewId} close={close} /> });
 }
+const dirLabel = (t: PropType | undefined, d: 'asc' | 'desc') => (t === 'title' || t === 'text' || t === 'url' || t === 'email' ? (d === 'asc' ? '按“A → Z”排序' : '按“Z → A”排序') : t === 'number' || t === 'formula' ? (d === 'asc' ? '按“1 → 9”排序' : '按“9 → 1”排序') : d === 'asc' ? '升序' : '降序');
 function SortPanel({ dbId, viewId, close }: { dbId: string; viewId: string; close: () => void }) {
   live(() => {});
   const db = store.get(dbId); const view = db && viewsOf(db).find((v) => v.id === viewId);
@@ -262,13 +268,13 @@ function SortPanel({ dbId, viewId, close }: { dbId: string; viewId: string; clos
   const s = schemaOf(db); const rules = view.sort || [];
   const set = (rs: SortRule[]) => updateView(dbId, viewId, { sort: rs }, 'sort');
   return (
-    <div className="ink-menu ink-sort-panel" style={{ width: 340 }}>
+    <div className="ink-menu ink-sort-panel" style={{ width: 328 }}>
       <div className="ink-sort-rules">
         {rules.map((r, i) => (
           <div key={i} className="ink-sort-rule">
             <span className="ink-sort-grip"><Icon name="grip" size={14} /></span>
             <button className="ink-sort-btn" onClick={(e) => openMenu(R(e.currentTarget), propPicker(db, '搜索属性…', (id) => set(rules.map((x, j) => (j === i ? { ...x, prop: id } : x)))), { parent: 'db-sort' })}>{s[r.prop] && <PropIcon type={s[r.prop].type} />}{s[r.prop]?.name}<Icon name="chevronDown" size={12} /></button>
-            <button className="ink-sort-btn" onClick={(e) => openMenu(R(e.currentTarget), { width: 140, groups: [[{ id: 'asc', label: '升序', checked: r.dir === 'asc', onSelect: () => set(rules.map((x, j) => (j === i ? { ...x, dir: 'asc' as const } : x))) }, { id: 'desc', label: '降序', checked: r.dir === 'desc', onSelect: () => set(rules.map((x, j) => (j === i ? { ...x, dir: 'desc' as const } : x))) }]] }, { parent: 'db-sort' })}>{r.dir === 'asc' ? '升序' : '降序'}<Icon name="chevronDown" size={12} /></button>
+            <button className="ink-sort-btn" onClick={(e) => openMenu(R(e.currentTarget), { width: 140, groups: [[{ id: 'asc', label: dirLabel(s[r.prop]?.type, 'asc'), checked: r.dir === 'asc', onSelect: () => set(rules.map((x, j) => (j === i ? { ...x, dir: 'asc' as const } : x))) }, { id: 'desc', label: dirLabel(s[r.prop]?.type, 'desc'), checked: r.dir === 'desc', onSelect: () => set(rules.map((x, j) => (j === i ? { ...x, dir: 'desc' as const } : x))) }]] }, { parent: 'db-sort' })}>{dirLabel(s[r.prop]?.type, r.dir)}<Icon name="chevronDown" size={12} /></button>
             <span style={{ flex: 1 }} />
             <button className="ink-sort-x" aria-label="删除排序" onClick={() => set(rules.filter((_, j) => j !== i))}><Icon name="x" size={14} /></button>
           </div>

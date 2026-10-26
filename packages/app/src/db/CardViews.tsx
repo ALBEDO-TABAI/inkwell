@@ -41,7 +41,7 @@ export function BoardView({ ctx }: { ctx: DbCtx }) {
               <div className="ink-bv-head">
                 {gp?.type === 'status' ? <span className="ink-bv-pill" style={{ background: `var(--ink-${c}-background-tertiary-translucent)`, color: `var(--ink-${c}-text-primary)` }}><span className="ink-status-dot" style={{ background: `var(--ink-status-dot-${c})` }} />{g.label}</span>
                   : g.key ? <Tag label={g.label} color={g.color} /> : <span className="ink-bv-none">{g.label}</span>}
-                <span className="ink-bv-count" style={{ color: `var(--ink-${c}-text-secondary)` }}>{g.rows.length}</span>
+                <span className="ink-bv-count" style={{ color: c === 'gray' ? 'var(--ink-gray-text-primary)' : `var(--ink-${c}-text-secondary)` }}>{g.rows.length}</span>
               </div>
               <div className="ink-bv-cards">
                 {g.rows.map((r) => (
@@ -55,7 +55,7 @@ export function BoardView({ ctx }: { ctx: DbCtx }) {
                     {!ctx.locked && <span className="ink-card-more" role="button" onClick={(e) => { e.stopPropagation(); openCardMenu(e.currentTarget, db, r); }}><Icon name="more" size={16} /></span>}
                   </div>
                 ))}
-                {!ctx.locked && <div className="ink-bv-new" role="button" style={{ color: `var(--ink-${c}-text-secondary)` }}
+                {!ctx.locked && <div className="ink-bv-new" role="button" style={{ color: c === 'gray' ? 'var(--ink-gray-text-primary)' : `var(--ink-${c}-text-secondary)` }}
                   onClick={() => { const id = addRow(db.id, { values: defaultsFor(view, groupBy && g.key ? { [groupBy]: gp?.type === 'multi_select' ? [g.key] : g.key } : {}) }); ctx.openRow(id); }}>
                   <Icon name="plus" size={16} /><span>新页面</span></div>}
               </div>
@@ -95,7 +95,7 @@ export function GalleryView({ ctx }: { ctx: DbCtx }) {
   const size = view.gallerySize || 'M';
   useLayoutEffect(() => {
     const el = ref.current; if (!el) return;
-    const f = () => setCols(Math.max(1, Math.floor((el.clientWidth + 16) / (GALLERY_MIN[size] + 16))));
+    const f = () => { const cs = getComputedStyle(el); const w = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); setCols(Math.max(1, Math.floor((w + 16) / (GALLERY_MIN[size] + 16)))); };
     f(); const ro = new ResizeObserver(f); ro.observe(el); return () => ro.disconnect();
   }, [size]);
   const schema = schemaOf(db);
