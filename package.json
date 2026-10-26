@@ -1,0 +1,17 @@
+{
+  "name": "inkwell-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "scripts": {
+    "tokens": "node packages/tokens/build.mjs",
+    "dev": "npm run tokens && npm -w @inkwell/app run dev",
+    "build": "npm run tokens && npm -w @inkwell/app run build && npm -w @inkwell/desktop run build",
+    "electron": "npm -w @inkwell/desktop run start",
+    "electron:dev": "npm -w @inkwell/desktop run dev",
+    "typecheck": "npm -w @inkwell/app run typecheck",
+    "parity": "node packages/parity/run.mjs",
+    "test": "node packages/parity/behavior.mjs"
+  }
+}

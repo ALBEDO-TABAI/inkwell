@@ -1,0 +1,20 @@
+{
+  "name": "@inkwell/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && electron .",
+    "dev": "node build.mjs && INKWELL_DEV_URL=http://127.0.0.1:5200 electron .",
+    "rebuild": "electron-rebuild -f -w better-sqlite3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.4.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.0",
+    "electron": "44.9.3",
+    "esbuild": "^0.25.0"
+  }
+}

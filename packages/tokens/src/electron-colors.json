@@ -1,0 +1,124 @@
+{
+ "tabBarBackground": {
+  "light": "rgba(249, 248, 247, 1)",
+  "dark": "rgba(32, 32, 32, 1)",
+  "lightHighContrast": "rgba(249, 248, 247, 1)",
+  "darkHighContrast": "rgba(32, 32, 32, 1)"
+ },
+ "notionBackground": {
+  "light": "rgba(255, 255, 255, 1)",
+  "dark": "rgba(25, 25, 25, 1)",
+  "lightHighContrast": "rgba(255, 255, 255, 1)",
+  "darkHighContrast": "rgba(25, 25, 25, 1)"
+ },
+ "buttonBackground": {
+  "light": "rgba(42, 28, 0, 0.07)",
+  "dark": "rgba(255, 255, 243, 0.082)",
+  "lightHighContrast": "rgb(from rgba(42, 28, 0, 0.07) r g b / calc(alpha * (1 + 0.5 * 3)))",
+  "darkHighContrast": "rgb(from rgba(255, 255, 243, 0.082) r g b / calc(alpha * (1 + 0.5 * 3)))"
+ },
+ "enabledButtonColor": {
+  "light": "rgba(142, 139, 134, 1)",
+  "dark": "rgba(173, 169, 163, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "secondaryButtonColor": {
+  "light": "rgba(173, 169, 163, 1)",
+  "dark": "rgba(125, 122, 117, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "sidebarDivider": {
+  "light": "rgba(240, 239, 237, 1)",
+  "dark": "rgba(44, 44, 43, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "sidebarDividerHovered": {
+  "light": "rgba(28, 19, 1, 0.11)",
+  "dark": "rgba(255, 255, 235, 0.1)",
+  "lightHighContrast": "rgba(1, 1, 0, 0.831)",
+  "darkHighContrast": "rgba(255, 254, 252, 0.934)"
+ },
+ "overlayBackground": {
+  "light": "rgba(15, 15, 15, 0.6)",
+  "dark": "rgba(15, 15, 15, 0.3)"
+ },
+ "blueAccentBackground": {
+  "light": "rgba(39, 131, 222, 1)",
+  "dark": "rgba(39, 131, 222, 1)",
+  "lightHighContrast": "rgba(25, 94, 167, 1)",
+  "darkHighContrast": "rgba(25, 94, 167, 1)"
+ },
+ "blueAccentBackgroundHovered": {
+  "light": "rgba(94, 159, 232, 1)",
+  "dark": "rgba(94, 159, 232, 1)",
+  "lightHighContrast": "rgba(25, 94, 167, 1)",
+  "darkHighContrast": "rgba(25, 94, 167, 1)"
+ },
+ "blueAccentText": {
+  "light": "rgba(243, 249, 253, 1)",
+  "dark": "rgba(243, 249, 253, 1)",
+  "lightHighContrast": "rgba(255, 255, 255, 1)",
+  "darkHighContrast": "rgba(255, 255, 255, 1)"
+ },
+ "desktopBetaCtaText": {
+  "light": "rgba(125, 122, 117, 1)",
+  "dark": "rgba(173, 169, 163, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "desktopBetaCtaBackgroundHovered": {
+  "light": "rgba(33, 27, 23, 0.05)",
+  "dark": "rgba(255, 255, 255, 0.056)",
+  "lightHighContrast": "rgba(59, 20, 0, 0.05)",
+  "darkHighContrast": "rgba(255, 255, 255, 0.056)"
+ },
+ "desktopBetaCtaDismissIcon": {
+  "light": "rgba(173, 169, 163, 1)",
+  "dark": "rgba(125, 122, 117, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "redAccentBackground": {
+  "light": "rgba(229, 100, 88, 1)",
+  "dark": "rgba(229, 100, 88, 1)",
+  "lightHighContrast": "rgba(172, 51, 41, 1)",
+  "darkHighContrast": "rgba(230, 137, 119, 1)"
+ },
+ "staleBadgeText": {
+  "light": "rgba(142, 139, 134, 1)",
+  "dark": "rgba(142, 139, 134, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(173, 169, 163, 1)"
+ },
+ "staleBadgeBackground": {
+  "light": "rgba(230, 229, 227, 1)",
+  "dark": "rgba(95, 94, 89, 1)",
+  "lightHighContrast": "rgba(230, 229, 227, 1)",
+  "darkHighContrast": "rgba(95, 94, 89, 1)"
+ },
+ "titleBarOverlayBackground": {
+  "light": "rgba(255, 255, 255, 0.1)",
+  "dark": "rgba(0, 0, 0, 0)"
+ },
+ "primaryTextColor": {
+  "light": "rgba(44, 44, 43, 1)",
+  "dark": "rgba(240, 239, 237, 1)",
+  "lightHighContrast": "rgba(32, 32, 32, 1)",
+  "darkHighContrast": "rgba(249, 248, 247, 1)"
+ },
+ "secondaryTextColor": {
+  "light": "rgba(125, 122, 117, 1)",
+  "dark": "rgba(173, 169, 163, 1)",
+  "lightHighContrast": "rgba(95, 94, 89, 1)",
+  "darkHighContrast": "rgba(212, 211, 207, 1)"
+ },
+ "errorTextColor": {
+  "light": "rgba(229, 100, 88, 1)",
+  "dark": "rgba(229, 100, 88, 1)",
+  "lightHighContrast": "rgba(172, 51, 41, 1)",
+  "darkHighContrast": "rgba(230, 137, 119, 1)"
+ }
+}
