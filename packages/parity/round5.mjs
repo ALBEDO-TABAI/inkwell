@@ -34,6 +34,21 @@ T.emojiUsage = async () => {
   const order = await page.evaluate(async () => { const m = await import('/src/editor/emoji-data.ts'); const before = m.searchEmoji('heart').slice(0, 3).map((e) => e.char); const pick = m.searchEmoji('heart')[5].char; m.pushRecentEmoji(pick); m.pushRecentEmoji(pick); return [before[0], m.searchEmoji('heart')[0].char, pick]; });
   ok(order[1] === order[2] && order[0] !== order[2], 'emoji search ranks the most-used match first');
 };
+T.fileProp = async () => {
+  await go('page-db', '&sidebar=closed');
+  const fp = await page.evaluate(async () => { const m = await import('/src/db/model.ts'); const v = m.viewsOf(window.__ink.store.get('page-db'))[0]; return m.addProp('page-db', 'file', { name: 'Files', at: { viewId: v.id, after: 'title' } }); });
+  await page.waitForTimeout(200);
+  await page.click(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${fp}"]`); await page.waitForTimeout(300);
+  ok(!!(await page.$('.ink-file-editor')), 'files editor opens');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+  await page.setInputFiles('.ink-file-editor input[type=file]', [{ name: 'cover.png', mimeType: 'image/png', buffer: png }, { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') }]);
+  await page.waitForTimeout(400);
+  ok((await page.$$('.ink-file-editor .ink-file-row')).length === 2, 'two files attached');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+  ok(!!(await page.$(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${fp}"] img.ink-file-thumb`)) && (await page.textContent(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${fp}"]`)).includes('notes.txt'), 'cell shows thumbnail + file chip');
+  await page.evaluate(() => window.__ink.setActiveView('page-db', 'view-3')); await page.waitForTimeout(300);
+  ok(!!(await page.$('.ink-gv-card[data-row-id="row-01"] .ink-gv-cover img')), 'gallery card uses the image as its cover');
+};
 const only = process.argv[2];
 for (const [k, f] of Object.entries(T)) { if (only && !k.includes(only)) continue; try { await f(); } catch (e) { ok(false, k + ' threw ' + e.message.split('\n')[0]); } }
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));

@@ -4,11 +4,12 @@ import { store } from '../store/store';
 import { Icon, type IconName } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
 import { pageTitle } from '../app/pages';
+import { isImageFile, type FileRef } from './model';
 import { schemaOf, rawValue, fmtDateRange, fmtDateTime, displayUrl, type Prop, type PropType, type Value } from './model';
 
 export const PROP_ICON: Record<PropType, IconName> = {
   title: 'caseUpper', text: 'alignLeft', number: 'hash', select: 'selectProp', multi_select: 'multiSelect', status: 'statusProp', date: 'dateProp',
-  person: 'personProp', checkbox: 'checkboxProp', url: 'urlProp', email: 'at', phone_number: 'phone', formula: 'sigma', created_time: 'clock', relation: 'arrowUpRight', rollup: 'search',
+  person: 'personProp', checkbox: 'checkboxProp', url: 'urlProp', email: 'at', phone_number: 'phone', formula: 'sigma', created_time: 'clock', relation: 'arrowUpRight', rollup: 'search', file: 'paperclip',
 };
 export function PropIcon({ type, size = 16 }: { type: PropType; size?: number }) {
   if (type === 'title') return <span className="ink-prop-aa" style={{ width: size, height: size, fontSize: size * 0.72 }}>Aa</span>;
@@ -52,6 +53,7 @@ export function CellValue({ row, propId, db, wrap, onCheck }: { row: Block; prop
     case 'checkbox': return <span className={'ink-checkbox' + (v ? ' is-on' : '')} role="checkbox" aria-checked={!!v} onMouseDown={onCheck ? (e) => { e.preventDefault(); e.stopPropagation(); onCheck(!v); } : undefined}>{v ? <Icon name="check" size={12} stroke={2.5} /> : null}</span>;
     case 'url': return v ? <a className="ink-cell-link" href={String(v)} target="_blank" rel="noreferrer" onClick={(e) => e.preventDefault()}>{displayUrl(String(v))}</a> : null;
     case 'email': case 'phone_number': return v ? <span className="ink-cell-link">{String(v)}</span> : null;
+    case 'file': return Array.isArray(v) && v.length ? <span className={'ink-file-list' + (wrap ? ' is-wrap' : '')}>{(v as unknown as FileRef[]).map((f, i) => isImageFile(f) ? <img key={i} className="ink-file-thumb" src={f.url} alt={f.name} title={f.name} /> : <span key={i} className="ink-file-chip" title={f.name}><Icon name="paperclip" size={12} />{f.name}</span>)}</span> : null;
     case 'relation': return Array.isArray(v) && v.length ? <span className={'ink-rel-list' + (wrap ? ' is-wrap' : '')}>{v.map((id) => { const b = store.get(id); return <span key={id} className="ink-rel-chip"><PageIcon block={b} size={16} /><span className="ink-rel-title">{pageTitle(b)}</span></span>; })}</span> : null;
     case 'rollup': return v != null && v !== '' ? <span className={typeof v === 'number' ? 'ink-cell-num' : 'ink-cell-text'}>{String(v)}</span> : null;
     case 'formula': return v != null && v !== '' ? <span className={typeof v === 'number' ? 'ink-cell-num' : 'ink-cell-text'}>{typeof v === 'boolean' ? (v ? '✓' : '') : String(v)}</span> : null;

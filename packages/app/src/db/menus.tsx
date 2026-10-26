@@ -97,7 +97,7 @@ function NameInput({ value, onCommit, lead, info }: { value: string; onCommit: (
 /* ---------- property types ---------- */
 const TYPE_ORDER: { type: PropType | null; label: string; icon?: IconName }[] = [
   { type: 'text', label: '文本' }, { type: 'number', label: '数字' }, { type: 'select', label: '选择' }, { type: 'multi_select', label: '多选' }, { type: 'status', label: '状态' },
-  { type: 'date', label: '日期' }, { type: 'person', label: '人员' }, { type: null, label: '文件和媒体', icon: 'image' }, { type: 'checkbox', label: '复选框' }, { type: 'url', label: '网址' },
+  { type: 'date', label: '日期' }, { type: 'person', label: '人员' }, { type: 'file', label: '文件和媒体' }, { type: 'checkbox', label: '复选框' }, { type: 'url', label: '网址' },
   { type: 'email', label: '电子邮件' }, { type: 'phone_number', label: '电话' }, { type: 'formula', label: '函数' }, { type: 'relation', label: '关联关系' }, { type: 'rollup', label: '汇总' },
   { type: 'created_time', label: '创建时间' },
 ];

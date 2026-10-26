@@ -7,8 +7,10 @@ import type { Block } from '../store/model';
 import { plain } from '../store/model';
 import { pageTitle } from '../app/pages';
 
-export type PropType = 'title' | 'text' | 'number' | 'select' | 'multi_select' | 'status' | 'date' | 'person' | 'checkbox' | 'url' | 'email' | 'phone_number' | 'formula' | 'created_time' | 'relation' | 'rollup';
+export type PropType = 'title' | 'text' | 'number' | 'select' | 'multi_select' | 'status' | 'date' | 'person' | 'checkbox' | 'url' | 'email' | 'phone_number' | 'formula' | 'created_time' | 'relation' | 'rollup' | 'file';
 export interface SelectOption { v: string; c: string; group?: 'todo' | 'doing' | 'done' }
+export interface FileRef { name: string; url: string; mime?: string; size?: number }
+export const isImageFile = (f: FileRef) => (f.mime || '').startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)(\?|$)/i.test(f.url);
 export type TimelineScale = 'day' | 'week' | 'month' | 'quarter' | 'year';
 export type RollupFn = 'show' | 'count' | 'count_values' | 'sum' | 'average' | 'min' | 'max' | 'range' | 'percent_checked';
 export interface Prop { name: string; type: PropType; options?: SelectOption[]; formula?: string; wrap?: boolean; relation?: { db: string }; rollup?: { relation?: string; target?: string; fn: RollupFn } }
@@ -114,6 +116,7 @@ export function valueText(row: Block, propId: string, db: Block): string {
     case 'created_time': return fmtDateTime(v as number);
     case 'person': return (v as string[]).map((id) => store.users.get(id)?.name || '').join(', ');
     case 'multi_select': return (v as string[]).join(', ');
+    case 'file': return (v as unknown as FileRef[]).map((f) => f.name).join(', ');
     case 'relation': return (v as string[]).map((id) => plain(store.get(id)?.title) || '新页面').join(', ');
     case 'checkbox': return v ? '✓' : '';
     default: return String(v);
@@ -370,7 +373,7 @@ export function addProp(dbId: string, type: PropType, opts: { name?: string; at?
   }, 'add property');
   return id;
 }
-export const PROP_DEFAULT_NAME: Partial<Record<PropType, string>> = { text: '文本', number: '数字', select: '选择', multi_select: '多选', status: '状态', date: '日期', person: '人员', checkbox: '复选框', url: '网址', email: '电子邮件', phone_number: '电话', formula: '函数', created_time: '创建时间', relation: '关联关系', rollup: '汇总' };
+export const PROP_DEFAULT_NAME: Partial<Record<PropType, string>> = { text: '文本', number: '数字', select: '选择', multi_select: '多选', status: '状态', date: '日期', person: '人员', checkbox: '复选框', url: '网址', email: '电子邮件', phone_number: '电话', formula: '函数', created_time: '创建时间', relation: '关联关系', rollup: '汇总', file: '文件和媒体' };
 export const STATUS_DEFAULT: SelectOption[] = [{ v: '未开始', c: 'default', group: 'todo' }, { v: '进行中', c: 'blue', group: 'doing' }, { v: '完成', c: 'green', group: 'done' }];
 export const OPTION_COLORS = ['default', 'gray', 'brown', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'red'];
 

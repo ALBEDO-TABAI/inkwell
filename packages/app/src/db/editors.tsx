@@ -7,7 +7,7 @@ import { openMenu, Switch } from '../ui/menu';
 import { Icon } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
 import { pageTitle } from '../app/pages';
-import { schemaOf, rowsOf, rawValue, setValue, updateDb, isoOf, parseIso, OPTION_COLORS, type Prop, type SelectOption } from './model';
+import { schemaOf, rowsOf, rawValue, setValue, updateDb, isoOf, parseIso, OPTION_COLORS, type Prop, type SelectOption, type FileRef, isImageFile } from './model';
 import { Tag, StatusPill, Avatar, colorVar } from './cells';
 
 const EDITOR_ID = 'cell-editor';
@@ -20,6 +20,9 @@ export function openCellEditor(cell: HTMLElement, rowId: string, propId: string,
   switch (p.type) {
     case 'checkbox': setValue(rowId, propId, !rawValue(row, propId, db)); onClose(); return;
     case 'created_time': case 'formula': case 'rollup': onClose(); return;
+    case 'file':
+      openPopover({ id: EDITOR_ID, anchor: over, placement: 'bottom-start', onClose, className: 'ink-cell-pop', render: (close) => <FileEditor dbId={db.id} rowId={rowId} propId={propId} close={close} /> });
+      return;
     case 'relation':
       openPopover({ id: EDITOR_ID, anchor: over, placement: 'bottom-start', onClose, className: 'ink-cell-pop', render: (close) => <RelationEditor dbId={db.id} rowId={rowId} propId={propId} close={close} /> });
       return;
@@ -178,6 +181,42 @@ function PersonEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: str
         {users.map((u) => <div key={u.id} className="ink-menu-item" onMouseDown={(e) => { e.preventDefault(); toggle(u.id); }}><Avatar userId={u.id} /><span style={{ flex: 1 }}>{u.name}</span>{sel.includes(u.id) && <Icon name="check" size={16} />}</div>)}
       </div>
       <div className="ink-opt-foot"><div className="ink-menu-item ink-muted"><Icon name="userRound" size={16} /> 邀请人员</div></div>
+    </div>
+  );
+}
+
+/* ---------- files & media ---------- */
+const MAX_FILE = 20 * 1024 * 1024;
+export function readFiles(files: FileList | File[]): Promise<FileRef[]> {
+  return Promise.all([...files].filter((f) => f.size <= MAX_FILE).map((f) => new Promise<FileRef>((res) => { const r = new FileReader(); r.onload = () => res({ name: f.name, url: String(r.result), mime: f.type, size: f.size }); r.readAsDataURL(f); })));
+}
+function FileEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: string; propId: string; close: () => void }) {
+  const [, force] = useState(0);
+  useEffect(() => store.subscribe(() => force((x) => x + 1)), []);
+  const db = store.get(dbId)!; const row = store.get(rowId)!;
+  const files = ((rawValue(row, propId, db) as unknown as FileRef[]) || []);
+  const [tab, setTab] = useState<'upload' | 'link'>('upload');
+  const [link, setLink] = useState('');
+  const input = useRef<HTMLInputElement>(null);
+  const set = (next: FileRef[]) => setValue(rowId, propId, next as never);
+  const addLink = () => { const u = link.trim(); if (!u) return; const url = /^[a-z][a-z0-9+.-]*:/i.test(u) ? u : 'https://' + u; set([...files, { name: url.split('/').filter(Boolean).pop() || url, url }]); setLink(''); };
+  void close;
+  return (
+    <div className="ink-menu ink-file-editor" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); if (e.dataTransfer.files.length) readFiles(e.dataTransfer.files).then((f) => set([...files, ...f])); }}>
+      {files.length > 0 && <div className="ink-file-rows">{files.map((f, i) => (
+        <div key={i} className="ink-menu-item ink-file-row">
+          {isImageFile(f) ? <img className="ink-file-thumb" src={f.url} alt="" /> : <Icon name="paperclip" size={16} />}
+          <span className="ink-file-name" title={f.name}>{f.name}</span>
+          <a className="ink-file-act" href={f.url} download={f.name} title="下载" onMouseDown={(e) => e.stopPropagation()}><Icon name="download" size={14} /></a>
+          <span className="ink-file-act" role="button" title="删除" onMouseDown={(e) => { e.preventDefault(); set(files.filter((_, j) => j !== i)); }}><Icon name="trash" size={14} /></span>
+        </div>))}
+      </div>}
+      <div className="ink-media-tabs">{(['upload', 'link'] as const).map((x) => <div key={x} role="tab" className={'ink-media-tab' + (tab === x ? ' is-active' : '')} onClick={() => setTab(x)}>{x === 'upload' ? '上传' : '嵌入链接'}</div>)}</div>
+      <div className="ink-media-body">
+        {tab === 'upload'
+          ? <><button className="ink-btn ink-media-wide" onClick={() => input.current?.click()}>选择文件</button><input ref={input} type="file" multiple hidden onChange={(e) => { if (e.target.files) readFiles(e.target.files).then((f) => set([...files, ...f])); e.target.value = ''; }} /><div className="ink-media-hint">每个文件的最大大小为 20MB，也可以拖放到这里。</div></>
+          : <><input data-autofocus className="ink-input ink-media-input" placeholder="粘贴文件链接…" value={link} onChange={(e) => setLink(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addLink(); } }} /><button className="ink-btn ink-btn-primary ink-media-wide" disabled={!link.trim()} onClick={addLink}>嵌入链接</button></>}
+      </div>
     </div>
   );
 }

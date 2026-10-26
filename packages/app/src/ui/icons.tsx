@@ -32,7 +32,7 @@ const REG = {
   insertLeft: L.ArrowLeftToLine, insertRight: L.ArrowRightToLine, wrap: L.WrapText, expand: L.Maximize2, collapse: L.Minimize2,
   chevronsRight: L.ChevronsRight, centerPeek: L.SquareSplitHorizontal, fullPage: L.Expand, unlock: L.LockOpen, chart: L.ChartLine, map: L.Map,
   form: L.FormInput, feed: L.Rss, dashboard: L.LayoutDashboard, openPage: L.SquareArrowOutUpRight, userRound: L.UserRound, sortDown: L.ArrowDownUp,
-  sigma: L.Sigma, caseUpper: L.CaseUpper, chevronUp: L.ChevronUp, minus: L.Minus, arrowUp: L.ArrowUp, arrowDown: L.ArrowDown,
+  sigma: L.Sigma, caseUpper: L.CaseUpper, chevronUp: L.ChevronUp, minus: L.Minus, paperclip: L.Paperclip, arrowUp: L.ArrowUp, arrowDown: L.ArrowDown,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };
 

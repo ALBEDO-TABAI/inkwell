@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { Block } from '../store/model';
 import { Icon, PageGlyph } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
-import { schemaOf, queryRows, groupRows, addRow, setValue, rawValue, updateView, type Group } from './model';
+import { schemaOf, queryRows, groupRows, addRow, setValue, rawValue, updateView, isImageFile, type Group, type FileRef } from './model';
 import { CellValue, StatusPill, Tag } from './cells';
 import { openCardMenu } from './menus';
 import { defaultsFor, NewRowButton, type DbCtx } from './Database';
@@ -103,6 +103,7 @@ export function GalleryView({ ctx }: { ctx: DbCtx }) {
     <div className={'ink-gv is-' + size} ref={ref} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
       {rows.map((r) => (
         <div key={r.id} className="ink-card ink-gv-card" role="presentation" data-row-id={r.id} onClick={() => ctx.openRow(r.id)}>
+          {(() => { const fp = Object.keys(schema).find((k) => schema[k].type === 'file'); const f = fp ? ((rawValue(r, fp, db) as unknown as FileRef[]) || []).find(isImageFile) : undefined; return f ? <div className="ink-gv-cover"><img src={f.url} alt="" /></div> : null; })()}
           <div className="ink-gv-body">
             <div className="ink-card-title">{r.format?.page_icon && rowIcon(r, 16)}<CellValue row={r} propId="title" db={db} /></div>
             {cardProps(ctx).map((id) => {
