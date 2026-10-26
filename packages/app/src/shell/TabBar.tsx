@@ -37,7 +37,7 @@ export function TabBar(p: TabBarProps) {
       <div className={'ink-tabbar-left' + (p.sidebarOpen ? ' is-sidebar' : '')} style={{ width: leftW }}>
         {p.trafficLights && <div className="ink-traffic" aria-hidden><span className="tl-close" /><span className="tl-min" /><span className="tl-max" /></div>}
         <div className="ink-tbar-icon ink-tbar-sidebar" role="button" aria-label={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} title={p.sidebarOpen ? t('tabs.closeSidebar') : t('tabs.openSidebar')} onClick={p.onToggleSidebar}>
-          <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden><rect x="1.6" y="2.6" width="12.8" height="10.8" rx="2.2" /><path d="M5.6 2.6v10.8" /></svg>
+          <svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" aria-hidden><rect x="1.6" y="2.6" width="12.8" height="10.8" rx="2.2" /><path d="M5.6 2.6v10.8" /></svg>
         </div>
         {p.sidebarOpen && <>
           <div className="ink-tbar-spacer" />
@@ -67,7 +67,7 @@ export function TabBar(p: TabBarProps) {
           </div>
         ))}
         {drag && drag.over === p.tabs.length && <div className="ink-tab-drop is-end" />}
-        <div className="ink-tbar-icon ink-tbar-new" role="button" aria-label={t('tabs.newTab')} title={t('tabs.newTab')} onClick={p.onNew}><Icon name="plus" size={24} stroke={1.25} /></div>
+        <div className="ink-tbar-icon ink-tbar-new" role="button" aria-label={t('tabs.newTab')} title={t('tabs.newTab')} onClick={p.onNew}><Icon name="plus" size={21} stroke={1.4} /></div>
       </div>
       <div className="ink-tabbar-right" />
     </div>
