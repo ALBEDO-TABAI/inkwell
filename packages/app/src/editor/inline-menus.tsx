@@ -38,7 +38,7 @@ export function openInlineMenu(kind: InlineKind, blockId: string, start: number,
     onClose: () => { session = null; keyHandler = null; emit(); markSlash(null); },
     render: (close) => <InlineHost close={close} />,
   });
-  if (kind === 'slash') markSlash(blockId);
+  if (kind === 'slash' || (kind === 'mention' && !opts.pagesOnly)) markSlash(blockId);
   emit();
 }
 export function closeInlineMenu() { if (session) closePopover('inline-menu'); }
@@ -50,7 +50,7 @@ export function updateInlineQuery(blockId: string, caret: number, text: string) 
   const q = text.slice(session.start + 1, caret);
   if (q.includes('\n') || q.length > 40 || (session.kind !== 'slash' && /\s{2}/.test(q))) { closeInlineMenu(); return; }
   session = { ...session, query: q };
-  markSlash(q ? null : blockId);
+  markSlash(q || session.kind === 'emoji' || session.pagesOnly ? null : blockId);
   emit();
 }
 
@@ -65,7 +65,7 @@ function markSlash(blockId: string | null) {
   const chip = document.createElement('span');
   chip.dataset.placeholder = ''; chip.dataset.placeholderChip = '';
   chip.className = 'ink-slash-ph'; chip.contentEditable = 'false';
-  chip.textContent = t('slash.inlinePlaceholder');
+  chip.textContent = session.kind === 'mention' ? t('common.today') : t('slash.inlinePlaceholder');
   const r = sel.getRangeAt(0).cloneRange(); r.collapse(true); r.insertNode(chip);
   // keep caret before chip
   const r2 = document.createRange(); r2.setStartBefore(chip); r2.collapse(true); sel.removeAllRanges(); sel.addRange(r2);
