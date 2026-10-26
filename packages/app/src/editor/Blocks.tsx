@@ -24,7 +24,7 @@ import { rtPlain, colorClass } from './richtext';
 export interface Ctx { parentType: BlockType | 'root'; first: boolean; last: boolean; prev?: Block; next?: Block; depth: number; number?: number }
 
 const HEADING_TOP: Partial<Record<BlockType, number>> = { header: 30, sub_header: 26, sub_sub_header: 22, header_4: 18 };
-const PADDED8: BlockType[] = ['quote', 'callout', 'code', 'table', 'image', 'video', 'bookmark', 'equation', 'table_of_contents', 'synced'];
+const PADDED8: BlockType[] = ['quote', 'callout', 'code', 'table', 'image', 'video', 'bookmark', 'equation', 'table_of_contents'];
 const PAGE_LINKS: BlockType[] = ['page', 'alias', 'collection_view_page'];
 const LIST_PARENTS: (BlockType | 'root')[] = ['bulleted_list', 'numbered_list', 'to_do', 'toggle'];
 

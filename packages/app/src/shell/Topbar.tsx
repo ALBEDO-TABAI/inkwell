@@ -34,12 +34,12 @@ export function Topbar({ pageId }: { pageId: string }) {
         ))}
         {inPrivate && (
           <span className="ink-crumb ink-crumb-scope" role="button">
-            <Icon name="lock" size={14} stroke={1.8} /><span className="ink-crumb-text">{t('top.private')}</span><Icon name="chevronDown" size={12} stroke={2} />
+            <Icon name="lock" size={12} stroke={2} /><span className="ink-crumb-text">{t('top.private')}</span><Icon name="chevronDown" size={12} stroke={2} />
           </span>
         )}
       </div>
       <div className="ink-topbar-right">
-        <span className="ink-topbar-btn ink-share-btn" role="button" onClick={(e) => openShare(e.currentTarget)}><Icon name="lock" size={14} stroke={1.8} /><span>{t('top.share')}</span></span>
+        <span className="ink-topbar-btn ink-share-btn" role="button" onClick={(e) => openShare(e.currentTarget)}><Icon name="lock" size={12} stroke={2} /><span>{t('top.share')}</span></span>
         <span className="ink-topbar-icon" role="button" {...tip(t('top.copyLink'))} onClick={() => copyPageLink(pageId)}><Icon name="link" size={20} stroke={1.6} /></span>
         <span className={'ink-topbar-icon' + (fav ? ' is-fav' : '')} role="button" {...tip(fav ? t('top.unfavorite') : t('top.favorite'))} onClick={() => toggleFavorite(pageId)}><Icon name="star" size={20} stroke={1.6} style={fav ? { fill: '#F6C050', color: '#F6C050' } : undefined} /></span>
         <span className="ink-topbar-icon ink-more-btn" role="button" {...tip(t('top.more'))} onClick={(e) => page && openPageMenu(e.currentTarget, pageId)}><Icon name="more" size={20} stroke={2} /></span>

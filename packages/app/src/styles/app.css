@@ -55,6 +55,7 @@ button { font: inherit; color: inherit; }
 .ink-sb-home-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: var(--ink-icon-secondary); }
 .ink-sb-home-btn:hover, .ink-sb-home-pill:hover { background: var(--ink-background-interactive-translucent); }
 .ink-sb-group, .ink-sb-section { display: flex; flex-direction: column; gap: 1px; margin-bottom: 12px; }
+.ink-sb-section { margin-bottom: 16px; }
 .ink-sb-section.is-spaced { margin-top: 4px; }
 .ink-sb-row {
   display: flex; align-items: center; height: 30px; min-height: 27px; padding: 5px 8px; border-radius: 6px;
@@ -90,7 +91,7 @@ button { font: inherit; color: inherit; }
 .ink-sb-customize { margin-bottom: 7px; }
 .ink-sb-divider { height: 1px; background: var(--ink-border-secondary); margin: 0 -8px; }
 .ink-sb-footer { display: flex; align-items: center; gap: 2px; height: 44px; padding: 0; }
-.ink-sb-switcher { width: 194px; height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 6px; border-radius: 6px; color: var(--ink-text-primary); font-weight: 500; font-size: 14px; line-height: 21px; }
+.ink-sb-switcher { width: 194px; flex: none; height: 28px; display: flex; align-items: center; gap: 8px; padding: 0 6px; border-radius: 6px; color: var(--ink-text-primary); font-weight: 500; font-size: 14px; line-height: 21px; }
 .ink-sb-switcher:hover, .ink-sb-iconbtn:hover { background: var(--ink-background-interactive-translucent); }
 .ink-ws-icon { width: 20px; height: 20px; flex: none; border-radius: 4px; background: var(--ink-background-tertiary-translucent); display: flex; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 500; color: var(--ink-text-secondary); }
 .ink-sb-switcher-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -111,7 +112,7 @@ button { font: inherit; color: inherit; }
 .ink-sidebar.is-floating .ink-sb-search-wrap { padding-top: 12px; }
 
 /* ---------------- topbar ---------------- */
-.ink-topbar { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; background: var(--ink-background-primary); z-index: 100; transition: opacity .7s, color .7s; font-size: 14px; line-height: 16.8px; }
+.ink-topbar { height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 12px; background: var(--ink-background-primary); z-index: 100; transition: opacity .7s, color .7s; font-size: 14px; line-height: 16.8px; }
 .ink-topbar.is-idle { opacity: 0; }
 .ink-topbar:hover { opacity: 1; }
 .ink-topbar-left { display: flex; align-items: center; min-width: 0; gap: 0; }
@@ -131,8 +132,9 @@ button { font: inherit; color: inherit; }
 .ink-scroller { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; position: relative; }
 .ink-page { position: relative; width: 100%; padding-bottom: 30vh; }
 .ink-page-header { position: relative; }
-.ink-page-header-inner { width: 100%; max-width: 900px; padding: 0 96px; margin: 0 auto; }
+.ink-page-header-inner { width: 100%; max-width: 900px; padding: 0 90px; margin: 0 auto; }
 .ink-page.is-full .ink-page-header-inner, .ink-page.is-full .ink-page-content { max-width: none; }
+.ink-page.is-full .ink-page-content { width: calc(100% - 180px); }
 .ink-page-top-pad { height: 78px; }
 .ink-page-header.has-icon:not(.has-cover) .ink-page-top-pad { height: 92px; }
 .ink-cover { position: relative; height: 30vh; overflow: hidden; }
@@ -157,7 +159,7 @@ button { font: inherit; color: inherit; }
 .ink-page-title { padding: 0 8px; margin-bottom: 8px; }
 .ink-title-editable { font-size: 40px; line-height: 48px; font-weight: 700; outline: none; white-space: break-spaces; word-break: break-word; min-height: 48px; caret-color: var(--ink-text-primary); }
 .ink-title-editable.is-empty::before { content: attr(data-placeholder); color: var(--ink-page-title-placeholder-text-color); pointer-events: none; position: absolute; }
-.ink-page-content { width: 100%; max-width: 900px; padding: 8px 96px 0; margin: 0 auto; white-space: pre-wrap; }
+.ink-page-content { width: calc(100% - 180px); max-width: 720px; padding: 8px 0 0; margin: 0 auto; white-space: pre-wrap; }
 .ink-page-blocks { margin: 0; }
 .ink-page-tail { height: 120px; cursor: text; }
 .ink-empty-hint { color: var(--ink-text-tertiary); padding: 8px; cursor: text; }
@@ -289,6 +291,9 @@ html.is-harness .ink-code-text { font-family: "JetBrains Mono", "Liberation Mono
 .ink-alias-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; }
 .ink-alias-arrow { position: absolute; right: -2px; bottom: -1px; background: var(--ink-background-primary); border-radius: 2px; color: var(--ink-icon-primary); }
 .ink-synced { border-radius: 4px; outline: 2px solid transparent; }
+.ink-synced > .ink-children > .ink-block { padding-left: 0; padding-right: 0; }
+.ink-synced > .ink-children > .ink-block:first-child { padding-top: 0 !important; }
+.ink-synced > .ink-children > .ink-block:last-child { padding-bottom: 0 !important; }
 .ink-b-synced:hover > .ink-synced { outline-color: rgba(235, 87, 87, .45); }
 .ink-db-ph { padding: 8px 2px; }
 .ink-db-ph-views { display: flex; gap: 8px; font-size: 14px; padding-bottom: 6px; border-bottom: 1px solid var(--ink-border-primary); margin-bottom: 8px; }
@@ -303,7 +308,7 @@ html.is-harness .ink-code-text { font-family: "JetBrains Mono", "Liberation Mono
 .ink-u { text-decoration: underline; }
 .ink-s { text-decoration: line-through; }
 .ink-u.ink-s { text-decoration: underline line-through; }
-.ink-code-mark, span.ink-code { font-family: var(--ink-font-code, var(--ink-font-mono)); font-size: 85%; color: var(--ink-red-text-secondary); background: var(--ink-background-interactive-translucent); padding: .2em .4em; border-radius: 4px; }
+.ink-code-mark { line-height: normal; font-family: var(--ink-font-code, var(--ink-font-mono)); font-size: 85%; color: var(--ink-red-text-secondary); background: var(--ink-background-interactive-translucent); padding: .2em .4em; border-radius: 4px; }
 html.is-harness span.ink-code { font-family: "JetBrains Mono", "Liberation Mono", monospace; }
 .ink-link { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-link-decoration-color); text-underline-offset: 2px; cursor: pointer; }
 .ink-link:hover { text-decoration-color: var(--ink-text-secondary); }

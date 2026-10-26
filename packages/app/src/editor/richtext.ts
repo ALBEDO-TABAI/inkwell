@@ -128,7 +128,7 @@ export function toHtml(rt: RichText | undefined, ctx: RenderCtx = {}): string {
     if (m.i) cls.push('ink-i');
     if (m.u) cls.push('ink-u');
     if (m.s) cls.push('ink-s');
-    if (m.code) cls.push('ink-code');
+    if (m.code) cls.push('ink-code-mark');
     if (m.color) cls.push(colorClass(m.color));
     const attrs = `data-m="${escapeHtml(JSON.stringify(m))}"`;
     if (m.link) inner = `<a class="ink-link${cls.length ? ' ' + cls.join(' ') : ''}" href="${escapeHtml(m.link)}" ${attrs}>${inner}</a>`;
