@@ -375,3 +375,7 @@ body.is-col-resizing { cursor: col-resize !important; user-select: none; }
 .ink-cal-grid { margin-top: 0; }
 .ink-cal-day.is-today { right: 4px; }
 .ink-tl-right { display: flex; align-items: center; gap: 4px; height: 100%; padding: 0 104px 0 8px; margin-right: -104px; background: var(--ink-timeline-background, var(--ink-background-primary)); pointer-events: auto; }
+.ink-db-chips { margin-top: 2px; }
+.ink-sort-rules { padding-bottom: 1px; }
+.ink-sort-grip { margin-right: 3px; }
+.ink-sort-btn .ink-prop-icon, .ink-sort-btn > svg:first-child { transform: scale(1.15); }
