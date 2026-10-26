@@ -5,7 +5,9 @@ import { store } from '../store/store';
 import { openPopover, closePopover, type Anchor } from '../ui/overlay';
 import { openMenu, Switch } from '../ui/menu';
 import { Icon } from '../ui/icons';
-import { schemaOf, rawValue, setValue, updateDb, isoOf, parseIso, OPTION_COLORS, type Prop, type SelectOption } from './model';
+import { PageIcon } from '../ui/PageIcon';
+import { pageTitle } from '../app/pages';
+import { schemaOf, rowsOf, rawValue, setValue, updateDb, isoOf, parseIso, OPTION_COLORS, type Prop, type SelectOption } from './model';
 import { Tag, StatusPill, Avatar, colorVar } from './cells';
 
 const EDITOR_ID = 'cell-editor';
@@ -17,7 +19,10 @@ export function openCellEditor(cell: HTMLElement, rowId: string, propId: string,
   const onClose = () => cell.classList.remove('is-editing');
   switch (p.type) {
     case 'checkbox': setValue(rowId, propId, !rawValue(row, propId, db)); onClose(); return;
-    case 'created_time': case 'formula': onClose(); return;
+    case 'created_time': case 'formula': case 'rollup': onClose(); return;
+    case 'relation':
+      openPopover({ id: EDITOR_ID, anchor: over, placement: 'bottom-start', onClose, className: 'ink-cell-pop', render: (close) => <RelationEditor dbId={db.id} rowId={rowId} propId={propId} close={close} /> });
+      return;
     case 'select': case 'multi_select': case 'status':
       openPopover({ id: EDITOR_ID, anchor: over, placement: 'bottom-start', onClose, className: 'ink-cell-pop', render: (close) => <OptionEditor dbId={db.id} rowId={rowId} propId={propId} close={close} /> });
       return;
@@ -173,6 +178,31 @@ function PersonEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: str
         {users.map((u) => <div key={u.id} className="ink-menu-item" onMouseDown={(e) => { e.preventDefault(); toggle(u.id); }}><Avatar userId={u.id} /><span style={{ flex: 1 }}>{u.name}</span>{sel.includes(u.id) && <Icon name="check" size={16} />}</div>)}
       </div>
       <div className="ink-opt-foot"><div className="ink-menu-item ink-muted"><Icon name="userRound" size={16} /> 邀请人员</div></div>
+    </div>
+  );
+}
+
+/* ---------- relation ---------- */
+function RelationEditor({ dbId, rowId, propId, close }: { dbId: string; rowId: string; propId: string; close: () => void }) {
+  const [, force] = useState(0);
+  useEffect(() => store.subscribe(() => force((x) => x + 1)), []);
+  const db = store.get(dbId)!; const row = store.get(rowId)!; const p = schemaOf(db)[propId];
+  const target = store.get(p.relation?.db || dbId)!;
+  const sel = (rawValue(row, propId, db) as string[]) || [];
+  const [q, setQ] = useState('');
+  const all = rowsOf(target).filter((b) => b.id !== rowId && (!q || pageTitle(b).toLowerCase().includes(q.toLowerCase())));
+  const toggle = (id: string) => setValue(rowId, propId, sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id]);
+  void close;
+  return (
+    <div className="ink-menu ink-opt-editor ink-rel-editor">
+      <div className="ink-rel-head"><span className="ink-muted">关联到</span><PageIcon block={target} size={16} /><span className="ink-rel-db">{pageTitle(target)}</span></div>
+      <div className="ink-opt-input"><input data-autofocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="搜索页面…" /></div>
+      <div className="ink-opt-list">
+        {sel.length > 0 && <div className="ink-menu-label">已关联页面</div>}
+        {sel.map((id) => <div key={'s' + id} className="ink-menu-item" onMouseDown={(e) => { e.preventDefault(); toggle(id); }}><PageIcon block={store.get(id)} size={18} /><span style={{ flex: 1 }}>{pageTitle(store.get(id))}</span><Icon name="minus" size={16} /></div>)}
+        <div className="ink-menu-label">{sel.length ? '关联另一个页面' : '选择要关联的页面'}</div>
+        {all.filter((b) => !sel.includes(b.id)).map((b) => <div key={b.id} className="ink-menu-item" onMouseDown={(e) => { e.preventDefault(); toggle(b.id); }}><PageIcon block={b} size={18} /><span style={{ flex: 1 }}>{pageTitle(b)}</span><Icon name="plus" size={16} /></div>)}
+      </div>
     </div>
   );
 }

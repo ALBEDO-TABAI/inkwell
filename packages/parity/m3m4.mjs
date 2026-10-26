@@ -100,6 +100,25 @@ ok((await page.$$('.ink-hist-item')).length >= 2, 'history lists versions');
 await page.click('.ink-hist-item >> nth=1'); await page.waitForTimeout(200);
 await page.click('.ink-hist-restore'); await page.waitForTimeout(300);
 ok(await page.evaluate(() => { const s = window.__ink.store; const id = s.get('page-rea').content.at(-1); return JSON.stringify(s.get(id).title) !== '[["CHANGED"]]'; }), 'restore brings back the older text');
+
+// M5: relation + rollup
+await page.goto(base + '#/p/page-db'); await page.reload(); await page.waitForFunction(() => window.__inkwellReady); await page.waitForTimeout(400);
+const relIds = await page.evaluate(async () => {
+  const m = await import('/src/db/model.ts');
+  const rel = m.addProp('page-db', 'relation', { name: 'Depends on' });
+  const ru = m.addProp('page-db', 'rollup', { name: 'Dep score' });
+  m.updateDb('page-db', ({ schema }) => ({ schema: { ...schema, [ru]: { ...schema[ru], rollup: { relation: rel, target: 'score', fn: 'sum' } } } }), 'cfg');
+  return { rel, ru };
+});
+await page.waitForTimeout(200);
+await page.evaluate(() => document.querySelector('.ink-main .ink-tv-scroll').scrollLeft = 99999); await page.waitForTimeout(200);
+await page.click(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${relIds.rel}"]`); await page.waitForTimeout(300);
+ok(!!(await page.$('.ink-rel-editor')), 'relation editor opens');
+await page.click('.ink-rel-editor .ink-menu-item:has-text("Task 02")'); await page.waitForTimeout(150);
+await page.click('.ink-rel-editor .ink-menu-item:has-text("Task 03")'); await page.waitForTimeout(150);
+await page.keyboard.press('Escape'); await page.waitForTimeout(200);
+ok((await page.textContent(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${relIds.rel}"]`)).includes('Task 02'), 'relation cell shows linked pages');
+ok((await page.textContent(`.ink-tv-row[data-row-id="row-01"] .ink-tv-cell[data-prop="${relIds.ru}"]`)).trim() === '50', 'rollup sum of linked scores = 50');
 // slash inline database
 ok(errs.length === 0, 'no page errors ' + errs.join('; '));
 await browser.close();

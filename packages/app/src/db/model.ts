@@ -7,9 +7,10 @@ import type { Block } from '../store/model';
 import { plain } from '../store/model';
 import { pageTitle } from '../app/pages';
 
-export type PropType = 'title' | 'text' | 'number' | 'select' | 'multi_select' | 'status' | 'date' | 'person' | 'checkbox' | 'url' | 'email' | 'phone_number' | 'formula' | 'created_time';
+export type PropType = 'title' | 'text' | 'number' | 'select' | 'multi_select' | 'status' | 'date' | 'person' | 'checkbox' | 'url' | 'email' | 'phone_number' | 'formula' | 'created_time' | 'relation' | 'rollup';
 export interface SelectOption { v: string; c: string; group?: 'todo' | 'doing' | 'done' }
-export interface Prop { name: string; type: PropType; options?: SelectOption[]; formula?: string; wrap?: boolean }
+export type RollupFn = 'show' | 'count' | 'count_values' | 'sum' | 'average' | 'min' | 'max' | 'range' | 'percent_checked';
+export interface Prop { name: string; type: PropType; options?: SelectOption[]; formula?: string; wrap?: boolean; relation?: { db: string }; rollup?: { relation?: string; target?: string; fn: RollupFn } }
 export type Schema = Record<string, Prop>;
 export type ViewType = 'table' | 'board' | 'list' | 'gallery' | 'calendar' | 'timeline';
 export interface SortRule { prop: string; dir: 'asc' | 'desc' }
@@ -58,8 +59,34 @@ export function rawValue(row: Block, propId: string, db?: Block): Value {
   if (p.type === 'title') return plain(row.title);
   if (p.type === 'created_time') return row.created;
   if (p.type === 'formula') return evalFormula(p.formula || '', row, d!);
+  if (p.type === 'relation') return ((row.props?.[propId] as string[]) || []).filter((id) => { const b = store.get(id); return b && b.alive !== false; });
+  if (p.type === 'rollup') return rollupValue(row, p, d!);
   return row.props?.[propId] as Value;
 }
+/** rollup: follow a relation, read one property of each linked row, aggregate */
+export function rollupValue(row: Block, p: Prop, db: Block): Value {
+  const r = p.rollup; if (!r?.relation) return null;
+  const rel = schemaOf(db)[r.relation]; if (!rel || rel.type !== 'relation') return null;
+  const target = store.get(rel.relation?.db || db.id); if (!target) return null;
+  const linked = (rawValue(row, r.relation, db) as string[]).map((id) => store.get(id)!).filter(Boolean);
+  const tid = r.target || 'title';
+  if (!linked.length && r.fn !== 'count') return null;
+  const vals = linked.map((b) => rawValue(b, tid, target));
+  const nums = vals.map((v) => (typeof v === 'number' ? v : Number(v))).filter((n) => typeof n === 'number' && !isNaN(n));
+  const round = (n: number) => Math.round(n * 100) / 100;
+  switch (r.fn) {
+    case 'count': return linked.length;
+    case 'count_values': return vals.filter((v) => !isEmpty(v)).length;
+    case 'sum': return round(nums.reduce((a, b) => a + b, 0));
+    case 'average': return nums.length ? round(nums.reduce((a, b) => a + b, 0) / nums.length) : null;
+    case 'min': return nums.length ? Math.min(...nums) : null;
+    case 'max': return nums.length ? Math.max(...nums) : null;
+    case 'range': return nums.length ? Math.max(...nums) - Math.min(...nums) : null;
+    case 'percent_checked': return linked.length ? `${Math.round((vals.filter(Boolean).length / linked.length) * 100)}%` : null;
+    default: return linked.map((b) => valueText(b, tid, target)).filter(Boolean).join(', ');
+  }
+}
+export const ROLLUP_LABEL: Record<RollupFn, string> = { show: '显示原始值', count: '全部计数', count_values: '值计数', sum: '求和', average: '平均值', min: '最小值', max: '最大值', range: '范围', percent_checked: '已勾选百分比' };
 export const isEmpty = (v: Value) => v == null || v === '' || (Array.isArray(v) && v.length === 0) || v === false;
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -85,6 +112,7 @@ export function valueText(row: Block, propId: string, db: Block): string {
     case 'created_time': return fmtDateTime(v as number);
     case 'person': return (v as string[]).map((id) => store.users.get(id)?.name || '').join(', ');
     case 'multi_select': return (v as string[]).join(', ');
+    case 'relation': return (v as string[]).map((id) => plain(store.get(id)?.title) || '新页面').join(', ');
     case 'checkbox': return v ? '✓' : '';
     default: return String(v);
   }
@@ -292,7 +320,8 @@ export function addProp(dbId: string, type: PropType, opts: { name?: string; at?
     const n = opts.name || PROP_DEFAULT_NAME[type] || '属性';
     const names = new Set(Object.values(schema).map((p) => p.name));
     let name = n; let i = 1; while (names.has(name)) name = `${n} ${i++}`;
-    const prop: Prop = { name, type, ...(type === 'select' || type === 'multi_select' ? { options: [] } : type === 'status' ? { options: STATUS_DEFAULT.map((o) => ({ ...o })) } : {}) };
+    const firstRel = Object.keys(schema).find((k) => schema[k].type === 'relation');
+    const prop: Prop = { name, type, ...(type === 'select' || type === 'multi_select' ? { options: [] } : type === 'status' ? { options: STATUS_DEFAULT.map((o) => ({ ...o })) } : type === 'relation' ? { relation: { db: dbId } } : type === 'rollup' ? { rollup: { relation: firstRel, target: 'title', fn: 'show' } } : {}) };
     return {
       schema: { ...schema, [id]: prop },
       views: views.map((v) => {
@@ -306,7 +335,7 @@ export function addProp(dbId: string, type: PropType, opts: { name?: string; at?
   }, 'add property');
   return id;
 }
-export const PROP_DEFAULT_NAME: Partial<Record<PropType, string>> = { text: '文本', number: '数字', select: '选择', multi_select: '多选', status: '状态', date: '日期', person: '人员', checkbox: '复选框', url: '网址', email: '电子邮件', phone_number: '电话', formula: '函数', created_time: '创建时间' };
+export const PROP_DEFAULT_NAME: Partial<Record<PropType, string>> = { text: '文本', number: '数字', select: '选择', multi_select: '多选', status: '状态', date: '日期', person: '人员', checkbox: '复选框', url: '网址', email: '电子邮件', phone_number: '电话', formula: '函数', created_time: '创建时间', relation: '关联关系', rollup: '汇总' };
 export const STATUS_DEFAULT: SelectOption[] = [{ v: '未开始', c: 'default', group: 'todo' }, { v: '进行中', c: 'blue', group: 'doing' }, { v: '完成', c: 'green', group: 'done' }];
 export const OPTION_COLORS = ['default', 'gray', 'brown', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'red'];
 

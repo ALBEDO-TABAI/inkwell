@@ -7,9 +7,10 @@ import { openPopover, closePopover } from '../ui/overlay';
 import { Icon, type IconName } from '../ui/icons';
 import { toast } from '../ui/toast';
 import { openPeek } from '../app/state';
-import { duplicateBlock } from '../app/pages';
+import { duplicateBlock, pageTitle } from '../app/pages';
 import {
   schemaOf, viewsOf, propIds, updateDb, updateView, addProp, addRow, deleteRow, VIEW_NAMES, PROP_DEFAULT_NAME, STATUS_DEFAULT,
+  ROLLUP_LABEL, type Prop, type RollupFn,
   type View, type ViewType, type PropType, type CalcFn, type FilterRule, type FilterOp, type SortRule,
 } from './model';
 import { PropIcon, Tag, StatusPill } from './cells';
@@ -96,7 +97,7 @@ function NameInput({ value, onCommit, lead, info }: { value: string; onCommit: (
 const TYPE_ORDER: { type: PropType | null; label: string; icon?: IconName }[] = [
   { type: 'text', label: '文本' }, { type: 'number', label: '数字' }, { type: 'select', label: '选择' }, { type: 'multi_select', label: '多选' }, { type: 'status', label: '状态' },
   { type: 'date', label: '日期' }, { type: 'person', label: '人员' }, { type: null, label: '文件和媒体', icon: 'image' }, { type: 'checkbox', label: '复选框' }, { type: 'url', label: '网址' },
-  { type: 'email', label: '电子邮件' }, { type: 'phone_number', label: '电话' }, { type: 'formula', label: '函数' }, { type: null, label: '关联关系', icon: 'openPage' }, { type: null, label: '汇总', icon: 'search' },
+  { type: 'email', label: '电子邮件' }, { type: 'phone_number', label: '电话' }, { type: 'formula', label: '函数' }, { type: 'relation', label: '关联关系' }, { type: 'rollup', label: '汇总' },
   { type: 'created_time', label: '创建时间' },
 ];
 const typeItems = (onPick: (t: PropType) => void, current?: PropType): MenuItemSpec[] => TYPE_ORDER.map((t) => ({
@@ -123,7 +124,7 @@ function calcGroups(db: Block, view: View, propId: string): MenuSpec {
   const set = (fn: CalcFn) => updateView(db.id, view.id, (v) => ({ calcs: { ...v.calcs, [propId]: fn } }), 'calculate');
   const cur = view.calcs?.[propId] || 'none';
   const it = (fn: CalcFn): MenuItemSpec => ({ id: fn, label: CALC_LABEL[fn], checked: cur === fn, onSelect: () => set(fn) });
-  const numeric = p.type === 'number' || p.type === 'formula';
+  const numeric = p.type === 'number' || p.type === 'formula' || p.type === 'rollup';
   return { width: 220, groups: [[
     it('none'),
     { id: 'count', label: '总数', sub: () => ({ width: 200, groups: [[it('count_all'), it('count_values'), it('count_empty'), it('count_not_empty')]] }) },
@@ -146,6 +147,7 @@ export function openHeaderMenu(anchor: HTMLElement, db: Block, view: View, propI
       ...(!isTitle ? [{ id: 'type', label: '更改类型', icon: 'sortDown' as IconName, sub: () => ({ width: 265, search: '搜索属性类型…', maxHeight: 480, groups: [typeItems((t) => changeType(db, propId, t), p.type)] }) }] : []),
       { id: 'ai', label: 'AI 自动填充', icon: 'wand', right: <span className="ink-badge-blue">现已支持代理</span>, sub: () => ({ width: 220, groups: [[{ id: 'off', label: 'AI 功能未启用', disabled: true }]] }) },
       ...(p.type === 'formula' ? [{ kind: 'custom' as const, key: 'formula', render: () => <FormulaInput db={db} propId={propId} /> }] : []),
+      ...relationItems(db, propId),
     ],
     [
       { id: 'filter', label: '筛选', icon: 'filter', onSelect: () => setTimeout(() => addFilter(store.get(db.id)!, view, propId, anchor), 0) },
@@ -181,6 +183,33 @@ function duplicateProp(db: Block, view: View, propId: string) {
   store.transact('duplicate property', (tx) => { for (const r of store.children(db.id)) if (r.props?.[propId] !== undefined) tx.update(r.id, { props: { ...r.props, [id]: r.props[propId] } }); });
 }
 
+/* relation / rollup configuration rows in the header menu */
+function relationItems(db: Block, propId: string): MenuItemSpec[] {
+  const p = schemaOf(db)[propId]; const s = schemaOf(db);
+  const setP = (patch: Partial<Prop>, label: string) => updateDb(db.id, ({ schema }) => ({ schema: { ...schema, [propId]: { ...schema[propId], ...patch } } }), label);
+  const dbs = [...new Set([db.id, ...allDbIds()])];
+  if (p.type === 'relation') {
+    const target = store.get(p.relation?.db || db.id);
+    return [{ id: 'rel-db', label: '关联到', icon: 'arrowUpRight', right: <span className="ink-menu-value">{pageTitle(target)}</span>, sub: () => ({ width: 240, groups: [dbs.map((id) => ({ id: 'd' + id, label: pageTitle(store.get(id)), checked: id === (p.relation?.db || db.id), onSelect: () => setP({ relation: { db: id } }, 'relation target') }))] }) }];
+  }
+  if (p.type !== 'rollup') return [];
+  const r = p.rollup || { fn: 'show' as RollupFn };
+  const rels = Object.keys(s).filter((k) => s[k].type === 'relation');
+  const rel = r.relation ? s[r.relation] : undefined;
+  const target = store.get(rel?.relation?.db || db.id);
+  const tSchema = target ? schemaOf(target) : {};
+  return [
+    { id: 'ru-rel', label: '关联关系', icon: 'arrowUpRight', right: <span className="ink-menu-value">{rel?.name || '选择'}</span>, sub: () => ({ width: 220, groups: [rels.length ? rels.map((k) => ({ id: 'r' + k, label: s[k].name, icon: <PropIcon type="relation" />, checked: k === r.relation, onSelect: () => setP({ rollup: { ...r, relation: k } }, 'rollup relation') })) : [{ id: 'none', label: '先添加一个关联关系属性', disabled: true }]] }) },
+    { id: 'ru-prop', label: '属性', icon: 'listView', right: <span className="ink-menu-value">{tSchema[r.target || 'title']?.name || '—'}</span>, sub: () => ({ width: 220, search: '搜索属性…', groups: [Object.keys(tSchema).filter((k) => tSchema[k].type !== 'rollup').map((k) => ({ id: 'p' + k, label: tSchema[k].name, icon: <PropIcon type={tSchema[k].type} />, checked: k === (r.target || 'title'), onSelect: () => setP({ rollup: { ...r, target: k } }, 'rollup property') }))] }) },
+    { id: 'ru-fn', label: '计算', icon: 'sigma', right: <span className="ink-menu-value">{ROLLUP_LABEL[r.fn]}</span>, sub: () => ({ width: 200, groups: [(Object.keys(ROLLUP_LABEL) as RollupFn[]).map((fn) => ({ id: 'f' + fn, label: ROLLUP_LABEL[fn], checked: fn === r.fn, onSelect: () => setP({ rollup: { ...r, fn } }, 'rollup function') }))] }) },
+  ];
+}
+function allDbIds(): string[] {
+  const out: string[] = [];
+  for (const b of store.blocks.values()) if ((b.type === 'collection_view_page' || b.type === 'collection_view') && b.alive !== false && b.props?.schema) out.push(b.id);
+  return out;
+}
+
 /* ---------- filter ---------- */
 const OPS: Partial<Record<PropType, FilterOp[]>> = {
   title: ['contains', 'not_contains', 'is', 'is_not', 'empty', 'not_empty'], text: ['contains', 'not_contains', 'is', 'is_not', 'empty', 'not_empty'],
@@ -188,6 +217,7 @@ const OPS: Partial<Record<PropType, FilterOp[]>> = {
   number: ['eq', 'gt', 'lt', 'empty', 'not_empty'], formula: ['contains', 'eq', 'gt', 'lt', 'empty', 'not_empty'],
   select: ['is', 'is_not', 'empty', 'not_empty'], status: ['is', 'is_not', 'empty', 'not_empty'], multi_select: ['is', 'is_not', 'empty', 'not_empty'], person: ['contains', 'empty', 'not_empty'],
   date: ['is', 'before', 'after', 'empty', 'not_empty'], created_time: ['before', 'after'], checkbox: ['checked', 'unchecked'],
+  relation: ['contains', 'empty', 'not_empty'], rollup: ['contains', 'eq', 'gt', 'lt', 'empty', 'not_empty'],
 };
 const OP_LABEL: Record<FilterOp, string> = { contains: '包含', not_contains: '不包含', is: '是', is_not: '不是', empty: '为空', not_empty: '不为空', eq: '=', gt: '>', lt: '<', checked: '已勾选', unchecked: '未勾选', before: '早于', after: '晚于' };
 
@@ -292,7 +322,7 @@ function SortPanel({ dbId, viewId, close }: { dbId: string; viewId: string; clos
 /* ---------- settings / group ---------- */
 export function openGroupPanel(anchor: HTMLElement, db: Block, view: View) {
   const s = schemaOf(db);
-  const groupable = sortedProps(db).filter((id) => !['title', 'formula'].includes(s[id].type));
+  const groupable = sortedProps(db).filter((id) => !['title', 'formula', 'relation', 'rollup'].includes(s[id].type));
   openPopover({ id: 'db-group', anchor: R(anchor), placement: 'bottom-end', offset: 4, className: 'ink-group-pop', render: (close) => (
     <div className="ink-menu ink-group-panel" style={{ width: 290 }}>
       <div className="ink-gp-head"><button className="ink-gp-back" aria-label="返回" onClick={close}><Icon name="arrowLeft" size={16} /></button><span>分组方式</span><span style={{ flex: 1 }} /><button className="ink-gp-back" aria-label="关闭" onClick={close}><Icon name="x" size={16} /></button></div>
