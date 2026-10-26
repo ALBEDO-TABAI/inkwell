@@ -46,7 +46,7 @@
 | divider block | w=720 h=13 dx=0 dy=0 | w=720 h=13 dx=0 dy=0 | ✅ w+0 h+0 dx+0 dy+0 |
 | divider inner | w=704 h=1 dx=8 dy=6 | w=704 h=1 dx=8 dy=6 | ✅ w+0 h+0 dx+0 dy+0 |
 | table block | w=1050 h=189 dx=0 dy=0 | w=720 h=189 dx=0 dy=0 | ❌ w-330 h+0 dx+0 dy+0 |
-| table inner | w=120 h=35 dx=179.5 dy=16.5 | w=120 h=35 dx=15 dy=16.5 | ❌ w+0 h+0 dx-164.5 dy+0 |
+| table inner | w=120 h=35 dx=179.5 dy=16.5 | w=120 h=35 dx=8.5 dy=16.5 | ❌ w+0 h+0 dx-171 dy+0 |
 | image block | w=720 h=332.06 dx=0 dy=0 | w=720 h=332.05 dx=0 dy=0 | ✅ w+0 h-0.01 dx+0 dy+0 |
 | image inner | w=704 h=316.06 dx=8 dy=8 | w=704 h=316.05 dx=8 dy=8 | ✅ w+0 h-0.01 dx+0 dy+0 |
 | bookmark block | w=720 h=124 dx=0 dy=0 | w=720 h=124 dx=0 dy=0 | ✅ w+0 h+0 dx+0 dy+0 |

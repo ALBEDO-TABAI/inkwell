@@ -13,6 +13,7 @@ import { activeEditable } from './editor/registry';
 import { getSelectionOffsets } from './editor/caret';
 import { startHistory } from './app/history';
 import { startReminders } from './app/reminders';
+import { kvPut } from './store/persistence';
 import './editor/date-mention';
 import { ToastHost } from './ui/toast';
 import { openSearch } from './shell/Search';
@@ -53,7 +54,7 @@ export function App() {
       if (e.code === 'KeyU' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'updates' ? null : 'updates' }); return; }
       if ((k === '/' || e.code === 'Slash') && e.altKey && !e.shiftKey) { e.preventDefault(); openShortcuts(); return; }
       if (e.code === 'KeyM' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ rightPanel: getUi().rightPanel === 'comments' ? null : 'comments' }); return; }
-      if (e.code === 'KeyL' && e.shiftKey && e.altKey) { e.preventDefault(); setUi({ highContrast: !getUi().highContrast }); return; }
+      if (e.code === 'KeyL' && e.shiftKey && e.altKey) { e.preventDefault(); const v = !getUi().highContrast; setUi({ highContrast: v }); kvPut('highContrast', v); return; }
       if (k === 'f' && !e.shiftKey && !e.altKey) { e.preventDefault(); openFind(); return; }
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }

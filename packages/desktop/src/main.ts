@@ -3,7 +3,8 @@
  * One BrowserWindow per window (1320×860, hiddenInset title bar). Inside it a 36px tab-bar
  * WebContentsView plus one WebContentsView per tab, only the active one visible.
  */
-import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, session, contentTracing, systemPreferences, shell, dialog, clipboard, screen, type MenuItemConstructorOptions, type WebContents } from 'electron';
+import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, session, contentTracing, systemPreferences, shell, dialog, clipboard, screen, Tray, nativeImage, globalShortcut, Notification, type MenuItemConstructorOptions, type WebContents } from 'electron';
+import { TRAY_1X, TRAY_2X } from './tray-icon';
 import path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -216,6 +217,21 @@ function wireContents(wc: WebContents) {
 function wireIpc() {
   ipcMain.handle(IPC.dbLoad, () => db.load());
   ipcMain.handle('inkwell:fetch-og', (_e, url: string) => fetchOg(String(url || '')));
+  ipcMain.handle('inkwell:print-pdf', async (e, p: { name?: string }) => {
+    const w = BrowserWindow.fromWebContents(e.sender) || current()?.win;
+    const r = w ? await dialog.showSaveDialog(w, { defaultPath: path.join(app.getPath('downloads'), (p?.name || 'page.pdf').replace(/[\\/:*?"<>|]/g, '_')), filters: [{ name: 'PDF', extensions: ['pdf'] }] }) : { canceled: true, filePath: '' };
+    if (r.canceled || !r.filePath) return { ok: false };
+    const data = await e.sender.printToPDF({ printBackground: true, pageSize: 'A4', margins: { top: 0.4, bottom: 0.4, left: 0.4, right: 0.4 } });
+    fs.writeFileSync(r.filePath, data); return { ok: true, path: r.filePath };
+  });
+  ipcMain.handle('inkwell:check-updates', () => checkForUpdates(false));
+  ipcMain.on('inkwell:badge', (_e, p: { count: number }) => setBadge(p?.count || 0));
+  ipcMain.on('inkwell:reminder', (_e, p: { title: string; body: string; pageId: string }) => {
+    if (process.platform === 'darwin') app.dock?.bounce('informational');
+    void p;
+  });
+  ipcMain.on('inkwell:quick-open', (_e, p: { pageId: string; newTab?: boolean }) => quickOpen(p.pageId, !!p.newTab));
+  ipcMain.on('inkwell:quick-close', () => quickWin?.hide());
   // every tab is its own renderer with its own in-memory store: fan writes out so the others stay live
   const fanout = (from: WebContents, ch: string, ...a: unknown[]) => { for (const w of windows) for (const t of w.tabs) if (t.view.webContents !== from && !t.view.webContents.isDestroyed()) t.view.webContents.send(ch, ...a); };
   ipcMain.handle(IPC.dbWrite, (e, c) => { db.write(c); fanout(e.sender, 'inkwell:db-changed', c); });
@@ -306,7 +322,7 @@ function buildMenu() {
         { label: L.about, click: showAbout },
         { type: 'separator' },
         { label: L.prefs, accelerator: 'Cmd+,', click: cmd('settings') },
-        { label: L.updates, enabled: false },
+        { label: L.updates, click: () => checkForUpdates(true) },
         { type: 'separator' },
         { label: L.services, role: 'services' },
         { type: 'separator' },
@@ -431,6 +447,66 @@ async function resetLocalData() {
   quittingWithoutTabs = true; app.relaunch(); app.quit();
 }
 
+/* ------------------------------ quick search window (⇧⌘K, global) ------------------------------ */
+let quickWin: BrowserWindow | null = null;
+function toggleQuickSearch() {
+  if (quickWin && !quickWin.isDestroyed() && quickWin.isVisible()) { quickWin.hide(); return; }
+  if (!quickWin || quickWin.isDestroyed()) {
+    const d = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
+    quickWin = new BrowserWindow({
+      width: 755, height: 700, x: Math.round(d.x + (d.width - 755) / 2), y: Math.round(d.y + Math.max(40, (d.height - 700) / 3)),
+      frame: false, resizable: false, minimizable: false, maximizable: false, fullscreenable: false, skipTaskbar: true, show: false, transparent: process.platform === 'darwin',
+      vibrancy: process.platform === 'darwin' ? 'popover' : undefined, visualEffectState: 'active', roundedCorners: true, alwaysOnTop: true, hasShadow: true,
+      backgroundColor: process.platform === 'darwin' ? '#00000000' : BG[nativeTheme.shouldUseDarkColors ? 'dark' : 'light'],
+      webPreferences: { preload: path.join(__dirname, 'preload-app.cjs'), partition: BRAND.partition, sandbox: true, contextIsolation: true },
+    });
+    quickWin.loadURL(pageUrl({ quick: '1', theme: nativeTheme.shouldUseDarkColors ? 'dark' : 'light' }, ''));
+    quickWin.on('blur', () => { if (!process.env.INKWELL_QUICK_KEEP) quickWin?.hide(); });
+    quickWin.once('ready-to-show', () => { quickWin?.show(); quickWin?.focus(); });
+  } else { quickWin.show(); quickWin.focus(); quickWin.webContents.send(IPC.command, { cmd: 'focus' }); }
+}
+function quickOpen(pageId: string, newTab: boolean) {
+  quickWin?.hide();
+  const w = current() || new WindowController();
+  if (newTab) w.addTab('#/p/' + pageId); else w.command('navigate', pageId);
+  w.win.show(); w.win.focus();
+}
+
+/* ------------------------------ tray, dock badge, notifications, updates ------------------------------ */
+let tray: Tray | null = null;
+function createTray() {
+  if (process.env.INKWELL_NO_TRAY) return;
+  const img = nativeImage.createFromDataURL(TRAY_1X);
+  img.addRepresentation({ scaleFactor: 2, dataURL: TRAY_2X });
+  img.setTemplateImage(true);
+  tray = new Tray(img);
+  tray.setToolTip(BRAND.name);
+  const menu = () => Menu.buildFromTemplate([
+    { label: L.trayNewPage, click: () => { const w = current() || new WindowController(); w.win.show(); w.win.focus(); w.command('new-page'); } },
+    { label: L.trayQuickSearch, accelerator: 'Shift+CmdOrCtrl+K', click: toggleQuickSearch },
+    { type: 'separator' },
+    { label: L.trayShow, click: () => { const w = current() || new WindowController(); w.win.show(); w.win.focus(); } },
+    { label: L.updates, click: () => checkForUpdates(true) },
+    { type: 'separator' },
+    { label: L.quit, click: () => app.quit() },
+  ]);
+  tray.setContextMenu(menu());
+  tray.on('click', () => { if (process.platform !== 'darwin') { const w = current() || new WindowController(); w.win.show(); w.win.focus(); } });
+}
+function setBadge(n: number) {
+  const v = Math.max(0, Math.floor(n || 0));
+  if (process.platform === 'darwin') app.dock?.setBadge(v ? String(v) : '');
+  else app.setBadgeCount(v);
+  tray?.setTitle(v ? ` ${v}` : '');
+}
+/** Update check stub: local builds have no update feed; reports the running version. No network access. */
+async function checkForUpdates(interactive: boolean) {
+  const info = { current: app.getVersion(), latest: app.getVersion(), checkedAt: Date.now(), channel: 'local' };
+  state.data.lastUpdateCheck = info.checkedAt; state.save();
+  if (interactive) await dialog.showMessageBox({ type: 'info', title: L.updates.replace('…', ''), message: L.upToDate(app.getVersion()), detail: L.updateDetail, buttons: ['OK'] });
+  return info;
+}
+
 /* ------------------------------ deep links: inkwell://page/<id> ------------------------------ */
 function handleDeepLink(url: string) {
   const m = url.match(new RegExp(`^${BRAND.scheme}://page/([\\w-]+)`));
@@ -468,6 +544,8 @@ app.whenReady().then(() => {
   L = labels(process.env.INKWELL_LOCALE || app.getLocale() || 'zh-CN');
   wireIpc();
   buildMenu();
+  createTray();
+  try { globalShortcut.register('Shift+CommandOrControl+K', toggleQuickSearch); } catch { /* taken by another app */ }
   const saved = state.data.windows.length ? state.data.windows : [{ tabs: [{ hash: '', active: true }] }];
   for (const s of saved) new WindowController(s);
   const link = process.argv.find((a) => a.startsWith(`${BRAND.scheme}://`)); if (link) setTimeout(() => handleDeepLink(link), 800);
@@ -475,6 +553,6 @@ app.whenReady().then(() => {
 });
 app.on('before-quit', () => { persistAll(true); quitting = true; });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-app.on('will-quit', () => { try { db?.close(); } catch { /* ignore */ } });
+app.on('will-quit', () => { globalShortcut.unregisterAll(); try { db?.close(); } catch { /* ignore */ } });
 // graceful shutdown on signals so window/tab state is persisted (also used by the parity harness)
 for (const sig of ['SIGTERM', 'SIGINT'] as const) process.on(sig, () => app.quit());

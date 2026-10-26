@@ -13,9 +13,17 @@ import { kvGet, kvPut } from '../store/persistence';
 import { toHtml } from '../editor/richtext';
 import { inlineCtx } from '../editor/render-inline';
 import { copyPageLink } from './RowMenu';
-import { shellSend } from '../platform/bridge';
+import { shellSend, onShellCommand } from '../platform/bridge';
+import { OverlayHost } from '../ui/overlay';
 
 /** `newTab`: the palette a freshly opened tab shows (placeholder "open in new tab…", new chat / new page first). */
+/** Stand-alone quick-search window (⇧⌘K from anywhere): the same palette, filling a 755×700 frameless window. */
+export function QuickSearchApp() {
+  const [k, setK] = useState(0);
+  useEffect(() => onShellCommand((cmd) => { if (cmd === 'focus') setK((x) => x + 1); }), []);
+  const close = () => { shellSend('inkwell:quick-close'); setK((x) => x + 1); };
+  return <div className="ink-quick-root"><SearchModal key={k} close={close} newTab={false} quick /><OverlayHost /></div>;
+}
 export function openSearch(o: { newTab?: boolean } = {}) {
   openPopover({ id: 'search', anchor: { left: 0, top: 0, right: 0, bottom: 0 }, placement: 'center', topFraction: 0.09, modal: true, clearBackdrop: !!o.newTab, className: 'ink-search-pop', render: (close) => <SearchModal close={close} newTab={!!o.newTab} /> });
 }
@@ -50,12 +58,12 @@ function highlight(text: string, q: string): ReactNode {
   return out;
 }
 
-function SearchModal({ close, newTab }: { close: () => void; newTab: boolean }) {
+function SearchModal({ close, newTab, quick }: { close: () => void; newTab: boolean; quick?: boolean }) {
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const [titleOnly, setTitleOnly] = useState(false);
   const [sort, setSort] = useState<Sort>('best');
-  const [preview, setPreview] = useState(() => kvGet('searchPreview', true));
+  const [preview, setPreview] = useState(() => !quick && kvGet('searchPreview', true));
   const listRef = useRef<HTMLDivElement>(null);
   const current = getUi().pageId;
   const query = q.trim().toLowerCase();
@@ -89,6 +97,7 @@ function SearchModal({ close, newTab }: { close: () => void; newTab: boolean }) 
   const go = (id: string, newTab = false) => {
     if (id === '__page') { createPage('private'); close(); return; }
     if (id === '__chat') { close(); return; }
+    if (quick) { shellSend('inkwell:quick-open', { pageId: id, newTab }); close(); return; }
     if (newTab) shellSend('inkwell:new-tab', { url: `#/p/${id}` }); else navigate(id);
     close();
   };
@@ -105,7 +114,7 @@ function SearchModal({ close, newTab }: { close: () => void; newTab: boolean }) 
     }}>
       <div className="ink-search-head">
         <span className="ink-search-glass"><Icon name="search" size={20} stroke={1.6} /></span>
-        <input data-autofocus placeholder={newTab ? t('search.newTabPlaceholder') : t('search.placeholder', { space })} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} />
+        <input data-autofocus autoFocus={quick} placeholder={newTab ? t('search.newTabPlaceholder') : t('search.placeholder', { space })} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} />
         <span className="ink-search-head-actions">
           <span role="button" className={'ink-search-iconbtn' + (preview ? ' is-on' : '')} aria-label={t('search.togglePreview')} onClick={togglePreview}><Icon name="panelRight" size={20} stroke={1.5} /></span>
           <span role="button" className="ink-search-iconbtn is-on" aria-label={t('search.filters')}><Icon name="filterCircle" size={20} stroke={1.5} /></span>

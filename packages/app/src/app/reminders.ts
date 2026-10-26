@@ -6,6 +6,8 @@ import { pageTitle } from './pages';
 import { navigate } from './state';
 import { toast } from '../ui/toast';
 import { shellSend } from '../platform/bridge';
+import { kvGet } from '../store/persistence';
+import { BRAND } from '@shared/brand';
 
 export interface Reminder { key: string; blockId: string; pageId: string; at: number; when: number; label: string }
 const FIRED = 'inkwell:reminders:fired';
@@ -35,10 +37,10 @@ function fire(r: Reminder) {
   const title = pageTitle(store.get(r.pageId));
   const d = new Date(r.when);
   const body = (r.label ? r.label + ' · ' : '') + `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  toast('⏰ ' + title + ' — ' + body);
+  if (kvGet('inAppReminders', true)) toast('⏰ ' + title + ' — ' + body);
   shellSend('inkwell:reminder', { title, body, pageId: r.pageId });
   try {
-    if (typeof Notification !== 'undefined') {
+    if (typeof Notification !== 'undefined' && kvGet('pushReminders', true)) {
       const show = () => { const n = new Notification(title, { body, tag: r.key, silent: false }); n.onclick = () => { window.focus(); navigate(r.pageId); }; };
       if (Notification.permission === 'granted') show();
       else if (Notification.permission !== 'denied') void Notification.requestPermission().then((p) => { if (p === 'granted') show(); });
@@ -54,6 +56,9 @@ function plan() {
   const now = Date.now(); const done = fired();
   const pending = allReminders().filter((r) => !done.has(r.key));
   for (const r of pending) if (r.at <= now && now - r.at < 86400000) fire(r);
+  const today = new Date(); today.setHours(0, 0, 0, 0); const tomorrow = today.getTime() + 86400000;
+  if (kvGet('badgeEnabled', true)) shellSend('inkwell:badge', { count: allReminders().filter((r) => r.when >= today.getTime() && r.when < tomorrow).length });
+  else shellSend('inkwell:badge', { count: 0 });
   const next = pending.find((r) => r.at > now);
   if (next) timer = setTimeout(plan, Math.min(next.at - now, 2 ** 31 - 1));
 }
@@ -64,3 +69,7 @@ export function startReminders() {
   setTimeout(plan, 1000);
 }
 export const __plan = plan;
+export function testNotification() {
+  try { if (typeof Notification !== 'undefined') { const go = () => new Notification(BRAND.name, { body: '这是一条测试通知，一切正常。' }); if (Notification.permission === 'granted') go(); else void Notification.requestPermission().then((p) => { if (p === 'granted') go(); }); } } catch { /* ignore */ }
+  toast('已发送测试通知');
+}

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 export interface SavedTab { hash: string; active: boolean; title?: string; icon?: string }
 export interface SavedWindow { bounds?: { x: number; y: number; width: number; height: number }; maximized?: boolean; tabs: SavedTab[] }
-export interface SavedState { version: 1; installId: string; windows: SavedWindow[]; gpuDisabled?: boolean; verboseLogging?: boolean }
+export interface SavedState { version: 1; installId: string; windows: SavedWindow[]; gpuDisabled?: boolean; verboseLogging?: boolean; lastUpdateCheck?: number }
 
 export class StateFile {
   private file: string;
@@ -14,7 +14,7 @@ export class StateFile {
     this.file = path.join(dir, name);
     let d: Partial<SavedState> = {};
     try { d = JSON.parse(fs.readFileSync(this.file, 'utf8')); } catch { /* first run */ }
-    this.data = { version: 1, installId: d.installId || cryptoId(), windows: Array.isArray(d.windows) ? d.windows : [], gpuDisabled: d.gpuDisabled, verboseLogging: d.verboseLogging };
+    this.data = { version: 1, installId: d.installId || cryptoId(), windows: Array.isArray(d.windows) ? d.windows : [], gpuDisabled: d.gpuDisabled, verboseLogging: d.verboseLogging, lastUpdateCheck: d.lastUpdateCheck };
   }
   save(now = false) {
     clearTimeout(this.timer);

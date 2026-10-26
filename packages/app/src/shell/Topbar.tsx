@@ -14,6 +14,7 @@ import { toast } from '../ui/toast';
 import { pageToMarkdown } from '../editor/clipboard';
 import { pageHasComments, toggleRightPanel } from '../comments/Comments';
 import { setUi } from '../app/state';
+import { exportPage, pickAndImport } from '../app/io';
 
 export function Topbar({ pageId }: { pageId: string }) {
   useStoreVersion();
@@ -150,7 +151,7 @@ export function openPageMenu(el: HTMLElement, pageId: string) {
           { id: 'lock', label: t('pm.lock'), icon: 'lock', toggle: !!p.props?.locked, onSelect: () => store.transact('lock', (tx) => tx.update(pageId, (b) => ({ props: { ...b.props, locked: !b.props?.locked } }))) },
           { id: 'trash', label: t('pm.trash'), icon: 'trash', onSelect: () => trashPage(pageId) },
         ],
-        [{ id: 'more', label: t('pm.more'), icon: 'more', sub: () => ({ width: 240, groups: [[{ id: 'import', label: t('pm.import'), icon: 'download' }, { id: 'export', label: t('pm.export'), icon: 'upload', onSelect: () => exportMarkdown(pageId) }]] }) }],
+        [{ id: 'more', label: t('pm.more'), icon: 'more', sub: () => ({ width: 240, groups: [[{ id: 'import', label: t('pm.import'), icon: 'download', onSelect: () => pickAndImport(pageId) }, { id: 'export', label: t('pm.export'), icon: 'upload', sub: () => ({ width: 200, groups: [[{ id: 'ex-md', label: 'Markdown', onSelect: () => void exportPage(pageId, 'md') }, { id: 'ex-html', label: 'HTML', onSelect: () => void exportPage(pageId, 'html') }, { id: 'ex-pdf', label: 'PDF', onSelect: () => void exportPage(pageId, 'pdf') }]] }) }]] }) }],
       ],
       footer: <EditedFooter block={p} counts="chars" />,
     };

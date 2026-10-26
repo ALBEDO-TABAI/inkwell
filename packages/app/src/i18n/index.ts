@@ -1,17 +1,20 @@
 import { zhCN } from './zh-CN';
 import { en } from './en';
+import { zhTW } from './zh-TW';
 import { BRAND } from '@shared/brand';
 
-export type Locale = 'zh-CN' | 'en';
+export type Locale = 'zh-CN' | 'zh-TW' | 'en';
+export const LOCALES: Locale[] = ['zh-CN', 'zh-TW', 'en'];
+const isLocale = (x: unknown): x is Locale => LOCALES.includes(x as Locale);
 export type MessageKey = keyof typeof zhCN;
-const tables: Record<Locale, Record<string, string | undefined>> = { 'zh-CN': zhCN, en };
+const tables: Record<Locale, Record<string, string | undefined>> = { 'zh-CN': zhCN, 'zh-TW': zhTW, en };
 
 let current: Locale = (() => {
   try {
     const q = new URLSearchParams(location.search).get('lang');
-    if (q === 'en' || q === 'zh-CN') return q;
+    if (isLocale(q)) return q;
     const saved = localStorage.getItem('inkwell.locale');
-    if (saved === 'en' || saved === 'zh-CN') return saved;
+    if (isLocale(saved)) return saved;
   } catch {}
   return 'zh-CN';
 })();

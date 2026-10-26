@@ -21,7 +21,8 @@ async function boot() {
   if (q.get('promo') === '1') kv.promoDismissed = false;
   if (q.has('expand')) kv.sidebarExpanded = Object.fromEntries(q.get('expand')!.split(',').filter(Boolean).map((id) => [id, true]));
   initUi();
-  createRoot(document.getElementById('root')!).render(<App />);
+  if (q.get('quick') === '1') { document.documentElement.classList.add('is-quick'); const { QuickSearchApp } = await import('./shell/Search'); createRoot(document.getElementById('root')!).render(<QuickSearchApp />); }
+  else createRoot(document.getElementById('root')!).render(<App />);
   if (q.get('harness') === '1') (window as any).__ink = { store, getUi, setUi, navigate, editables, focusBlock, setActiveView, openPeek, closePeek };
   (window as any).__inkwellReady = true;
 }

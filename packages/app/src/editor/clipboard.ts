@@ -71,7 +71,7 @@ function rtToHtml(rt: RichText | undefined): string {
     return s;
   }).join('').replace(/\n/g, '<br>');
 }
-function blocksToHtml(ids: string[]): string {
+export function blocksToHtml(ids: string[]): string {
   const one = (b: Block): string => {
     const kids = store.children(b.id).filter(() => b.type !== 'page');
     const inner = kids.length ? kidsHtml(kids) : '';
@@ -135,7 +135,7 @@ export function handleCut(e: React.ClipboardEvent, id: string, el: HTMLElement) 
   focusBlock(id, o.start);
 }
 
-interface ParsedBlock { type: BlockType; title: RichText; props?: Block['props']; children: ParsedBlock[]; format?: Block['format'] }
+export interface ParsedBlock { type: BlockType; title: RichText; props?: Block['props']; children: ParsedBlock[]; format?: Block['format'] }
 
 /** Markdown → block tree (supports headings, lists with indentation, to-dos, quotes, code fences, dividers, tables). */
 export function parseMarkdown(src: string): ParsedBlock[] {
@@ -186,7 +186,7 @@ export function parseMarkdown(src: string): ParsedBlock[] {
   return root;
 }
 
-function htmlToBlocks(html: string): ParsedBlock[] {
+export function htmlToBlocks(html: string): ParsedBlock[] {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const out: ParsedBlock[] = [];
   const inline = (el: Element): RichText => { const tmp = document.createElement('div'); tmp.innerHTML = el.innerHTML; return fromDom(tmp); };

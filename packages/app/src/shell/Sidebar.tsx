@@ -19,6 +19,8 @@ import { openSearch } from './Search';
 export function Sidebar({ floating = false }: { floating?: boolean }) {
   useStoreVersion();
   const width = useUi((s) => s.sidebarWidth);
+  const [, bump] = useState(0);
+  useEffect(() => { const f = () => bump((x) => x + 1); window.addEventListener('ink-sb-prefs', f); return () => window.removeEventListener('ink-sb-prefs', f); }, []);
   const space = store.space;
   const [promo, setPromo] = useState(() => !kvGet('promoDismissed', true));
   const priv = space.privatePages.filter((id) => !isInTrash(id) && store.get(id)?.alive);
@@ -54,16 +56,16 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
             <NavRow icon="newChat" label={t('sidebar.newChat')} />
             <NavRow icon="library" label={t('sidebar.library')} />
           </div>
-          {favs.length > 0 && (
+          {favs.length > 0 && kvGet('sbShowFavorites', true) && (
             <Section id="favorites" title={t('sidebar.favorites')}>
               {favs.map((id) => <TreeRow key={'f' + id} id={id} level={0} keyPrefix="fav" />)}
             </Section>
           )}
-          <Section id="upcoming" title={t('sidebar.upcoming')}>
+          {kvGet('sbShowAgenda', true) && <Section id="upcoming" title={t('sidebar.upcoming')}>
             <NavRow iconNode={<CalendarBadge />} label={t('sidebar.connectCalendar')} weight={400} />
-          </Section>
+          </Section>}
           <Section id="teamspaces" title={t('sidebar.teamspaces')} spaced>
-            {space.teamspaces.map((ts) => (
+            {kvGet('sbShowTeam', true) && space.teamspaces.map((ts) => (
               <TeamspaceRow key={ts.id} name={ts.name} pageId={ts.pages[0]} />
             ))}
             <NavRow icon="plus" label={t('sidebar.addNew')} muted className="ink-sb-addnew" iconSize={16} />
