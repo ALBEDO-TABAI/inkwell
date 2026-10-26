@@ -40,6 +40,7 @@ export function App() {
       if (k === '[' && !e.shiftKey) { e.preventDefault(); goBack(); return; }
       if (k === ']' && !e.shiftKey) { e.preventDefault(); goForward(); return; }
       if (k === ',' ) { e.preventDefault(); openSettings(); return; }
+      if (/^[1-9]$/.test(k) && !e.shiftKey && !e.altKey && window.inkwellNative) { e.preventDefault(); shellSend('inkwell:tab-index', { n: Number(k) }); return; } // normally caught by the main process first
       if (k === 'n' && !e.shiftKey) { e.preventDefault(); createPage('private'); return; }
       if (k === 'l' && e.altKey) { e.preventDefault(); copyPageLink(getUi().pageId); return; }
       if (k === 'z' && !(e.target as HTMLElement).closest?.('[contenteditable="true"], input, textarea') && !isPopoverOpen()) { e.preventDefault(); e.shiftKey ? redo() : undo(); }
@@ -77,6 +78,8 @@ export function App() {
     return () => { off1(); off2(); off3(); window.removeEventListener('hashchange', onHash); };
   }, []);
   useEffect(() => { shellSend('inkwell:sidebar-state', { open: sidebarOpen, width: sidebarWidth }); }, [sidebarOpen, sidebarWidth]);
+  // a tab the user just opened (+ / Cmd+T) shows the "open in new tab…" palette, like the reference app
+  useEffect(() => { const q = new URLSearchParams(location.search); if (q.get("newtab") === "1") { openSearch({ newTab: true }); history.replaceState(null, "", location.pathname + location.search.replace(/[?&]newtab=1/, (m) => (m[0] === "?" ? "?" : "")).replace("?&", "?") + location.hash); } }, []);
   const theme = useUi((s) => s.resolvedTheme);
   useEffect(() => { shellSend('inkwell:theme-changed', { theme }); }, [theme]);
 

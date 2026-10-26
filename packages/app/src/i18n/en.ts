@@ -96,6 +96,7 @@ export const en: Partial<Record<keyof typeof zhCN, string>> = {
   'media.htmlHint': 'HTML runs in an isolated sandbox.',
   'toast.aiUnavailable': 'AI features are not available',
   'search.placeholder': 'Search or ask anything in {space}…',
+  'search.newTabPlaceholder': 'Open in new tab…', 'search.newPage': 'New page',
   'search.titleOnly': 'Title only',
   'search.createdBy': 'Created by',
   'search.inPage': 'In page',

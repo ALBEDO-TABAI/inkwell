@@ -7,7 +7,7 @@ import { Icon } from '../ui/icons';
 import { PageIcon } from '../ui/PageIcon';
 import { openPopover } from '../ui/overlay';
 import { openMenu } from '../ui/menu';
-import { pageTitle, breadcrumbPath, isInTrash } from '../app/pages';
+import { pageTitle, breadcrumbPath, isInTrash, createPage } from '../app/pages';
 import { navigate, getUi } from '../app/state';
 import { kvGet, kvPut } from '../store/persistence';
 import { toHtml } from '../editor/richtext';
@@ -15,9 +15,11 @@ import { inlineCtx } from '../editor/render-inline';
 import { copyPageLink } from './RowMenu';
 import { shellSend } from '../platform/bridge';
 
-export function openSearch() {
-  openPopover({ id: 'search', anchor: { left: 0, top: 0, right: 0, bottom: 0 }, placement: 'center', topFraction: 0.09, modal: true, className: 'ink-search-pop', render: (close) => <SearchModal close={close} /> });
+/** `newTab`: the palette a freshly opened tab shows (placeholder "open in new tab…", new chat / new page first). */
+export function openSearch(o: { newTab?: boolean } = {}) {
+  openPopover({ id: 'search', anchor: { left: 0, top: 0, right: 0, bottom: 0 }, placement: 'center', topFraction: 0.09, modal: true, clearBackdrop: !!o.newTab, className: 'ink-search-pop', render: (close) => <SearchModal close={close} newTab={!!o.newTab} /> });
 }
+const ACTIONS = [{ id: '__chat', icon: 'chat', label: 'sidebar.newChat' }, { id: '__page', icon: 'page', label: 'search.newPage' }] as const;
 
 type Sort = 'best' | 'edited' | 'created';
 interface Hit { id: string; score: number }
@@ -48,7 +50,7 @@ function highlight(text: string, q: string): ReactNode {
   return out;
 }
 
-function SearchModal({ close }: { close: () => void }) {
+function SearchModal({ close, newTab }: { close: () => void; newTab: boolean }) {
   const [q, setQ] = useState('');
   const [active, setActive] = useState(0);
   const [titleOnly, setTitleOnly] = useState(false);
@@ -79,11 +81,14 @@ function SearchModal({ close }: { close: () => void }) {
     else out.sort((a, c) => c.score - a.score || (store.get(c.id)!.edited || 0) - (store.get(a.id)!.edited || 0));
     return out;
   }, [query, titleOnly, sort, current]);
-  const ids = query ? hits.map((h) => h.id) : recents.map((b) => b.id);
+  const actions = newTab && !query ? ACTIONS.map((a) => a.id as string) : [];
+  const ids = query ? hits.map((h) => h.id) : [...actions, ...recents.map((b) => b.id)];
   const sel = ids[Math.min(active, ids.length - 1)];
   useEffect(() => { listRef.current?.querySelector('.is-active')?.scrollIntoView({ block: 'nearest' }); }, [active]);
 
   const go = (id: string, newTab = false) => {
+    if (id === '__page') { createPage('private'); close(); return; }
+    if (id === '__chat') { close(); return; }
     if (newTab) shellSend('inkwell:new-tab', { url: `#/p/${id}` }); else navigate(id);
     close();
   };
@@ -100,7 +105,7 @@ function SearchModal({ close }: { close: () => void }) {
     }}>
       <div className="ink-search-head">
         <span className="ink-search-glass"><Icon name="search" size={20} stroke={1.6} /></span>
-        <input data-autofocus placeholder={t('search.placeholder', { space })} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} />
+        <input data-autofocus placeholder={newTab ? t('search.newTabPlaceholder') : t('search.placeholder', { space })} value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} />
         <span className="ink-search-head-actions">
           <span role="button" className={'ink-search-iconbtn' + (preview ? ' is-on' : '')} aria-label={t('search.togglePreview')} onClick={togglePreview}><Icon name="panelRight" size={20} stroke={1.5} /></span>
           <span role="button" className="ink-search-iconbtn is-on" aria-label={t('search.filters')}><Icon name="filterCircle" size={20} stroke={1.5} /></span>
@@ -114,11 +119,22 @@ function SearchModal({ close }: { close: () => void }) {
       </div>
       <div className="ink-search-main">
         <div className="ink-search-list" ref={listRef}>
+          {actions.map((id, i) => {
+            const a = ACTIONS.find((x) => x.id === id)!;
+            return (
+              <div key={id} role="option" aria-selected={i === active} className={'ink-search-row' + (i === active ? ' is-active' : '')} onMouseMove={() => setActive(i)} onClick={() => go(id)}>
+                <span className="ink-search-icon"><Icon name={a.icon} size={18} stroke={1.6} /></span>
+                <span className="ink-search-title">{t(a.label)}</span>
+                {i === active && <span className="ink-search-enter"><Icon name="cornerDownLeft" size={14} stroke={1.6} /></span>}
+              </div>
+            );
+          })}
           <div className="ink-search-label">
             <span>{query ? t('search.results', { n: hits.length }) : t('search.today')}</span>
             {query && <span role="button" className="ink-search-sort" onClick={(e) => openMenu((e.currentTarget as HTMLElement).getBoundingClientRect(), { width: 180, groups: [(['best', 'edited', 'created'] as Sort[]).map((s) => ({ id: s, label: s === 'best' ? t('search.bestMatch') : s === 'edited' ? t('search.lastEditedSort') : t('search.createdSort'), checked: sort === s, onSelect: () => setSort(s) }))] }, { placement: 'bottom-end' })}>{sortLabel}<Icon name="chevronDown" size={12} stroke={2} /></span>}
           </div>
           {ids.map((id, i) => {
+            if (i < actions.length) return null;
             const b = store.get(id)!;
             const path = breadcrumbPath(id).slice(0, -1);
             const onRow = { onMouseMove: () => setActive(i), onClick: (e: React.MouseEvent) => go(id, e.metaKey || e.ctrlKey) };
@@ -152,7 +168,8 @@ function SearchModal({ close }: { close: () => void }) {
           })}
           {query && !hits.length && <div className="ink-search-empty">{t('search.noResults')}</div>}
         </div>
-        {preview && sel && <SearchPreview id={sel} onOpen={() => go(sel)} />}
+        {preview && sel && sel.startsWith('__') && <div className="ink-search-preview is-skeleton"><div className="ink-search-preview-cover" /><div className="ink-search-preview-body"><span className="ink-skel-dot" />{[88, 72, 88, 72, 30].map((w, k) => <span key={k} className="ink-skel-line" style={{ width: w + '%' }} />)}</div></div>}
+        {preview && sel && !sel.startsWith('__') && <SearchPreview id={sel} onOpen={() => go(sel)} />}
       </div>
       <div className="ink-search-footer">
         <span className="ink-search-hint"><kbd>⌘ ↵</kbd>{t('search.openNewTab')}</span>

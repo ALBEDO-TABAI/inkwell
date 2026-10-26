@@ -649,3 +649,10 @@ body.is-dragging-blocks .ink-handles { opacity: 0; }
 .ink-link-pop .ink-menu-item.has-sub { height: 46px; }
 .ink-link-pop-lines { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .ink-link-pop-sub { font-size: 12px; line-height: 16px; color: var(--ink-text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+
+/* new-tab palette: action rows + skeleton preview */
+.ink-search-enter { margin-left: auto; color: var(--ink-icon-secondary); display: flex; }
+.ink-search-preview.is-skeleton .ink-search-preview-body { display: flex; flex-direction: column; gap: 8px; padding: 0; }
+.ink-skel-dot { width: 30px; height: 30px; border-radius: 50%; background: var(--ink-background-secondary); margin: -18px 0 14px 26px; box-shadow: 0 0 0 2px var(--ink-background-primary); }
+.ink-skel-line { display: block; height: 8px; border-radius: 4px; background: var(--ink-background-secondary); margin-left: 22px; max-width: calc(100% - 44px); }
+.ink-modal-backdrop.is-clear { background: transparent; }

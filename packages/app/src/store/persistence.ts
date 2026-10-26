@@ -134,5 +134,9 @@ export async function initPersistence(): Promise<string> {
       backend.write({ blocks: [...p.blocks.values()], space: p.space }).catch((e) => console.error('write failed', e));
     }, 120);
   };
+  if (window.inkwellNative) {
+    window.inkwellNative.on('inkwell:db-changed', (c) => store.applyRemote(c as { blocks: Block[]; space?: Space }));
+    window.inkwellNative.on('inkwell:kv-changed', (k, v) => { kv[k as string] = v; store.applyRemote({}); });
+  }
   return backend.kind;
 }

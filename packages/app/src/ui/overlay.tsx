@@ -13,6 +13,8 @@ export interface PopoverSpec {
   onClose?: () => void;
   /** dim background, e.g. settings modal */
   modal?: boolean;
+  /** modal without the dim (the new-tab palette) */
+  clearBackdrop?: boolean;
   /** close when clicking outside (default true) */
   dismissOnOutside?: boolean;
   /** keep focus where it is (inline menus while typing) */
@@ -142,7 +144,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
   }, [entry, pos]);
   return (
     <>
-      {entry.modal && <div className="ink-modal-backdrop" style={{ zIndex: z }} onPointerDown={close} />}
+      {entry.modal && <div className={'ink-modal-backdrop' + (entry.clearBackdrop ? ' is-clear' : '')} style={{ zIndex: z }} onPointerDown={close} />}
       <div
         ref={ref}
         data-popover-id={entry.id}

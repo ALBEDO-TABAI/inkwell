@@ -426,6 +426,7 @@ export const zhCN = {
   'media.htmlHint': 'HTML 会在隔离的沙盒中运行。',
   'toast.aiUnavailable': 'AI 功能暂不可用',
   'search.placeholder': '在 {space} 中搜索或提问…',
+  'search.newTabPlaceholder': '在新选项卡中打开…', 'search.newPage': '新页面',
   'search.titleOnly': '仅搜索标题',
   'search.createdBy': '创建者',
   'search.inPage': '在页面中',

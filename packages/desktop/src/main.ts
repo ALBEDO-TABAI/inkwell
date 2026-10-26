@@ -3,7 +3,7 @@
  * One BrowserWindow per window (1320×860, hiddenInset title bar). Inside it a 36px tab-bar
  * WebContentsView plus one WebContentsView per tab, only the active one visible.
  */
-import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, shell, dialog, clipboard, screen, type MenuItemConstructorOptions, type WebContents } from 'electron';
+import { app, BrowserWindow, WebContentsView, ipcMain, Menu, nativeTheme, protocol, net, session, shell, dialog, clipboard, screen, type MenuItemConstructorOptions, type WebContents } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -97,6 +97,7 @@ class WindowController {
     this.win.contentView.addChildView(view);
     const params: Record<string, string> = { tab: id, theme: this.theme };
     if (process.env.INKWELL_FIXTURE) params.fixture = process.env.INKWELL_FIXTURE;
+    if (!hash && !o.quiet) params.newtab = '1'; // user-opened blank tab: the page opens with the "open in new tab…" palette
     view.webContents.loadURL(pageUrl(params, hash));
     wireContents(view.webContents);
     if (o.activate !== false) this.activate(id);
@@ -170,6 +171,8 @@ class WindowController {
     return { bounds: this.win.isMaximized() || this.win.isFullScreen() ? this.win.getNormalBounds() : this.win.getBounds(), maximized: this.win.isMaximized(), tabs: this.tabs.map((t) => ({ hash: t.hash, active: t.id === this.activeId, title: t.title, icon: t.icon })) };
   }
   persist() { if (!quitting) persistAll(); }
+  /** Cmd/Ctrl+1…8 = nth tab, 9 = last */
+  activateIndex(n: number) { const t = n === 9 ? this.tabs[this.tabs.length - 1] : this.tabs[n - 1]; if (t) this.activate(t.id); }
 }
 
 function visibleOnSomeDisplay(b: { x: number; y: number; width: number; height: number }) {
@@ -194,8 +197,7 @@ function wireContents(wc: WebContents) {
     const o = ownerOf(wc); if (!o) return;
     if (mod && !input.shift && !input.alt && /^[1-9]$/.test(input.key)) {
       e.preventDefault();
-      const n = Number(input.key); const t = n === 9 ? o.w.tabs[o.w.tabs.length - 1] : o.w.tabs[n - 1];
-      if (t) o.w.activate(t.id);
+      o.w.activateIndex(Number(input.key));
     } else if (input.control && input.key === 'Tab') { e.preventDefault(); o.w.cycle(input.shift ? -1 : 1); }
   });
   wc.setWindowOpenHandler(({ url }) => {
@@ -211,11 +213,14 @@ function wireContents(wc: WebContents) {
 /* ------------------------------ IPC ------------------------------ */
 function wireIpc() {
   ipcMain.handle(IPC.dbLoad, () => db.load());
-  ipcMain.handle(IPC.dbWrite, (_e, c) => { db.write(c); });
+  // every tab is its own renderer with its own in-memory store: fan writes out so the others stay live
+  const fanout = (from: WebContents, ch: string, ...a: unknown[]) => { for (const w of windows) for (const t of w.tabs) if (t.view.webContents !== from && !t.view.webContents.isDestroyed()) t.view.webContents.send(ch, ...a); };
+  ipcMain.handle(IPC.dbWrite, (e, c) => { db.write(c); fanout(e.sender, 'inkwell:db-changed', c); });
   ipcMain.handle(IPC.dbReset, (_e, s) => { db.reset(s); });
-  ipcMain.on(IPC.kvSet, (_e, k: string, v: unknown) => db.kvSet(k, v));
+  ipcMain.on(IPC.kvSet, (e, k: string, v: unknown) => { db.kvSet(k, v); fanout(e.sender, 'inkwell:kv-changed', k, v); });
 
   ipcMain.on('inkwell:tabbar-ready', (e) => ownerOf(e.sender)?.w.onTabbarReady());
+  ipcMain.on('inkwell:tab-index', (e, p: { n: number }) => ownerOf(e.sender)?.w.activateIndex(p.n));
   ipcMain.on(IPC.tabNew, (e) => ownerOf(e.sender)?.w.addTab(''));
   ipcMain.on(IPC.tabClose, (e, id: string) => ownerOf(e.sender)?.w.closeTab(id));
   ipcMain.on(IPC.tabActivate, (e, id: string) => ownerOf(e.sender)?.w.activate(id));
@@ -402,13 +407,16 @@ if (state.data.gpuDisabled) app.disableHardwareAcceleration();
 
 app.whenReady().then(() => {
   // serve the built renderer from inkwell://app/…
-  protocol.handle(BRAND.scheme, (req) => {
+  // (registered on the app partition too — protocol.handle is per-session)
+  const serve = (req: Request) => {
     const u = new URL(req.url);
     if (u.host !== 'app') return new Response('not found', { status: 404 });
     const file = path.normalize(path.join(APP_DIST, decodeURIComponent(u.pathname)));
     if (!file.startsWith(APP_DIST)) return new Response('forbidden', { status: 403 });
     return net.fetch(pathToFileURL(file).toString());
-  });
+  };
+  protocol.handle(BRAND.scheme, serve);
+  session.fromPartition(BRAND.partition).protocol.handle(BRAND.scheme, serve);
   db = openStore(app.getPath('userData'), BRAND.dbFile);
   console.log(`[inkwell] storage: ${db.kind} at ${app.getPath('userData')}`);
   L = labels(process.env.INKWELL_LOCALE || app.getLocale() || 'zh-CN');
@@ -422,3 +430,5 @@ app.whenReady().then(() => {
 app.on('before-quit', () => { persistAll(true); quitting = true; });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('will-quit', () => { try { db?.close(); } catch { /* ignore */ } });
+// graceful shutdown on signals so window/tab state is persisted (also used by the parity harness)
+for (const sig of ['SIGTERM', 'SIGINT'] as const) process.on(sig, () => app.quit());

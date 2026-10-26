@@ -138,6 +138,13 @@ export class RecordStore {
     this.emit(list);
   }
 
+  /** Apply records written by another tab/window (no undo entry, no persistence echo). */
+  applyRemote(c: { blocks?: Block[]; space?: Space }) {
+    for (const b of c.blocks || []) this.blocks.set(b.id, b);
+    if (c.space) this.space = c.space;
+    this.bump((c.blocks || []).map((b) => b.id).concat(c.space ? [c.space.id] : []));
+  }
+
   private emit(list: Change[]) {
     const blocks: Block[] = []; let space: Space | undefined;
     for (const c of list) { if (c.table === 'space') space = this.space; else { const b = this.blocks.get(c.id); if (b) blocks.push(b); } }
