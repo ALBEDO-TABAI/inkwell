@@ -84,8 +84,13 @@ export function navigate(pageId: string, opts: { replace?: boolean; fromHash?: b
   if (pageId === state.pageId) return;
   setUi((s) => ({ pageId, back: opts.replace ? s.back : [...s.back, s.pageId], forward: [] }));
   kvPut('lastPage', pageId);
+  pushRecent(pageId);
   syncHash();
   navListeners.forEach((f) => f());
+}
+export function pushRecent(pageId: string) {
+  const cur = kvGet<string[]>('recentPages', []).filter((x) => x !== pageId);
+  kvPut('recentPages', [pageId, ...cur].slice(0, 30));
 }
 export function goBack() {
   const s = state; if (!s.back.length) return;

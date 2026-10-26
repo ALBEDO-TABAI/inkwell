@@ -114,7 +114,7 @@ export function buildFixture(): FixtureData {
   const users: User[] = [{ id: 'user-1', name: '老 贰哔', email: 'bai@example.com', avatar: '贰哔' }];
   return {
     blocks, space, users,
-    kv: { sidebarExpanded: { [P]: true }, recentPages: [P, L1.id, L2.id] },
+    kv: { sidebarExpanded: { [P]: true }, recentPages: ['page-db', 'row-01', 'row-03', L1.id, L2.id, L3.id, 'page-mobile'] },
   };
 }
 

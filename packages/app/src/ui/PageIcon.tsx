@@ -18,7 +18,18 @@ export function PageIcon({ block, size = 20, emojiSize }: { block?: Block; size?
   }
   const ic = block.format?.page_icon;
   if (block.type === 'collection_view_page' && !ic) return <Icon name="table" size={size} stroke={1.4} />;
-  if (!ic) return <PageGlyph size={size} />;
+  if (!ic) return <PageGlyph size={size} empty={!hasContent(block)} />;
   if (ic.startsWith('icon:')) return <Icon name={ic.slice(5) as IconName} size={size} stroke={1.6} />;
   return <span className="ink-emoji" style={{ fontSize: emojiSize ?? Math.round(size * 0.8), lineHeight: 1, width: size, height: size }}>{ic}</span>;
+}
+
+/** A page "has content" when any child block carries text or is a non-text block. */
+function hasContent(b: Block): boolean {
+  for (const id of b.content || []) {
+    const c = store.get(id);
+    if (!c || !c.alive) continue;
+    if (c.type !== 'text') return true;
+    if ((c.title || []).some(([s]) => s.length > 0)) return true;
+  }
+  return false;
 }

@@ -23,7 +23,7 @@ const REG = {
   shuffle: L.Shuffle, hand: L.Hand, leaf: L.Leaf, carrot: L.Carrot, ball: L.Volleyball, plane: L.Plane, bulb: L.Lightbulb,
   circleCheck: L.CircleCheck, flag: L.Flag, symbols: L.Shapes, wiki: L.BookOpen, bookmark: L.Bookmark, video: L.Video,
   synced: L.RefreshCcw, breadcrumb: L.ChevronsRight, tab: L.PanelTop, arrowLeft: L.ArrowLeft, arrowRight: L.ArrowRight,
-  sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
+  sun: L.Sun, moon: L.Moon, monitor: L.Monitor, keyboard: L.Keyboard, mic: L.Mic, embed: L.CodeXml, panelRight: L.PanelRight, filterCircle: L.ListFilter, caseSensitive: L.CaseSensitive, aiNotes: L.FileAudio, embedHtml: L.FileCode2, palette: L.Palette,
   turnInto: L.Repeat2, paintBucket: L.PaintBucket, file: L.File, info: L.Info, eye: L.Eye, user: L.User,
   emojiAdd: L.SmilePlus, commentAdd: L.MessageSquarePlus, upload: L.Upload, cornerDownLeft: L.CornerDownLeft,
 };
@@ -34,12 +34,12 @@ export function Icon({ name, size = 20, stroke = 1.5, style, className }: { name
 }
 
 /** Original page glyph used for pages without an icon (a folded-corner sheet). */
-export function PageGlyph({ size = 20, link = false }: { size?: number; link?: boolean }) {
+export function PageGlyph({ size = 20, link = false, empty = false }: { size?: number; link?: boolean; empty?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth={1.25} strokeLinejoin="round" aria-hidden style={{ display: 'block', flexShrink: 0 }}>
       <path d="M5.5 3.25h6l3.25 3.25v9.25a1 1 0 0 1-1 1h-8.25a1 1 0 0 1-1-1v-11.5a1 1 0 0 1 1-1z" />
       <path d="M11.25 3.4v3.35h3.35" />
-      {link ? <path d="M9 14.5l4-4m0 0h-3m3 0v3" strokeLinecap="round" /> : <path d="M7.25 10.25h5.5M7.25 12.75h5.5" strokeLinecap="round" />}
+      {link ? <path d="M9 14.5l4-4m0 0h-3m3 0v3" strokeLinecap="round" /> : empty ? null : <path d="M7.25 10.25h5.5M7.25 12.75h5.5" strokeLinecap="round" />}
     </svg>
   );
 }

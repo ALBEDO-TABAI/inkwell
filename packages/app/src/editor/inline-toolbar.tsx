@@ -35,7 +35,7 @@ export function onSelectionChanged() {
   const rects = sel.getRangeAt(0).getClientRects();
   const last = rects[rects.length - 1] || sel.getRangeAt(0).getBoundingClientRect();
   const anchorX = lastMouse ? lastMouse.x : (o.backward ? rects[0]?.left ?? last.left : last.right);
-  const anchorY = lastMouse ? Math.max(lastMouse.y, last.bottom - 2) : (o.backward ? rects[0]?.bottom ?? last.bottom : last.bottom);
+  const anchorY = lastMouse ? Math.max(lastMouse.y, last.bottom) : (o.backward ? rects[0]?.bottom ?? last.bottom : last.bottom);
   state = { blockId: a.id, start: o.start, end: o.end, rect: new DOMRect(anchorX, anchorY, 0, 0) };
   emit();
   if (!isPopoverOpen('inline-toolbar')) {
@@ -115,7 +115,7 @@ function Toolbar() {
       </div>
       <div className="ink-tb-sep" />
       <div className="ink-tb-grid">
-        <span className="ink-tb-btn ink-tb-color" role="button" {...tip(t('tb.color'), undefined, 'top')} onMouseDown={(e) => e.preventDefault()} onClick={(e) => {
+        <span className="ink-tb-btn ink-tb-color" style={{ width: 32 }} role="button" {...tip(t('tb.color'), undefined, 'top')} onMouseDown={(e) => e.preventDefault()} onClick={(e) => {
           const r = e.currentTarget.getBoundingClientRect();
           openPopover({ id: 'tb-color', parent: 'inline-toolbar', anchor: { left: r.left - 4, right: r.right, top: r.top, bottom: r.bottom }, placement: 'bottom-start', offset: 4, noFocus: true,
             render: (close) => <div className="ink-menu ink-color-pop" style={{ width: 192 }}><ColorGrid current={curColor} onPick={(c) => { withSel((st) => applyTextColor(st.blockId, st.start, st.end, c)); close(); }} /></div> });

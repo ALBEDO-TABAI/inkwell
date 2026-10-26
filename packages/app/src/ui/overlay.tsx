@@ -18,6 +18,8 @@ export interface PopoverSpec {
   /** keep focus where it is (inline menus while typing) */
   noFocus?: boolean;
   className?: string;
+  /** for placement 'center': place the top edge at this fraction of the viewport height when it fits */
+  topFraction?: number;
   style?: CSSProperties;
   /** parent popover id — children close with parent and outside-clicks inside children don't close parent */
   parent?: string;
@@ -110,7 +112,7 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
         case 'right-start': left = a.right + off; top = a.top; if (left + w > vw - m) left = a.left - w - off; break;
         case 'left-start': left = a.left - w - off; top = a.top; break;
         case 'left-center': left = a.left - w - off; top = (a.top + a.bottom) / 2 - h / 2; break;
-        case 'center': left = (vw - w) / 2; top = (vh - h) / 2; break;
+        case 'center': left = (vw - w) / 2; top = (vh - h) / 2; if (entry.topFraction != null && vh * entry.topFraction + h <= vh - m) top = vh * entry.topFraction; break;
       }
       if (entry.placement !== 'center') {
         if (top + h > vh - m) {
@@ -128,12 +130,15 @@ function PopoverFrame({ entry, z }: { entry: Entry; z: number }) {
     window.addEventListener('resize', place);
     return () => { ro.disconnect(); window.removeEventListener('resize', place); };
   }, [entry]);
+  const focused = useRef<Entry | null>(null);
   useEffect(() => {
-    if (entry.noFocus) return;
+    // Hidden (unplaced) elements can't take focus, so wait until we have a position.
+    if (entry.noFocus || !pos || focused.current === entry) return;
+    focused.current = entry;
     const el = ref.current!;
     const f = el.querySelector<HTMLElement>('[data-autofocus]') || el;
     f.focus({ preventScroll: true });
-  }, [entry]);
+  }, [entry, pos]);
   return (
     <>
       {entry.modal && <div className="ink-modal-backdrop" style={{ zIndex: z }} onPointerDown={close} />}
