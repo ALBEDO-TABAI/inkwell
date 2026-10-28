@@ -4,6 +4,7 @@ import '@tokens/tokens.css';
 import './styles/app.css';
 import './styles/db.css';
 import './styles/motion.css';
+import './styles/studio.css';
 import { initPersistence, kv } from './store/persistence';
 import { initUi } from './app/state';
 import { App } from './App';

@@ -40,6 +40,7 @@ export function Sidebar({ floating = false }: { floating?: boolean }) {
   return (
     <nav className={'ink-sidebar' + (floating ? ' is-floating' : '')} style={{ width }} aria-label="sidebar">
       <div className="ink-sb-inner">
+        <div className="ink-studio-brand"><span aria-hidden="true" />Inkwell</div>
         <div className="ink-sb-search-wrap">
           <div className="ink-sb-search" role="button" tabIndex={0} onClick={() => openSearch()}>
             <span className="ink-sb-search-text">{t('sidebar.search')}</span>

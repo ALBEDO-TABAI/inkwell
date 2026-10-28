@@ -1,0 +1,168 @@
+/* Poster Printer study: a quiet paper workspace inside floating glass controls.
+   Root-scoped rules keep this theme above base styles when Vite splits shared CSS. */
+@font-face { font-family: 'Studio Sans'; src: url('../assets/studio/Inter.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Studio Display'; src: url('../assets/studio/InterTight.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Studio Serif'; src: url('../assets/studio/InstrumentSerif.woff2') format('woff2'); font-display: swap; }
+@font-face { font-family: 'Studio Mono'; src: url('../assets/studio/GeistMono.woff2') format('woff2'); font-weight: 100 900; font-display: swap; }
+
+:root {
+  --ink-font-sans: 'Studio Sans', 'PingFang SC', system-ui, sans-serif;
+  --ink-font-sans-zh: var(--ink-font-sans);
+  --ink-font-mono: 'Studio Mono', 'PingFang SC', monospace;
+  --studio-display: 'Studio Display', 'PingFang SC', system-ui, sans-serif;
+  --studio-stage: #ebebee;
+  --studio-paper: #fdfdfc;
+  --studio-ink: #151518;
+  --studio-muted: #66666e;
+  --studio-faint: #777780;
+  --studio-fill: rgba(11, 11, 14, .045);
+  --studio-hover: rgba(11, 11, 14, .075);
+  --studio-line: rgba(11, 11, 14, .10);
+  --studio-glass: rgba(252, 250, 247, .68);
+  --studio-rim: rgba(255, 255, 255, .88);
+  --studio-accent: #ff5a1f;
+  --studio-accent-text: #bd3b0c;
+  --studio-accent-soft: rgba(255, 90, 31, .10);
+  --studio-inverse: #242326;
+  --studio-on-inverse: #fff;
+  --studio-shadow: 0 2px 5px rgba(10, 10, 20, .04), 0 14px 30px -20px rgba(10, 10, 30, .24);
+  --studio-paper-shadow: 0 2px 5px rgba(10, 10, 20, .025), 0 24px 60px -32px rgba(10, 10, 30, .18);
+}
+:root[data-theme='dark'] {
+  --studio-stage: #111114;
+  --studio-paper: #1c1c20;
+  --studio-ink: #f4f4f6;
+  --studio-muted: #b3b3bc;
+  --studio-faint: #9999a3;
+  --studio-fill: rgba(255, 255, 255, .045);
+  --studio-hover: rgba(255, 255, 255, .08);
+  --studio-line: rgba(255, 255, 255, .10);
+  --studio-glass: rgba(34, 33, 35, .78);
+  --studio-rim: rgba(255, 255, 255, .13);
+  --studio-accent: #ff6a2c;
+  --studio-accent-text: #ff9368;
+  --studio-accent-soft: rgba(255, 106, 44, .13);
+  --studio-inverse: #f4f4f6;
+  --studio-on-inverse: #151518;
+  --studio-shadow: 0 2px 5px rgba(0, 0, 0, .15), 0 14px 32px -20px rgba(0, 0, 0, .6);
+  --studio-paper-shadow: 0 24px 60px -24px rgba(0, 0, 0, .4);
+}
+
+/* Keep document colour choices and the existing high-contrast palette intact. */
+:root:not([data-contrast='high']) {
+  --ink-text-primary: var(--studio-ink);
+  --ink-text-accent-primary: var(--studio-ink);
+  --ink-text-secondary: var(--studio-muted);
+  --ink-text-tertiary: var(--studio-faint);
+  --ink-icon-primary: var(--studio-ink);
+  --ink-icon-secondary: var(--studio-muted);
+  --ink-icon-tertiary: var(--studio-faint);
+  --ink-background-primary: var(--studio-paper);
+  --ink-background-secondary: var(--studio-stage);
+  --ink-background-elevated: var(--studio-paper);
+  --ink-background-tertiary: var(--studio-stage);
+  --ink-background-secondary-translucent: var(--studio-fill);
+  --ink-background-tertiary-translucent: var(--studio-hover);
+  --ink-background-interactive: var(--studio-stage);
+  --ink-background-interactive-translucent: var(--studio-hover);
+  --ink-button-hovered-background: var(--studio-hover);
+  --ink-border-primary: var(--studio-line);
+  --ink-border-secondary: var(--studio-line);
+  --ink-border-primary-translucent: var(--studio-line);
+  --ink-border-secondary-translucent: var(--studio-line);
+  --ink-chrome-tab-bar-background: var(--studio-stage);
+  --ink-chrome-sidebar-divider: transparent;
+  --ink-chrome-enabled-button-color: var(--studio-muted);
+  --ink-chrome-secondary-button-color: var(--studio-faint);
+  --ink-chrome-button-background: var(--studio-hover);
+}
+
+:root body { background: var(--studio-stage); }
+:root ::selection { background: var(--studio-accent-soft); }
+:root .ink-app {
+  padding: 14px 18px 18px; gap: 16px;
+  background: radial-gradient(circle at 1px 1px, var(--studio-line) .6px, transparent 1px) 0 0 / 24px 24px,
+    radial-gradient(ellipse at 15% 0%, var(--studio-accent-soft), transparent 50%), var(--studio-stage);
+}
+:root .ink-main { background: transparent; gap: 14px; }
+:root .ink-sidebar, :root .ink-topbar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel {
+  background: var(--studio-glass);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  box-shadow: inset 0 1px 0 var(--studio-rim), inset 0 0 0 1px var(--studio-line), var(--studio-shadow);
+}
+:root .ink-sidebar { border-radius: 22px; }
+:root .ink-sidebar.is-floating { border-radius: 0 22px 22px 0; background: var(--studio-glass); }
+:root .ink-sb-inner { border-radius: inherit; }
+:root .ink-studio-brand { display: flex; align-items: center; gap: 11px; height: 64px; padding: 0 22px; flex: none; font: 30px/1 'Studio Serif', Georgia, serif; letter-spacing: -.02em; color: var(--studio-ink); }
+:root .ink-studio-brand > span { width: 8px; height: 8px; border-radius: 50%; background: var(--studio-accent); box-shadow: 0 0 0 4px var(--studio-accent-soft); }
+:root .ink-sb-search-wrap { padding: 0 14px 4px; }
+:root .ink-sb-search { height: 36px; padding: 0 12px; border-radius: 18px; background: var(--studio-fill); border-color: var(--studio-line); font-size: 12px; }
+:root .ink-kbd-chip, :root .ink-menu-sc { font-family: var(--ink-font-mono); font-size: 10px; }
+:root .ink-sb-scroll { padding: 12px 12px 8px; }
+:root .ink-sb-row { height: 34px; border-radius: 10px; font-size: 13px; }
+:root .ink-sb-row.is-selected { background: var(--studio-accent-soft); box-shadow: inset 2px 0 0 var(--studio-accent); }
+:root .ink-sb-row.is-selected .ink-sb-icon, :root .ink-sb-row.is-selected .ink-sb-label { color: var(--studio-accent-text); }
+:root .ink-sb-section-title { font-size: 11px; letter-spacing: .035em; }
+:root .ink-sb-home-pill { border-radius: 18px; font-size: 12px; }
+:root .ink-sb-bottom { padding: 0 12px; }
+:root .ink-sb-footer { height: 50px; }
+:root .ink-sb-switcher { flex: 1; width: auto; min-width: 0; font-size: 12px; }
+:root .ink-sb-iconbtn { flex: none; }
+:root .ink-sb-divider { margin: 0 4px; }
+:root .ink-topbar { height: 46px; padding: 0 12px; border-radius: 24px; font-size: 12px; }
+:root .ink-topbar-btn, :root .ink-topbar-icon, :root .ink-crumb, :root .ink-search-chip, :root .ink-db-tool { border-radius: 18px; }
+:root .ink-topbar-btn { padding: 0 14px; }
+:root .ink-main > .ink-scroller { border: 1px solid var(--studio-line); border-radius: 20px; background: var(--studio-paper); box-shadow: var(--studio-paper-shadow); }
+:root .ink-title-editable { font-family: var(--studio-display); font-weight: 600; letter-spacing: -.025em; }
+:root .ink-page-top-pad { height: 54px; }
+:root .ink-h { font-family: var(--studio-display); letter-spacing: -.015em; }
+:root .ink-page-content { line-height: 1.65; }
+:root .ink-page-ctl { font-size: 12px; border-radius: 14px; }
+:root .ink-code, :root .ink-bookmark, :root .ink-callout { border-radius: 12px; }
+:root .ink-menu { border-radius: 16px; padding: 4px; }
+:root .ink-menu-item { border-radius: 9px; min-height: 30px; }
+:root .ink-menu-search { border-radius: 10px; }
+:root .ink-menu-search:focus { box-shadow: inset 0 0 0 1px var(--studio-accent); }
+:root .ink-settings, :root .ink-search { border-radius: 24px; }
+:root .ink-set-nav-item { border-radius: 10px; }
+:root .ink-set-nav-item.is-active { background: var(--studio-accent-soft); color: var(--studio-accent-text); }
+:root .ink-set-h1 { font-family: var(--studio-display); font-size: 20px; }
+:root .ink-modal-backdrop { background: rgba(15, 15, 20, .25); backdrop-filter: blur(5px); }
+:root .ink-btn { border-radius: 18px; }
+:root .ink-btn-primary, :root .ink-db-new button { background: var(--studio-inverse); color: var(--studio-on-inverse); }
+:root .ink-btn-primary:hover, :root .ink-db-new button:hover { background: var(--studio-inverse); filter: brightness(.9); }
+:root .ink-db-new-main { border-radius: 16px 0 0 16px; padding-left: 14px; }
+:root .ink-db-new-more { border-radius: 0 16px 16px 0; }
+:root .ink-db-tab.is-active { background: var(--studio-accent-soft); color: var(--studio-accent-text); }
+:root .ink-db-tool.is-on, :root .ink-menu-item.is-accent, :root .ink-search-iconbtn.is-on, :root .ink-search-hl { color: var(--studio-accent-text); }
+:root .ink-search-chip.is-on, :root .ink-db-chip.is-on, :root .ink-db-chip.is-sort { background: var(--studio-accent-soft); color: var(--studio-accent-text); }
+:root .ink-checkbox.is-on, :root .ink-check.is-on, :root .ink-switch.is-on { background: var(--studio-accent); }
+:root .ink-rpanel { border-radius: 20px; }
+:root .ink-tabbar { background: var(--studio-stage); }
+:root .ink-tabbar-left, :root .ink-tabbar-nav, :root .ink-tabbar-right, :root .ink-tabstrip::after { box-shadow: none; }
+:root .ink-tabstrip { align-items: center; gap: 4px; }
+:root .ink-tab, :root .ink-tab.is-last, :root .ink-tabstrip > .ink-tab:first-child { height: 28px; border-radius: 16px; box-shadow: none; font-size: 12px; }
+:root .ink-tab.is-active { background: var(--studio-glass); box-shadow: inset 0 1px 0 var(--studio-rim), 0 1px 4px rgba(0,0,0,.06); }
+:root .ink-tab.is-active::before { content: ''; width: 5px; height: 5px; margin-right: 8px; flex: none; border-radius: 50%; background: var(--studio-accent); }
+:root .ink-tbar-icon { border-radius: 50%; }
+
+@media (max-width: 900px) {
+  :root .ink-app { padding: 10px; gap: 10px; }
+  :root .ink-main { gap: 10px; }
+  :root .ink-page-header-inner { padding-inline: 40px; }
+  :root .ink-page-content, :root .ink-page.is-full .ink-page-content { width: calc(100% - 80px); }
+}
+:root[data-contrast='high'] {
+  --studio-paper: var(--ink-background-primary);
+  --studio-stage: var(--ink-background-secondary);
+  --studio-glass: var(--ink-background-elevated);
+  --studio-ink: var(--ink-text-primary);
+  --studio-line: var(--ink-border-primary);
+  --studio-accent-text: var(--ink-text-primary);
+  --studio-accent-soft: var(--ink-background-interactive);
+}
+:root[data-contrast='high'] :is(.ink-sidebar, .ink-topbar, .ink-menu, .ink-search, .ink-settings, .ink-toolbar, .ink-rpanel) { backdrop-filter: none; }
+@media (prefers-reduced-transparency: reduce) {
+  :root .ink-sidebar, :root .ink-topbar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel { background: var(--ink-background-elevated); backdrop-filter: none; }
+}
