@@ -81,11 +81,10 @@
 :root ::selection { background: var(--studio-accent-soft); }
 :root .ink-app {
   padding: 14px 18px 18px; gap: 16px;
-  background: radial-gradient(circle at 1px 1px, var(--studio-line) .6px, transparent 1px) 0 0 / 24px 24px,
-    radial-gradient(ellipse at 15% 0%, var(--studio-accent-soft), transparent 50%), var(--studio-stage);
+  background: radial-gradient(circle at 1px 1px, var(--studio-line) .6px, transparent 1px) 0 0 / 24px 24px, var(--studio-stage);
 }
-:root .ink-main { background: transparent; gap: 14px; }
-:root .ink-sidebar, :root .ink-topbar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel {
+:root .ink-main { background: var(--studio-paper); gap: 0; border: 1px solid var(--studio-line); border-radius: 20px; box-shadow: var(--studio-paper-shadow); overflow: hidden; }
+:root .ink-sidebar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel {
   background: var(--studio-glass);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
   backdrop-filter: blur(22px) saturate(150%);
@@ -110,10 +109,10 @@
 :root .ink-sb-switcher { flex: 1; width: auto; min-width: 0; font-size: 12px; }
 :root .ink-sb-iconbtn { flex: none; }
 :root .ink-sb-divider { margin: 0 4px; }
-:root .ink-topbar { height: 46px; padding: 0 12px; border-radius: 24px; font-size: 12px; }
+:root .ink-topbar { height: 46px; padding: 0 12px; border-radius: 0; background: transparent; font-size: 12px; }
 :root .ink-topbar-btn, :root .ink-topbar-icon, :root .ink-crumb, :root .ink-search-chip, :root .ink-db-tool { border-radius: 18px; }
 :root .ink-topbar-btn { padding: 0 14px; }
-:root .ink-main > .ink-scroller { border: 1px solid var(--studio-line); border-radius: 20px; background: var(--studio-paper); box-shadow: var(--studio-paper-shadow); }
+:root .ink-main > .ink-scroller { background: transparent; }
 :root .ink-title-editable { font-family: var(--studio-display); font-weight: 600; letter-spacing: -.025em; }
 :root .ink-page-top-pad { height: 54px; }
 :root .ink-h { font-family: var(--studio-display); letter-spacing: -.015em; }
@@ -149,7 +148,6 @@
 
 @media (max-width: 900px) {
   :root .ink-app { padding: 10px; gap: 10px; }
-  :root .ink-main { gap: 10px; }
   :root .ink-page-header-inner { padding-inline: 40px; }
   :root .ink-page-content, :root .ink-page.is-full .ink-page-content { width: calc(100% - 80px); }
 }
@@ -162,7 +160,7 @@
   --studio-accent-text: var(--ink-text-primary);
   --studio-accent-soft: var(--ink-background-interactive);
 }
-:root[data-contrast='high'] :is(.ink-sidebar, .ink-topbar, .ink-menu, .ink-search, .ink-settings, .ink-toolbar, .ink-rpanel) { backdrop-filter: none; }
+:root[data-contrast='high'] :is(.ink-sidebar, .ink-menu, .ink-search, .ink-settings, .ink-toolbar, .ink-rpanel) { backdrop-filter: none; }
 @media (prefers-reduced-transparency: reduce) {
-  :root .ink-sidebar, :root .ink-topbar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel { background: var(--ink-background-elevated); backdrop-filter: none; }
+  :root .ink-sidebar, :root .ink-menu, :root .ink-search, :root .ink-settings, :root .ink-toolbar, :root .ink-rpanel { background: var(--ink-background-elevated); backdrop-filter: none; }
 }
